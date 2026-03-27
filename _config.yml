@@ -15,10 +15,10 @@ timezone:
 # ↓ --------------------------
 
 title: Sagar Pal
-tagline: Computational Scientist | Scientific ML & HPC
+tagline: Computational Physicist | Scientific ML & HPC
 description: >-
-  Research Scientist/Engineer at Entalpic. Computational scientist specializing in
-  multiphase fluid dynamics, Scientific ML, and High Performance Computing (HPC).
+  Computational physicist specializing in Scientific ML and High Performance Computing.
+  Senior ML & HPC Engineer at Entalpic. PhD in Computational Physics from Sorbonne Université.
   Based in Paris, France.
 
 # Fill in the protocol & hostname for your site.
@@ -36,7 +36,7 @@ social:
   links:
     - https://github.com/palsagar
     - https://linkedin.com/in/spal220493
-    - https://scholar.google.com/citations?user=YOUR_SCHOLAR_ID
+    - https://scholar.google.com/citations?user=PtMicc0AAAAJ
 
 # Site Verification Settings
 webmaster_verifications:
