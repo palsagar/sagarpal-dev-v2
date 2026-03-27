@@ -1,0 +1,21 @@
+- title: "FlowLab"
+  tagline: "Real-time 2D fluid dynamics simulator in the browser"
+  description: >-
+    GPU-accelerated Navier-Stokes solver running entirely in the browser via WebGPU
+    compute shaders. Features pressure-projection method with SOR Jacobi solver,
+    semi-Lagrangian advection, multiple visualization modes (smoke, pressure,
+    streamlines, particles), and interactive obstacle manipulation with preset
+    scenarios including vortex shedding and backward-facing step recirculation.
+  demo: "https://flow.gpuphysics.dev/"
+  github: "https://github.com/palsagar/webgpu-fluid-solver"
+  tags: ["WebGPU", "WGSL", "Navier-Stokes", "JavaScript"]
+
+- title: "Rent vs Buy Simulator"
+  tagline: "Interactive financial comparison for housing decisions"
+  description: >-
+    An interactive simulator for comparing realistic rent vs buy scenarios,
+    accounting for mortgage rates, property appreciation, investment returns,
+    taxes, and maintenance costs to help make informed housing decisions.
+  demo: "https://rent-or-buy-sim.com/"
+  github: "https://github.com/palsagar/rent-vs-buy-simulator"
+  tags: ["Python", "Streamlit", "Finance"]

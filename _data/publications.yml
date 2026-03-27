@@ -1,0 +1,52 @@
+- title: "A novel momentum-conserving, mass-momentum consistent method for interfacial flows involving large density contrasts"
+  authors: "<strong>S. Pal</strong>, D. Fuster, S. Zaleski"
+  journal: "Journal of Computational Physics"
+  year: 2021
+  description: >-
+    Proposed a novel Volume-of-Fluid method that ensures discrete consistency between
+    mass and momentum transport on staggered uniform Cartesian grids. Extended conservative
+    direction-split time integration of geometric fluxes to 3D. Demonstrated stability and
+    robustness on a complex turbulent interfacial flow configuration involving a falling
+    raindrop in air.
+  pdf: "/assets/pdfs/jcp-paper.pdf"
+  doi: "https://doi.org/10.48550/arXiv.2101.04142"
+  featured: true
+
+- title: "Statistics of drops generated from ensembles of randomly corrugated ligaments"
+  authors: "<strong>S. Pal</strong>, C. Pairetti, M. Crialesi-Esposito, D. Fuster, S. Zaleski"
+  journal: "Physics of Fluids"
+  year: 2024
+  description: >-
+    Performed large-ensemble numerical simulations of individual ligaments with random
+    initial surface corrugations to study the statistics of drop formation. Revealed
+    three stable drop sizes generated via two distinct stages of breakup. Tested
+    Log-Normal, Gaussian, Gamma, and Poisson distributions, establishing a reproducible
+    framework for investigating polydispersity in fluid fragmentation.
+  pdf: "/assets/pdfs/ligaments-physfluid.pdf"
+  doi: "https://doi.org/10.1063/5.0221732"
+  featured: true
+
+- title: "A mass-momentum consistent, Volume-of-Fluid method for incompressible flow on staggered grids"
+  authors: "T. Arrufat, M. Crialesi-Esposito, D. Fuster, Y. Ling, L. Malan, <strong>S. Pal</strong>, R. Scardovelli, G. Tryggvason, S. Zaleski"
+  journal: "Computers and Fluids"
+  year: 2021
+  description: >-
+    Developed a consistent discretization of the Navier-Stokes equations that advects mass
+    and momentum at the same speed as the volume-fraction discontinuity. Tested for droplets
+    in uniform flow, the Kelvin-Helmholtz instability, a falling raindrop, and atomizing
+    flow in air-water conditions.
+  pdf: "/assets/pdfs/mass-momentum-CAF-paper.pdf"
+  doi: "https://doi.org/10.1016/j.compfluid.2020.104785"
+  featured: false
+
+- title: "PArallel, Robust, Interface Simulator (PARIS)"
+  authors: "W. Aniszewski, T. Arrufat, M. Crialesi-Esposito, S. Dabiri, D. Fuster, Y. Ling, J. Lu, L. Malan, <strong>S. Pal</strong>, R. Scardovelli, G. Tryggvason"
+  journal: "Computer Physics Communications"
+  year: 2021
+  description: >-
+    Co-developed a massively parallel computational fluid dynamics code for simulating
+    multiphase flows. The solver scales up to 64,000 cores using a hybrid combination
+    of MPI, OpenMP, and GPU (CUDA) parallelization.
+  pdf: null
+  doi: "https://doi.org/10.1016/j.cpc.2021.107849"
+  featured: false
