@@ -1,43 +1,230 @@
 ---
 layout: page
-# Override the default home layout to show About content on landing page
 title: ""
 ---
 
-<h2>Hi, I'm Sagar Pal</h2>
+<style>
+  .landing-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--btn-border-color, #e0e0e0);
+  }
+  .landing-section:last-child {
+    border-bottom: none;
+  }
+  .landing-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .hero-tagline {
+    font-size: 1rem;
+    color: var(--text-muted-color, #888);
+    margin-bottom: 1rem;
+  }
+  .hero-bio {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+  .hero-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .hero-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .hero-links a:hover {
+    opacity: 0.8;
+  }
+  .hero-link-cv {
+    background: var(--link-color, #2563eb);
+    color: #fff;
+  }
+  .hero-link-social {
+    border: 1px solid var(--btn-border-color, #e0e0e0);
+    color: var(--text-color, inherit);
+  }
+  .skill-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .skill-pill {
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  .skill-domain {
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--link-color, #2563eb);
+  }
+  .skill-tech {
+    background: rgba(22, 163, 74, 0.12);
+    color: #16a34a;
+  }
+  .timeline-item {
+    margin-bottom: 12px;
+  }
+  .timeline-role {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .timeline-meta {
+    font-size: 0.85rem;
+    color: var(--text-muted-color, #888);
+  }
+  .feat-card {
+    background: var(--card-bg, rgba(0,0,0,0.02));
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .feat-card-title {
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin-bottom: 3px;
+  }
+  .feat-card-meta {
+    font-size: 0.82rem;
+    color: var(--text-muted-color, #888);
+  }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1rem;
+  }
+  .section-header a {
+    font-size: 0.85rem;
+  }
+  .proj-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+</style>
 
-<p>I'm a <strong>Research Scientist/Engineer</strong> at <a href="https://www.entalpic.ai/">Entalpic</a>, working on computational modeling at the intersection of physics, machine learning, and industrial R&D.</p>
+<!-- Hero -->
+<div class="landing-section">
+  <h1 style="font-size: 1.6rem; margin-bottom: 0.3rem;">Hi, I'm Sagar Pal</h1>
+  <div class="hero-tagline">Computational Physicist &bull; Scientific ML & HPC &bull; Paris, France</div>
+  <div class="hero-bio">
+    I'm a computational physicist specializing in scientific machine learning and high-performance computing.
+    Over the past 9 years, I've worked across the entire technology stack — from optimizing performance-critical
+    code in C++ and Fortran to developing advanced ML solutions using PyTorch and JAX.
+  </div>
+  <div class="hero-bio">
+    Currently a <strong>Senior ML & HPC Engineer</strong> at <a href="https://www.entalpic.ai/">Entalpic</a>,
+    I bridge the gap between traditional scientific computing and cutting-edge machine learning approaches.
+    I'm passionate about building high-performance scientific software that's not just fast, but also
+    maintainable and adaptable to evolving research needs.
+  </div>
+  <div class="hero-links">
+    <a href="/assets/pdfs/Sagar_Pal_CV_2025.pdf" class="hero-link-cv" download>
+      <i class="fas fa-file-download"></i> Download CV
+    </a>
+    <a href="https://github.com/palsagar" class="hero-link-social" target="_blank" rel="noopener">
+      <i class="fab fa-github"></i> GitHub
+    </a>
+    <a href="https://linkedin.com/in/spal220493" class="hero-link-social" target="_blank" rel="noopener">
+      <i class="fab fa-linkedin"></i> LinkedIn
+    </a>
+    <a href="https://scholar.google.com/citations?user=PtMicc0AAAAJ" class="hero-link-social" target="_blank" rel="noopener">
+      <i class="fas fa-graduation-cap"></i> Scholar
+    </a>
+  </div>
+</div>
 
-<h3>Background</h3>
+<!-- Expertise -->
+<div class="landing-section">
+  <h2>Expertise</h2>
+  <div class="skill-pills">
+    <span class="skill-pill skill-domain">Scientific ML</span>
+    <span class="skill-pill skill-domain">High Performance Computing</span>
+    <span class="skill-pill skill-domain">Computational Fluid Dynamics</span>
+    <span class="skill-pill skill-domain">Numerical Methods</span>
+    <span class="skill-pill skill-domain">Stochastic Processes</span>
+  </div>
+  <div class="skill-pills">
+    <span class="skill-pill skill-tech">Python</span>
+    <span class="skill-pill skill-tech">C++</span>
+    <span class="skill-pill skill-tech">Fortran</span>
+    <span class="skill-pill skill-tech">PyTorch</span>
+    <span class="skill-pill skill-tech">JAX</span>
+    <span class="skill-pill skill-tech">MPI</span>
+    <span class="skill-pill skill-tech">OpenMP</span>
+    <span class="skill-pill skill-tech">CUDA</span>
+  </div>
+</div>
 
-<p>I have a background in <strong>mechanical engineering</strong> and have spent years in academia working on <strong>multiphase fluid dynamics</strong> — specifically the complex flow physics of fluid fragmentation (droplets, sprays, atomization). My work spans both deterministic and stochastic modeling frameworks.</p>
+<!-- Experience -->
+<div class="landing-section">
+  <h2>Experience</h2>
+  {% for exp in site.data.experience %}
+  <div class="timeline-item">
+    <div class="timeline-role">{{ exp.role }}</div>
+    <div class="timeline-meta">
+      <a href="{{ exp.url }}" target="_blank" rel="noopener">{{ exp.company }}</a>
+      &bull; {{ exp.period }} &bull; {{ exp.location }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
 
-<h3>Expertise</h3>
+<!-- Education -->
+<div class="landing-section">
+  <h2>Education</h2>
+  {% for edu in site.data.education %}
+  <div class="timeline-item">
+    <div class="timeline-role">{{ edu.degree }}</div>
+    <div class="timeline-meta">{{ edu.institution }} &bull; {{ edu.period }}</div>
+  </div>
+  {% endfor %}
+</div>
 
-<ul>
-  <li><strong>Scientific Machine Learning (SciML)</strong></li>
-  <li><strong>High Performance Computing (HPC)</strong> — large-scale parallel implementations on supercomputing infrastructure</li>
-  <li><strong>Computational Fluid Dynamics</strong> — multiphase flows, heat & mass transfer, thermal radiation</li>
-  <li><strong>Numerical Methods</strong> — coupled non-linear PDEs, optimization, perturbation theory</li>
-  <li><strong>Stochastic Processes & Probabilistic Modeling</strong></li>
-</ul>
+<!-- Featured Publications -->
+<div class="landing-section">
+  <div class="section-header">
+    <h2 style="margin-bottom: 0;">Featured Publications</h2>
+    <a href="/publications/">View all &rarr;</a>
+  </div>
+  {% for pub in site.data.publications %}
+  {% if pub.featured %}
+  <a href="/publications/" style="text-decoration: none; color: inherit;">
+    <div class="feat-card">
+      <div class="feat-card-title">{{ pub.title }}</div>
+      <div class="feat-card-meta">{{ pub.journal }} &bull; {{ pub.year }}</div>
+    </div>
+  </a>
+  {% endif %}
+  {% endfor %}
+</div>
 
-<h3>Current Work</h3>
-
-<p>At Entalpic, I develop computational models for large-scale industrial manufacturing processes. I work at the intersection of fluid dynamics, thermal physics, optimization, and advanced numerical methods to tackle real-world engineering challenges.</p>
-
-<h3>Location</h3>
-
-<p>Based in <strong>Paris, France</strong> 🇫🇷</p>
-
-<h3>Connect</h3>
-
-<ul>
-  <li><strong>GitHub:</strong> <a href="https://github.com/palsagar">github.com/palsagar</a></li>
-  <li><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/spal220493">linkedin.com/in/spal220493</a></li>
-  <li><strong>Email:</strong> sagar2204pal@gmail.com</li>
-</ul>
-
-<hr />
-
-<p><em>This site is built with <a href="https://jekyllrb.com/">Jekyll</a> and the <a href="https://github.com/cotes2020/jekyll-theme-chirpy">Chirpy</a> theme.</em></p>
+<!-- Side Projects -->
+<div class="landing-section" style="border-bottom: none;">
+  <div class="section-header">
+    <h2 style="margin-bottom: 0;">Side Projects</h2>
+    <a href="/projects/">View all &rarr;</a>
+  </div>
+  <div class="proj-preview-grid">
+    {% for proj in site.data.projects %}
+    <a href="/projects/" style="text-decoration: none; color: inherit;">
+      <div class="feat-card">
+        <div class="feat-card-title">{{ proj.title }}</div>
+        <div class="feat-card-meta">{{ proj.tagline }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
