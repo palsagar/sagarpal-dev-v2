@@ -1,3 +1,26 @@
+- title: "Gray-Scott"
+  tagline: "Real-time reaction-diffusion pattern simulator in the browser"
+  description: >-
+    GPU-accelerated Gray-Scott reaction-diffusion solver running in the browser
+    via WebGPU compute shaders. Features 12 curated parameter presets, brush
+    painting to seed patterns, live parameter tuning with vim-style keyboard
+    shortcuts, adjustable resolution, and an interactive guide explaining
+    the underlying equations and dynamics.
+  demo: "https://patterns.gpuphysics.dev"
+  github: "https://github.com/palsagar/webgpu-gray-scott"
+  tags: ["WebGPU", "WGSL", "Reaction-Diffusion", "JavaScript"]
+
+- title: "PortWhisperer"
+  tagline: "Beautiful CLI tool to see what's running on your ports"
+  description: >-
+    A developer-focused terminal utility that displays all listening ports with
+    color-coded status indicators, framework detection for Node.js/Python/Docker,
+    process inspection with memory and git branch info, real-time watch mode,
+    and interactive cleanup of orphaned processes.
+  pypi: "https://pypi.org/project/portwhisperer/"
+  github: "https://github.com/palsagar/port-whisperer"
+  tags: ["Python", "CLI", "Developer Tools"]
+
 - title: "FlowLab"
   tagline: "Real-time 2D fluid dynamics simulator in the browser"
   description: >-

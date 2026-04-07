@@ -96,6 +96,11 @@ title: Projects
         <i class="fas fa-external-link-alt"></i> Live Demo
       </a>
       {% endif %}
+      {% if proj.pypi %}
+      <a href="{{ proj.pypi }}" class="proj-link-demo" target="_blank" rel="noopener">
+        <i class="fas fa-cube"></i> PyPI
+      </a>
+      {% endif %}
       {% if proj.github %}
       <a href="{{ proj.github }}" class="proj-link-github" target="_blank" rel="noopener">
         <i class="fab fa-github"></i> Source
