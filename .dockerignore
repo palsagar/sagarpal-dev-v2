@@ -1,0 +1,19 @@
+# Jekyll build output & caches
+_site
+.jekyll-cache
+.jekyll-metadata
+
+# Bundler / gems
+vendor
+.bundle
+*.gem
+
+# Node (not used by the build, but ignored just in case)
+node_modules
+
+# Local tooling / editor cruft (keep .git — the lastmod hook needs it)
+.claude
+.superpowers
+.devcontainer
+.vscode
+.idea
