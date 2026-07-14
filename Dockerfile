@@ -1,6 +1,13 @@
 # ---- Build stage: compile the Jekyll site ----
 FROM ruby:3.3-slim-bookworm AS build
 
+# Keep the build small and bounded so it can't push a low-RAM VPS into swap:
+#  - skip the :test group (html-proofer/nokogiri) — not needed to build the site
+#  - single-threaded gem installs + C compiles cap peak memory
+ENV BUNDLE_WITHOUT="test" \
+    BUNDLE_JOBS="1" \
+    MAKEFLAGS="-j1"
+
 # build-essential: native gems (sass-embedded, ffi, ...).
 # git: required by _plugins/posts-lastmod-hook.rb, which shells out to `git log`.
 RUN apt-get update \
