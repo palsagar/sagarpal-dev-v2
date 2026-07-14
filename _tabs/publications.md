@@ -3,6 +3,7 @@ layout: page
 icon: fas fa-file-alt
 order: 1
 title: Publications
+description: Peer-reviewed publications by Sagar Pal spanning computational physics, scientific machine learning, and numerical methods for multiphase and multiphysics simulation.
 ---
 
 <style>

@@ -9,7 +9,7 @@ theme: jekyll-theme-chirpy
 lang: en
 
 # Change to your timezone › https://zones.arilyn.cc
-timezone:
+timezone: Europe/Paris
 
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
@@ -96,7 +96,7 @@ avatar: /assets/img/prof_pic.jpg
 
 # The URL of the site-wide social preview image used in SEO `og:image` meta tag.
 # It can be overridden by a customized `page.image` in front matter.
-social_preview_image: # string, local or CORS resources
+social_preview_image: /assets/img/og-card.png # string, local or CORS resources
 
 # boolean type, the global switch for TOC in posts.
 toc: true
@@ -209,6 +209,9 @@ exclude:
   - purgecss.js
   - "*.config.js"
   - "package*.json"
+  - Dockerfile
+  - DEPLOYMENT.md
+  - nginx.conf.template
 
 jekyll-archives:
   enabled: [categories, tags]

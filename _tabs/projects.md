@@ -3,6 +3,7 @@ layout: page
 icon: fas fa-code
 order: 2
 title: Projects
+description: Side projects by Sagar Pal — interactive physics simulations, GPU/WebGPU experiments, and scientific-computing tools at the intersection of ML and high-performance computing.
 ---
 
 <style>

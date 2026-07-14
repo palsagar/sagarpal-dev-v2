@@ -27,7 +27,14 @@ RUN JEKYLL_ENV=production bundle exec jekyll build -d _site
 # ---- Serve stage: static files behind nginx ----
 FROM nginx:1.27-alpine AS serve
 
+# Umami analytics is injected at request time by nginx (see nginx.conf.template),
+# driven by these runtime env vars — set them in Coolify. Empty default = inert.
+# NGINX_ENVSUBST_FILTER limits envsubst to UMAMI_* so it never touches nginx's $vars.
+ENV UMAMI_DOMAIN="" \
+    UMAMI_ID="" \
+    NGINX_ENVSUBST_FILTER="^UMAMI_"
+
 COPY --from=build /site/_site /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 80

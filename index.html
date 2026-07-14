@@ -1,9 +1,12 @@
 ---
 layout: page
-title: ""
+title: "Computational Physicist · Scientific ML & HPC"
 ---
 
 <style>
+  /* SEO: `title` above drives the <title> tag; hide Chirpy's visible page-title
+     heading on the landing page so it doesn't duplicate the hero below. */
+  .dynamic-title { display: none; }
   .landing-section {
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
@@ -254,3 +257,38 @@ title: ""
     {% endfor %}
   </div>
 </div>
+
+<!-- Structured data: Person (SEO / knowledge graph, E-E-A-T) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Sagar Pal",
+  "url": "https://sagar-pal.dev",
+  "image": "https://sagar-pal.dev/assets/img/prof_pic.jpg",
+  "jobTitle": "Senior ML & HPC Engineer",
+  "worksFor": {
+    "@type": "Organization",
+    "name": "Entalpic",
+    "url": "https://www.entalpic.ai/"
+  },
+  "alumniOf": [
+    { "@type": "CollegeOrUniversity", "name": "Sorbonne Université" },
+    { "@type": "CollegeOrUniversity", "name": "École Polytechnique" },
+    { "@type": "CollegeOrUniversity", "name": "Indian Institute of Technology" }
+  ],
+  "knowsAbout": [
+    "Computational Physics",
+    "Scientific Machine Learning",
+    "High-Performance Computing",
+    "Numerical Methods",
+    "Materials Discovery",
+    "Fluid Dynamics"
+  ],
+  "sameAs": [
+    "https://github.com/palsagar",
+    "https://linkedin.com/in/spal220493",
+    "https://scholar.google.com/citations?user=PtMicc0AAAAJ"
+  ]
+}
+</script>

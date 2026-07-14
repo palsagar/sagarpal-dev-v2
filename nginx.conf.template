@@ -1,0 +1,37 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Chirpy ships a custom 404 page.
+    error_page 404 /404.html;
+
+    # Inject the self-hosted Umami analytics tag into every HTML page at request
+    # time. ${UMAMI_DOMAIN} / ${UMAMI_ID} come from Coolify runtime env vars and
+    # are substituted by the nginx image's envsubst step at container start
+    # (NGINX_ENVSUBST_FILTER="^UMAMI_" keeps it from touching nginx's own $vars).
+    # Both empty by default => a harmless inert tag until you set them.
+    # We anchor on </title> (not </head>): Chirpy's production HTML compression
+    # strips optional closing tags like </head>, so </head> is never present.
+    sub_filter '</title>' '</title><script defer src="${UMAMI_DOMAIN}/script.js" data-website-id="${UMAMI_ID}"></script>';
+    sub_filter_once on;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # Long-cache heavy static assets for Core Web Vitals. Deliberately excludes
+    # HTML and sw.js so page content and the PWA service worker stay fresh.
+    location ~* \.(?:jpg|jpeg|png|gif|webp|avif|svg|ico|woff2?|ttf|otf|eot)$ {
+        expires 30d;
+        add_header Cache-Control "public";
+    }
+
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 256;
+    gzip_types text/css application/javascript application/json application/xml application/rss+xml image/svg+xml;
+}

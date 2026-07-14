@@ -118,7 +118,7 @@ proxy above (while `www` is DNS-only this rule silently does nothing):
    `curl -sI https://www.sagar-pal.dev` → `301` with `location: https://sagar-pal.dev/`.
 
 **If you keep `www` DNS-only (grey cloud):** the Cloudflare rule won't fire —
-redirect at the origin instead by adding this server block to `nginx.conf`
+redirect at the origin instead by adding this server block to `nginx.conf.template`
 (`www` must be listed in Coolify **Domains** so it routes to the container):
 
 ```nginx
@@ -137,3 +137,50 @@ Pages stays live through Phase 5, so rollback = DNS revert: re-add the four
 `pwa.enabled: true`, so returning visitors carry a cached service worker from
 the Pages deploy. Same domain, so the browser fetches the new `sw.js` on next
 visit and self-heals — possibly one stale load. Not a blocker.
+
+## Analytics (Umami) — wiring runbook
+
+The Umami tracking tag is **injected at request time by nginx**, driven by two
+runtime env vars — nothing about Umami lives in the repo or the build. This is a
+static site, so the tag can't come from a Coolify *runtime* env var via Jekyll;
+instead nginx's `sub_filter` (see `nginx.conf.template`) inserts:
+
+```html
+<script defer src="${UMAMI_DOMAIN}/script.js" data-website-id="${UMAMI_ID}"></script>
+```
+
+into every HTML page, with the two `${...}` values substituted from the
+container env at start-up (the nginx image's envsubst step; scoped to `UMAMI_*`).
+
+### One-time setup
+1. **In your Umami dashboard:** add a website for `sagar-pal.dev` (Settings →
+   Websites → Add). Copy its **Website ID** (a UUID) and note your Umami
+   instance URL.
+2. **In Coolify** → this app → **Environment Variables**, add two variables
+   (plain **runtime** vars — do *not* tick "Build Variable"):
+
+   | Key | Value | Notes |
+   |---|---|---|
+   | `UMAMI_DOMAIN` | `https://analytics.sagar-pal.dev` | Full URL of your Umami instance. **Must** include `https://` and have **no trailing slash** (nginx appends `/script.js`). |
+   | `UMAMI_ID` | `xxxxxxxx-xxxx-...` | The Website ID (UUID) from step 1. |
+
+3. **Redeploy** (or just Restart) the app in Coolify. Env-var changes take
+   effect on container start — **no rebuild needed**.
+
+### Verify
+```bash
+curl -s https://sagar-pal.dev/ | grep -o '<script[^>]*script.js[^>]*>'
+# → <script defer src="https://analytics.sagar-pal.dev/script.js" data-website-id="...">
+```
+Then load the site and confirm a hit appears in Umami's Realtime view.
+
+### Notes
+- **Change or disable analytics:** edit/remove the env vars + Restart. No rebuild.
+- **If unset:** the tag renders inert (`src="/script.js"`, empty id) — harmless,
+  just no tracking.
+- **Umami is cookieless** — no consent banner required.
+- If you enabled *domain enforcement* on the Umami website, make sure
+  `sagar-pal.dev` is in its allowed-domains list, or events are dropped.
+- Your audience is technical (ad-blocker-heavy), so expect some undercount from
+  the default self-hosted tracker. If it matters later, front-proxy the script +
+  `/api/send` under `sagar-pal.dev` to dodge blocklists.
