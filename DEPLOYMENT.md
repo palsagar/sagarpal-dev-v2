@@ -96,7 +96,38 @@ Only once this passes:
 ### Phase 7 — Optional Cloudflare hardening (after HTTPS confirmed)
 - Flip apex `A` and `www` `CNAME` to **Proxied (orange)** for DDoS/caching + origin hiding.
 - **SSL/TLS → Overview → Full (strict)**; enable **Always Use HTTPS**.
-- Canonical www→apex: Cloudflare **Redirect Rule** `www.sagar-pal.dev/*` → `https://sagar-pal.dev/$1` (301).
+
+#### www → apex redirect rule
+Canonicalize `www.sagar-pal.dev` to the bare apex with a **301** (path + query
+preserved).
+
+**Cloudflare Redirect Rule** — requires `www` to be **Proxied (orange)**;
+Redirect Rules only run on proxied traffic, so do this *after* enabling the
+proxy above (while `www` is DNS-only this rule silently does nothing):
+
+1. Cloudflare → **Rules → Redirect Rules → Create rule**.
+2. **Rule name:** `www to apex`.
+3. **When incoming requests match** → *Custom filter expression*:
+   Field **Hostname**, Operator **equals**, Value `www.sagar-pal.dev`
+   (expression: `http.host eq "www.sagar-pal.dev"`).
+4. **Then... Type: Dynamic**:
+   - **Expression:** `concat("https://sagar-pal.dev", http.request.uri.path)`
+   - **Status code:** `301`
+   - **Preserve query string:** on
+5. **Deploy**, then test:
+   `curl -sI https://www.sagar-pal.dev` → `301` with `location: https://sagar-pal.dev/`.
+
+**If you keep `www` DNS-only (grey cloud):** the Cloudflare rule won't fire —
+redirect at the origin instead by adding this server block to `nginx.conf`
+(`www` must be listed in Coolify **Domains** so it routes to the container):
+
+```nginx
+server {
+    listen 80;
+    server_name www.sagar-pal.dev;
+    return 301 https://sagar-pal.dev$request_uri;
+}
+```
 
 ### Rollback
 Pages stays live through Phase 5, so rollback = DNS revert: re-add the four
