@@ -1,44 +1,80 @@
-- title: "Gray-Scott"
-  tagline: "Real-time reaction-diffusion pattern simulator in the browser"
-  description: >-
-    GPU-accelerated Gray-Scott reaction-diffusion solver running in the browser
-    via WebGPU compute shaders. Features 12 curated parameter presets, brush
-    painting to seed patterns, live parameter tuning with vim-style keyboard
-    shortcuts, adjustable resolution, and an interactive guide explaining
-    the underlying equations and dynamics.
-  demo: "https://patterns.gpuphysics.dev"
-  github: "https://github.com/palsagar/webgpu-gray-scott"
-  tags: ["WebGPU", "WGSL", "Reaction-Diffusion", "JavaScript"]
-
-- title: "PortWhisperer"
-  tagline: "Beautiful CLI tool to see what's running on your ports"
-  description: >-
-    A developer-focused terminal utility that displays all listening ports with
-    color-coded status indicators, framework detection for Node.js/Python/Docker,
-    process inspection with memory and git branch info, real-time watch mode,
-    and interactive cleanup of orphaned processes.
-  pypi: "https://pypi.org/project/portwhisperer/"
-  github: "https://github.com/palsagar/port-whisperer"
-  tags: ["Python", "CLI", "Developer Tools"]
-
-- title: "FlowLab"
+# `order` is the display order (DESIGN.md §7.1). `summary` and `tech` are the home
+# copy (DESIGN.md §10); `tagline`, `description` and `tags` are the longer text for
+# /projects/. A project has either an `image` or a `terminal` fragment.
+- id: flowlab
+  order: 1
+  title: "FlowLab"
   tagline: "Real-time 2D fluid dynamics simulator in the browser"
+  summary: "Real-time 2D Navier–Stokes in the browser: pressure projection, semi-Lagrangian advection, obstacles you can drag through the flow."
+  tech: "WebGPU, WGSL, Navier–Stokes"
   description: >-
     GPU-accelerated Navier-Stokes solver running entirely in the browser via WebGPU
     compute shaders. Features pressure-projection method with SOR Jacobi solver,
     semi-Lagrangian advection, multiple visualization modes (smoke, pressure,
     streamlines, particles), and interactive obstacle manipulation with preset
     scenarios including vortex shedding and backward-facing step recirculation.
+  image: "../assets/project-flowlab.jpg"
+  image_alt: "FlowLab: dye shed from a cylinder curling into a Kármán vortex street"
   demo: "https://flow.gpuphysics.dev/"
   github: "https://github.com/palsagar/webgpu-fluid-solver"
   tags: ["WebGPU", "WGSL", "Navier-Stokes", "JavaScript"]
 
-- title: "Rent vs Buy Simulator"
+- id: gray-scott
+  order: 2
+  title: "Gray-Scott"
+  tagline: "Real-time reaction-diffusion pattern simulator in the browser"
+  summary: "Turing patterns on your GPU: twelve presets, brush seeding and live parameter tuning with vim-style keys."
+  tech: "WebGPU, WGSL, reaction–diffusion"
+  description: >-
+    GPU-accelerated Gray-Scott reaction-diffusion solver running in the browser
+    via WebGPU compute shaders. Features 12 curated parameter presets, brush
+    painting to seed patterns, live parameter tuning with vim-style keyboard
+    shortcuts, adjustable resolution, and an interactive guide explaining
+    the underlying equations and dynamics.
+  image: "../assets/project-gray-scott.jpg"
+  image_alt: "Gray-Scott simulator: spots and loops in amber and teal on a dark field"
+  demo: "https://patterns.gpuphysics.dev"
+  github: "https://github.com/palsagar/webgpu-gray-scott"
+  tags: ["WebGPU", "WGSL", "Reaction-Diffusion", "JavaScript"]
+
+- id: portwhisperer
+  order: 3
+  title: "PortWhisperer"
+  tagline: "Beautiful CLI tool to see what's running on your ports"
+  summary: "See what's running on your ports, with framework detection, Docker containers and cleanup of orphaned processes."
+  tech: "Python, CLI"
+  description: >-
+    A developer-focused terminal utility that displays all listening ports with
+    color-coded status indicators, framework detection for Node.js/Python/Docker,
+    process inspection with memory and git branch info, real-time watch mode,
+    and interactive cleanup of orphaned processes.
+  terminal:
+    label: "PortWhisperer output in a terminal"
+    command: "ports"
+    output: |2
+       PORT   PROCESS  PROJECT     FRAMEWORK
+       :3000  next     frontend    Next.js
+       :5173  vite     preview     Vite
+       :5432  docker   postgres    PostgreSQL
+       :8000  uvicorn  api         FastAPI
+    status: "4 ports active"
+  pypi: "https://pypi.org/project/portwhisperer/"
+  github: "https://github.com/palsagar/port-whisperer"
+  tags: ["Python", "CLI", "Developer Tools"]
+
+- id: rent-vs-buy
+  order: 4
+  title: "Rent vs Buy"
   tagline: "Interactive financial comparison for housing decisions"
+  summary: "Compare realistic renting and buying scenarios with mortgage rates, appreciation, returns, taxes and upkeep."
+  tech: "Python, simulation, finance"
   description: >-
     An interactive simulator for comparing realistic rent vs buy scenarios,
     accounting for mortgage rates, property appreciation, investment returns,
     taxes, and maintenance costs to help make informed housing decisions.
+  image: "../assets/project-rent-vs-buy.jpg"
+  image_alt: "Rent vs Buy simulator: verdict panel and net-value chart over ten years"
+  image_position: "top"
   demo: "https://rent-or-buy-sim.com/"
   github: "https://github.com/palsagar/rent-vs-buy-simulator"
   tags: ["Python", "Streamlit", "Finance"]

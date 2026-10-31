@@ -516,3 +516,51 @@ a:hover {
     display: none;
   }
 }
+
+/* ---------- Section header: h2 + side link or sentence (§7.1) ---------- */
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.section-head__link {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+/* ---------- Phone-only / not-on-phone content ---------- */
+
+@media (max-width: 719.98px) {
+  .phone-hidden {
+    display: none !important;
+  }
+}
+
+@media (min-width: 720px) {
+  .phone-only {
+    display: none !important;
+  }
+}
+
+/* ---------- Section entrances (§8) ----------
+ * Base.astro adds .reveal-pre from JS, only to [data-reveal] blocks that start
+ * below the fold and only when motion is allowed, so content is visible without JS.
+ * data-reveal="0|1|2" (heading, text, media) sets the 70ms stagger. */
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    transition:
+      opacity 500ms var(--ease-out),
+      transform 500ms var(--ease-out);
+    transition-delay: calc(var(--reveal-i, 0) * 70ms);
+  }
+
+  .reveal-pre {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}

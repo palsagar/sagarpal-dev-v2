@@ -1,6 +1,6 @@
 # sagar-pal.dev redesign — build plan
 
-> Status: **design signed off (31 Oct 2026). Phases 0–1 done on branch `redesign`. Phase 2 next.**
+> Status: **design signed off (31 Oct 2026). Phases 0–1 done on branch `redesign`. Phase 2 built; its Lighthouse check is still to run.**
 > This is the master plan for replacing the Jekyll/Chirpy site with an Astro front end and a FastAPI back end.
 > It is written for Claude Code to execute phase by phase; a human can follow it too.
 
@@ -163,12 +163,14 @@ Each phase lists tasks, then **Done when** criteria. Tick boxes as you go.
 *Phase 1 notes (31 Oct 2026):* tokens apply to any `[data-theme]` element (not only `:root`), so the styleguide renders both themes side by side; the no-JS fallback is as specified. The styleguide is injected only by `astro dev` (`devStyleguide` integration in `astro.config.mjs`), so it can never build or ship; it covers the Phase 1 components, and later phases add theirs. Fallback font metrics come from Capsize. On phones the footer name is sized to fit the column (the 92px mockup value overflows a 390px screen by 48px; the mockup clipped it). Nav "Projects"/"Papers" point to `/#work` and `/#papers`, as in the mockups. Checks: `tests/e2e/theme.spec.ts`, `layout.spec.ts`, `dev/styleguide.spec.ts` (axe: zero violations in both themes at 390/768/1440, with the Menu sheet open, and on both styleguide panels).
 
 ### Phase 2 — Home page (static parts)
-- [ ] Data collections with zod schemas for publications, projects, experience, education (fields exactly as in today's YAML; add `image` to projects).
-- [ ] Sections per DESIGN.md §7.1, in order: Hero (poster only for now), Path (portrait + paragraphs + career list), Writing (hidden when there are 0 published posts), Reading band (island placeholder; hidden when empty), Simulations and tools (four projects, alternating 7/5 and 5/7 widths), Papers (reverse-chronological, Sagar's name bold, PDF/DOI/arXiv pills), Footer.
-- [ ] Hero CTAs: when there are 0 posts, the primary becomes "View projects" (`#work`) and the secondary stays "Download CV".
-- [ ] Images through `astro:assets` (AVIF/WebP, responsive `srcset`, explicit width/height).
+- [x] Data collections with zod schemas for publications, projects, experience, education (fields exactly as in today's YAML; add `image` to projects).
+- [x] Sections per DESIGN.md §7.1, in order: Hero (poster only for now), Path (portrait + paragraphs + career list), Writing (hidden when there are 0 published posts), Reading band (island placeholder; hidden when empty), Simulations and tools (four projects, alternating 7/5 and 5/7 widths), Papers (reverse-chronological, Sagar's name bold, PDF/DOI/arXiv pills), Footer.
+- [x] Hero CTAs: when there are 0 posts, the primary becomes "View projects" (`#work`) and the secondary stays "Download CV".
+- [x] Images through `astro:assets` (AVIF/WebP, responsive `srcset`, explicit width/height).
 
 **Done when:** at 390, 768 and 1440 px in both themes, the page matches `design-reference/Main.dc.html` (desktop) and `HomeMobile.dc.html` (phone): no horizontal scroll, headings at most two lines, equal outer margins. Lighthouse (mobile) ≥ 95 for Performance, Accessibility, Best Practices and SEO.
+
+*Phase 2 notes (31 Oct 2026):* data decisions confirmed with Sagar: `projects.yml` keeps its old fields for `/projects/` and adds `order`, `summary`, `tech`, `image`/`image_alt`/`image_position` or `terminal` (PortWhisperer), title "Rent vs Buy"; `education.yml` adds optional short `label`/`org`, and year ranges come from `period` ("Present" → "now"); phones show all four projects and papers, stacked (only the career list is cut to four rows plus "Full CV"). Every YAML entry has an `id` (the `file()` loader needs one). `getCollection()` does not keep file order, so projects sort by `order` and papers by year, then featured, then id (so within 2021: JCP, Computers and Fluids, PARIS; the mockup had PARIS second). The Writing section is wired to `posts: PostRow[] = []` until Phase 4; the Reading band renders nothing until Phase 6. The hero shows the poster and caption only; the preset controls arrive with the island in Phase 3. Both theme posters are lazy `<picture>`s (a hidden lazy image is never fetched) and a head script preloads the active theme's AVIF with `fetchpriority="high"`. Projects render in explicit rows of two, because at 1440px the three flex bases fit on one line. Section entrances (DESIGN.md §8) are in `Base.astro`: blocks with `data-reveal="0|1|2"` that start below the fold; skipped under reduced motion and without JS. Checks: `tests/e2e/home.spec.ts` (CTAs, hidden sections, order, career, projects rows at 1160/1440/1920, papers and pills, poster loading, headings ≤ 2 lines, no element overflow, equal margins at 390/768/1440, entrances, no-JS); page-wide axe runs with reduced motion. Throttled Playwright measurement (412px, 4× CPU, 1.6 Mbps, 150 ms): LCP 0.8–0.9 s on the poster, CLS 0, 0.4 MB. **Not yet done:** an actual Lighthouse run (needs `npx lighthouse`, not installed).
 
 ### Phase 3 — Live hero simulation (`HeroField` island)
 Spec in DESIGN.md §5. Summary:

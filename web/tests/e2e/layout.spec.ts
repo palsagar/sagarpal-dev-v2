@@ -13,6 +13,9 @@ for (const theme of THEMES) {
       page,
     }) => {
       await storeTheme(page, theme);
+      // Static state: blocks waiting for their entrance sit at opacity 0, which
+      // axe would read as low contrast. home.spec.ts tests the entrances.
+      await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
       await expectNoHorizontalScroll(page);

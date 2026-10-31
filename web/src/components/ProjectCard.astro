@@ -1,0 +1,191 @@
+---
+// Project article (DESIGN.md §7.1.5): image (or terminal fragment), h3, summary,
+// tech line, buttons. `wide` cards take 7 parts of the row, narrow ones 5.
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>['data'];
+  wide: boolean;
+  /** Stagger index for the section entrance (DESIGN.md §8). */
+  reveal?: number;
+}
+
+const { project, wide, reveal } = Astro.props;
+const primary = project.demo
+  ? { label: 'Live demo', href: project.demo }
+  : { label: 'PyPI', href: project.pypi };
+const t = project.terminal;
+---
+
+<article
+  class:list={['project', wide ? 'project--wide' : 'project--narrow']}
+  data-reveal={reveal}
+>
+  {project.image ? (
+    <a class="project__media" href={primary.href}>
+      <Picture
+        src={project.image}
+        alt={project.image_alt ?? ''}
+        formats={['avif', 'webp']}
+        widths={[480, 800, 1200, project.image.width].filter(
+          (w) => w <= project.image!.width,
+        )}
+        sizes={
+          wide
+            ? '(max-width: 1100px) 100vw, 800px'
+            : '(max-width: 1100px) 100vw, 560px'
+        }
+        style={
+          project.image_position
+            ? `object-position: ${project.image_position}`
+            : undefined
+        }
+      />
+    </a>
+  ) : (
+    t && (
+      <figure class="project__media">
+        <pre
+          data-ui
+          class="terminal"
+        ><span class="terminal__prompt">$</span> {t.command}{'\n\n'}{t.output}{'\n '}<span class="terminal__status">{t.status}</span></pre>
+        <figcaption class="visually-hidden">{t.label}</figcaption>
+      </figure>
+    )
+  )}
+  <div class="project__body">
+    <div class="project__text">
+      <h3 class="card-title">{project.title}</h3>
+      <p class="project__summary">{project.summary}</p>
+      <span class="project__tech">{project.tech}</span>
+    </div>
+    <div class="project__actions">
+      <a class="btn btn--primary btn--sm" href={primary.href}>
+        {primary.label}
+      </a>
+      <a class="btn btn--secondary btn--sm" href={project.github}>
+        Source
+      </a>
+    </div>
+  </div>
+</article>
+
+<style>
+  .project {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .project--wide {
+    flex: 7 1 520px;
+  }
+
+  .project--narrow {
+    flex: 5 1 380px;
+  }
+
+  .project__media {
+    display: block;
+    margin: 0;
+  }
+
+  .project__media :global(img) {
+    width: 100%;
+    aspect-ratio: 1528 / 720;
+    object-fit: cover;
+  }
+
+  .project--narrow .project__media :global(img),
+  .terminal {
+    aspect-ratio: 4 / 3;
+  }
+
+  .terminal {
+    margin: 0;
+    padding: 28px;
+    overflow-x: auto;
+    background: var(--surface);
+    color: var(--ink);
+    font: 13px / 1.7 var(--font-mono);
+  }
+
+  .terminal__prompt {
+    color: var(--ink-2);
+  }
+
+  .terminal__status {
+    color: var(--link);
+  }
+
+  .project__body {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .project--wide .project__body {
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px 32px;
+  }
+
+  .project--wide .project__text {
+    flex: 1 1 320px;
+  }
+
+  .project__text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .project__summary {
+    max-width: 46ch;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .project__tech {
+    font-size: 15px;
+    color: var(--ink-2);
+  }
+
+  .project__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Below 1000px the 520px + 380px bases no longer share a row: a narrow card
+     spans the full width, so its 4:3 media would be very tall. */
+  @media (max-width: 999.98px) {
+    .project--narrow .project__media :global(img),
+    .terminal {
+      aspect-ratio: 16 / 10;
+    }
+  }
+
+  @media (max-width: 719.98px) {
+    .project,
+    .project__body {
+      gap: 14px;
+    }
+
+    .project__media {
+      margin-inline: calc(-1 * var(--gutter));
+    }
+
+    .terminal {
+      padding: 20px var(--gutter);
+    }
+
+    .project__summary {
+      font-size: 16px;
+    }
+  }
+</style>

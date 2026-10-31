@@ -1,31 +1,316 @@
 ---
-// Placeholder home until Phase 2 builds the real sections.
-import Base from '../layouts/Base.astro';
+// Home (DESIGN.md §7.1): Hero, Path, Writing*, Reading*, Simulations and tools,
+// Papers, full footer. *Hidden when empty.
+import { Picture } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import portrait from '../assets/portrait.jpg';
+import CareerList, { type CareerRow } from '../components/CareerList.astro';
+import Hero from '../components/Hero.astro';
+import PaperList from '../components/PaperList.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import WritingList, { type PostRow } from '../components/WritingList.astro';
 import { site } from '../data/site';
+import Base from '../layouts/Base.astro';
+import { startYear, yearRange } from '../lib/format';
+import { POSTER_SIZES, heroPosters } from '../lib/hero-poster';
+
+// Phase 4: the three latest published posts from the blog collection.
+const posts: PostRow[] = [];
+// Phase 6: the Reading band is a client island that renders only when the API
+// returns at least one "reading now" item. Until then there is nothing to show.
+
+// getCollection() does not keep file order, so sort explicitly.
+const projects = (await getCollection('projects')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+// Rows of two with alternating weights: 7/5, then 5/7. Explicit rows, because
+// at some widths three flex bases fit on one line.
+const projectRows = Array.from(
+  { length: Math.ceil(projects.length / 2) },
+  (_, r) => projects.slice(2 * r, 2 * r + 2),
+);
+// Newest first; within a year, featured papers first, then by id.
+const papers = (await getCollection('publications')).sort(
+  (a, b) =>
+    b.data.year - a.data.year ||
+    Number(b.data.featured) - Number(a.data.featured) ||
+    a.id.localeCompare(b.id),
+);
+
+const career: CareerRow[] = [
+  ...(await getCollection('experience')).map(({ data }) => ({
+    start: startYear(data.period),
+    years: yearRange(data.period),
+    role: data.role,
+    org: data.company,
+  })),
+  ...(await getCollection('education')).map(({ data }) => ({
+    start: startYear(data.period),
+    years: yearRange(data.period),
+    role: data.label ?? data.degree,
+    org: data.org ?? data.institution,
+  })),
+].sort((a, b) => b.start - a.start);
+
+const posters = await heroPosters();
+const preload = {
+  night: posters.night.avif,
+  day: posters.day.avif,
+  sizes: POSTER_SIZES,
+};
 ---
 
 <Base footer="full" person>
-  <section class="container placeholder" aria-labelledby="hero-title">
-    <h1 id="hero-title" class="display">
-      Sagar Pal
-    </h1>
-    <p class="statement">
-      I work at the intersection of scientific computing, AI for science and
-      high-performance ML systems.
-    </p>
-    <p>
-      <a class="btn btn--secondary btn--lg" href={site.cv}>
-        Download CV
+  <script is:inline slot="head" define:vars={{ preload }}>
+    // Preload the active theme's hero poster (the LCP image). ThemeScript has
+    // already set data-theme. Without JS the lazy <img> still loads.
+    const link = document.createElement('link');
+    const theme =
+      document.documentElement.dataset.theme === 'day' ? 'day' : 'night';
+    link.rel = 'preload';
+    link.as = 'image';
+    link.type = 'image/avif';
+    link.setAttribute('imagesrcset', preload[theme]);
+    link.setAttribute('imagesizes', preload.sizes);
+    link.setAttribute('fetchpriority', 'high');
+    document.head.append(link);
+  </script>
+
+  <Hero hasPosts={posts.length > 0} />
+
+  <section
+    id="path"
+    class="path container section"
+    aria-labelledby="path-title"
+  >
+    <div class="path__portrait" data-reveal="2">
+      <Picture
+        src={portrait}
+        alt="Sagar Pal, outdoors in a park in winter, wearing a dark coat and glasses"
+        formats={['avif', 'webp']}
+        widths={[320, 440, 640]}
+        sizes="(max-width: 719.98px) 100vw, 440px"
+      />
+    </div>
+    <div class="path__body">
+      <h2 id="path-title" class="h-section path__title" data-reveal="0">
+        From droplets to materials
+      </h2>
+      <div class="path__text" data-reveal="1">
+        <p class="path__para phone-hidden">
+          I started in mechanical engineering, moved into theoretical fluid
+          dynamics, and spent my PhD at Sorbonne Université building numerical
+          methods for multiphase flows: air meeting water at extreme speeds,
+          breaking into droplets and sprays.
+        </p>
+        <p class="path__para phone-hidden">
+          A post-doc pushed me into statistical physics, coupling direct
+          numerical simulation with Monte Carlo to model how liquids fragment.
+          Today I lead the technical side of Entalpic's ML platform for
+          materials discovery, where generative and predictive models run next
+          to HPC chemistry.
+        </p>
+        <p class="path__para path__para--quiet phone-hidden">
+          Across the whole stack, from hand-tuned Fortran on 64,000 cores to
+          PyTorch and JAX on GPU clusters.
+        </p>
+        <p class="path__para phone-only">
+          Mechanical engineering, then theoretical fluid dynamics, then a PhD at
+          Sorbonne Université on numerical methods for multiphase flows. A
+          post-doc in statistical physics. Now the technical side of Entalpic's
+          ML platform for materials discovery.
+        </p>
+      </div>
+      <div class="path__career" data-reveal="1">
+        <CareerList rows={career} phoneLimit={4} />
+        <a class="path__cv phone-only" href={site.cv}>
+          Full CV
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {posts.length > 0 && (
+    <section
+      id="writing"
+      class="container section"
+      aria-labelledby="writing-title"
+    >
+      <div class="section-head" data-reveal="0">
+        <h2 id="writing-title" class="h-section">
+          Writing
+        </h2>
+        <a class="section-head__link" href="/blog/">
+          All posts
+        </a>
+      </div>
+      <div class="section-list" data-reveal="1">
+        <WritingList posts={posts} />
+      </div>
+    </section>
+  )}
+
+  <section id="work" class="container section" aria-labelledby="work-title">
+    <div class="section-head" data-reveal="0">
+      <h2 id="work-title" class="h-section work__title">
+        Simulations and tools
+      </h2>
+      <p class="work__lede">
+        Side projects, mostly physics running in a browser tab.
+      </p>
+    </div>
+    <div class="projects">
+      {projectRows.map((row, r) => (
+        <div class="projects__row">
+          {row.map(({ data }, i) => (
+            <ProjectCard project={data} wide={i === r % 2} reveal={i + 1} />
+          ))}
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section id="papers" class="container section" aria-labelledby="papers-title">
+    <div class="section-head" data-reveal="0">
+      <h2 id="papers-title" class="h-section">
+        Papers
+      </h2>
+      <a class="section-head__link" href={site.social.scholar}>
+        Google Scholar
       </a>
-    </p>
+    </div>
+    <div class="section-list" data-reveal="1">
+      <PaperList papers={papers} />
+    </div>
   </section>
 </Base>
 
 <style>
-  .placeholder {
+  /* ---------- Path ---------- */
+
+  .path {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 48px 72px;
+  }
+
+  .path__portrait {
+    flex: 1 1 300px;
+    max-width: 440px;
+    min-width: 0;
+  }
+
+  .path__portrait :global(img) {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+  }
+
+  .path__body {
+    flex: 2 1 520px;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 40px;
-    padding-top: 88px;
+    gap: 44px;
+  }
+
+  .path__title {
+    max-width: 13ch;
+  }
+
+  .path__text {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 60ch;
+    font-size: 20px;
+    line-height: 1.55;
+  }
+
+  .path__para--quiet {
+    color: var(--ink-2);
+  }
+
+  .path__cv {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 14px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  /* ---------- Section bodies ---------- */
+
+  .section-list {
+    margin-top: 48px;
+  }
+
+  .work__title {
+    max-width: 12ch;
+  }
+
+  .work__lede {
+    max-width: 34ch;
+    font-size: 20px;
+    line-height: 1.5;
+  }
+
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: 72px;
+    margin-top: 64px;
+  }
+
+  .projects__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 72px 40px;
+  }
+
+  @media (max-width: 719.98px) {
+    /* The heading comes before the portrait on phones. */
+    .path {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 28px;
+    }
+
+    .path__body {
+      display: contents;
+    }
+
+    .path__title {
+      order: -1;
+    }
+
+    .path__portrait {
+      flex: none;
+      max-width: none;
+    }
+
+    .path__text {
+      font-size: 18px;
+    }
+
+    .section-list {
+      margin-top: 32px;
+    }
+
+    .work__lede {
+      font-size: 18px;
+    }
+
+    .projects,
+    .projects__row {
+      gap: 56px;
+    }
+
+    .projects {
+      margin-top: 32px;
+    }
   }
 </style>

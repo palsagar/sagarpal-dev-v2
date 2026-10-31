@@ -18,12 +18,13 @@ Rules that come from the plan:
 
 ## Status
 
-- Phase 0 (branch, clean-up, scaffold) and Phase 1 (design system foundations) are done. Next is Phase 2 (home page, static parts).
+- Phases 0 and 1 are done. Phase 2 (home page, static parts) is built and tested; its Lighthouse ≥ 95 check has not run yet. Next is Phase 3 (live hero simulation).
 
 ## Layout
 
 - `web/`: Astro project (npm). `src/pages/` routes, `src/data/*.yml` profile data migrated from Jekyll's `_data/` (publications, projects, experience, education), `public/assets/{pdfs,img}/` files that keep their old public URLs (for example `/assets/pdfs/Sagar_Pal_CV_2025.pdf`). `trailingSlash: 'always'` keeps the old `/projects/` and `/publications/` URLs.
 - Design system (`web/src/`): `styles/tokens.css` (colour tokens on any `[data-theme]` element, layout, font stacks), `styles/fonts.css` (Fontsource + Capsize-matched fallbacks), `styles/base.css` (reset, type role classes such as `.display`, `.h-section`, `.statement`, `.dek`, `.meta`; `.btn--primary/--secondary` with `--lg/--sm/--xs`; `.pill` with `aria-pressed`; `.row-link`; `.band`, `.card`; `.only-night/.only-day`; phone breakpoint `max-width: 719.98px`). `layouts/Base.astro` (head, SEO, JSON-LD via `person` prop, `ClientRouter`, skip link, focus to `<main>` after navigation; `footer="full"` on home, `"compact"` elsewhere). `components/ThemeScript.astro` (blocking head script; `window.__theme.get/set` is the only theme writer), `ThemeToggle.astro`, `Nav.astro` (phone Menu sheet is a native modal `<dialog>` with a Tab wrap), `Footer.astro`. `data/site.ts` holds name, links, CV path, nav and JSON-LD.
+- Home (Phase 2): `src/content.config.ts` (`file()` collections for the four YAML files; each entry needs an `id`; `getCollection()` does not keep file order, so sort explicitly), `components/Hero.astro` (poster pair + `lib/hero-poster.ts`, preloaded from the home page's `head` slot in `Base.astro`), `CareerList`, `ProjectCard`, `PaperList`, `WritingList` (reused by Phase 7 pages), `lib/format.ts`. `base.css` adds `.section-head`, `.phone-only`/`.phone-hidden` and the `[data-reveal]` entrance styles; the entrance script is in `Base.astro`.
 - Styleguide: `src/dev/styleguide.astro`, served at `/styleguide/` by `astro dev` only. Add each new component's specimens to `src/dev/Specimens.astro`.
 - Playwright has two projects: `build` (against `astro preview` on :4322) and `dev` (against `astro dev` on :4323, files under `tests/e2e/dev/`). `tests/e2e/helpers.ts` has the axe and no-sideways-scroll checks.
 - `api/`: uv project, Python 3.12. `app/main.py` (app factory), `app/config.py` (pydantic-settings; reads env vars and `api/.env`), `app/db.py` (SQLite engine with the API.md PRAGMAs), `app/routers/`, `migrations/` (Alembic, no versions yet), `tests/`.

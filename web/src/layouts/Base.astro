@@ -85,6 +85,7 @@ const ogImage = new URL('/assets/img/og-card.png', Astro.site ?? site.url).href;
       />
     )}
 
+    <slot name="head" />
     <ClientRouter />
     {/* Umami: FastAPI injects its <script> before </head> at runtime when UMAMI_DOMAIN and UMAMI_ID are set (API.md §6). */}
   </head>
@@ -106,6 +107,36 @@ const ogImage = new URL('/assets/img/og-card.png', Astro.site ?? site.url).href;
         document
           .querySelector<HTMLElement>('main')
           ?.focus({ preventScroll: true });
+      });
+
+      // Section entrances (DESIGN.md §8): blocks marked [data-reveal] that start
+      // below the fold fade and rise in once, when they scroll into view.
+      // Content above the fold, reduced motion and no-JS all skip it.
+      document.addEventListener('astro:page-load', () => {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.remove('reveal-pre');
+              observer.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px' },
+        );
+        document.addEventListener(
+          'astro:before-swap',
+          () => observer.disconnect(),
+          { once: true },
+        );
+        for (const el of document.querySelectorAll<HTMLElement>(
+          '[data-reveal]',
+        )) {
+          if (el.getBoundingClientRect().top < window.innerHeight) continue;
+          el.style.setProperty('--reveal-i', el.dataset.reveal || '0');
+          el.classList.add('reveal-pre');
+          observer.observe(el);
+        }
       });
     </script>
   </body>
