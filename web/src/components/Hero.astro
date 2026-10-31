@@ -337,68 +337,29 @@ const social = elsewhere.filter((link) => link.label !== 'RSS');
 </style>
 
 <script>
-  // Loads the live field once the hero is on screen, after the page has loaded
-  // and the browser is idle, so the poster stays the LCP element. Runs again
-  // after each client-router navigation; cleans up before the next swap.
-  let cleanup: (() => void) | undefined;
+  // Loads the live field once the hero is on screen (see lib/field-loader.ts).
+  // Runs again after each client-router navigation; cleans up before the next swap.
+  import { watchField } from '../lib/field-loader';
 
-  const mount = async (root: HTMLElement, focusControls = false) => {
+  let cleanup: (() => void) | undefined;
+  let unwatch: (() => void) | undefined;
+
+  const mount = async (root: HTMLElement, focusControls: boolean) => {
     const { mountHeroField } = await import('../lib/hero-field');
     if (root.isConnected)
       cleanup = await mountHeroField(root, { focusControls });
   };
 
-  const whenIdle = (fn: () => void) => {
-    const idle = () =>
-      'requestIdleCallback' in window
-        ? requestIdleCallback(fn, { timeout: 2000 })
-        : setTimeout(fn, 200);
-    if (document.readyState === 'complete') idle();
-    else addEventListener('load', idle, { once: true });
-  };
-
   document.addEventListener('astro:page-load', () => {
     const root = document.querySelector<HTMLElement>('[data-hero-field]');
     if (!root) return;
-    if (!('WebGL2RenderingContext' in window)) {
-      root.dataset.state = 'unsupported';
-      return;
-    }
-    const saveData = (
-      navigator as Navigator & { connection?: { saveData?: boolean } }
-    ).connection?.saveData;
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches || saveData) {
-      const play = root.querySelector<HTMLButtonElement>('.hero__play')!;
-      root.dataset.state = 'play';
-      play.hidden = false;
-      play.addEventListener(
-        'click',
-        () => {
-          play.hidden = true;
-          void mount(root, true);
-        },
-        { once: true },
-      );
-      return;
-    }
-    const io = new IntersectionObserver(([entry]) => {
-      if (!entry?.isIntersecting) return;
-      io.disconnect();
-      // Lazy images do not hold back the load event: wait for the visible
-      // poster itself, so the warm-up never competes with the LCP image.
-      const poster = [...root.querySelectorAll('img')].find(
-        (img) => img.offsetParent !== null,
-      );
-      const decoded = poster ? poster.decode().catch(() => {}) : null;
-      void Promise.resolve(decoded).then(() =>
-        whenIdle(() => void mount(root)),
-      );
-    });
-    io.observe(root);
+    const play = root.querySelector<HTMLButtonElement>('.hero__play')!;
+    unwatch = watchField(root, play, (fromPlay) => void mount(root, fromPlay));
   });
 
   document.addEventListener('astro:before-swap', () => {
+    unwatch?.();
     cleanup?.();
-    cleanup = undefined;
+    unwatch = cleanup = undefined;
   });
 </script>

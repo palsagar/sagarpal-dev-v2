@@ -1,0 +1,465 @@
+---
+// Post page (DESIGN.md §7.3; Post.dc.html, PostMobile.dc.html).
+// From 1024px: a 240px column (sticky table of contents) beside the prose,
+// with the header and captions aligned to the prose. Narrower: the table of
+// contents is a <details> above the prose.
+// Useful and the read count need the API (Phase 5): they stay hidden until
+// /api/posts/{slug}/stats answers (lib/post.ts). Copy link needs JS.
+import type { MarkdownHeading } from 'astro';
+import ThemedPicture from '../components/ThemedPicture.astro';
+import { isoDate, longDate, shortDate, type Post } from '../lib/posts';
+import Base from './Base.astro';
+import 'katex/dist/katex.min.css';
+import '../styles/prose.css';
+
+interface Props {
+  post: Post;
+  headings: MarkdownHeading[];
+  older?: Post | undefined;
+  newer?: Post | undefined;
+}
+
+const { post, headings, older, newer } = Astro.props;
+const { data } = post.entry;
+const toc = data.toc ? headings.filter((h) => h.depth === 2) : [];
+const showToc = toc.length >= 2;
+const canonical = new URL(post.url, Astro.site).href;
+const more = [
+  newer && { label: 'Next post', post: newer },
+  older && { label: 'Previous post', post: older },
+].filter((x) => !!x);
+---
+
+<Base title={data.title} description={data.dek}>
+  <article class="post" data-post data-slug={post.slug}>
+    <header class="container post__row post__head">
+      <div class="post__aside" aria-hidden="true"></div>
+      <div class="post__headmain">
+        <a class="navlink post__back" href="/blog/">
+          All writing
+        </a>
+        <h1 class="h-post">{data.title}</h1>
+        <p class="dek post__dek">{data.dek}</p>
+        <p class="meta post__meta">
+          <time datetime={isoDate(data.date)}>
+            <span class="phone-hidden">{longDate(data.date)}</span>
+            <span class="phone-only">{shortDate(data.date)}</span>
+          </time>
+          <span>{post.readingMinutes} min read</span>
+          <span data-reads hidden></span>
+          <span class="phone-hidden">{data.tags.join(', ')}</span>
+          {data.updated && (
+            <span>
+              Updated{' '}
+              <time datetime={isoDate(data.updated)}>
+                {longDate(data.updated)}
+              </time>
+            </span>
+          )}
+        </p>
+      </div>
+    </header>
+
+    {data.hero && (
+      <figure class="container post__hero">
+        <ThemedPicture
+          src={data.hero.image}
+          srcDay={data.hero.imageDay}
+          alt={data.hero.alt}
+          sizes="(min-width: 1440px) 1360px, 100vw"
+          class="post__hero-img"
+          priority
+        />
+        {data.hero.caption && (
+          <figcaption class="post__row">
+            <span class="post__aside" aria-hidden="true" />
+            <span class="post__hero-caption">
+              Figure 1. {data.hero.caption}
+            </span>
+          </figcaption>
+        )}
+      </figure>
+    )}
+
+    <div class="container post__row post__body">
+      <div class="post__aside">
+        {showToc && (
+          <nav class="post__toc" aria-labelledby="toc-title">
+            <h2 id="toc-title" class="post__toc-title">
+              On this page
+            </h2>
+            <ul role="list">
+              {toc.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`} data-toc-link>
+                    {h.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+      </div>
+      <div class="post__main">
+        {showToc && (
+          <details class="post__toc-sheet">
+            <summary>On this page</summary>
+            <nav aria-label="On this page">
+              <ul role="list">
+                {toc.map((h) => (
+                  <li>
+                    <a href={`#${h.slug}`} data-toc-link>
+                      {h.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </details>
+        )}
+        <div class="prose">
+          <slot />
+        </div>
+        <div class="post__end">
+          <div class="post__actions">
+            <button
+              type="button"
+              class="btn btn--primary post__useful"
+              aria-pressed="false"
+              data-useful
+              hidden
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 11v9H4v-9h3zM7 11l4-7c1.7 0 2.6 1 2.3 2.6L12.8 10H19a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7"></path>
+              </svg>
+              <span>Useful</span>
+              <span class="tabular post__useful-count" data-useful-count></span>
+            </button>
+            <button
+              type="button"
+              class="btn btn--secondary"
+              data-copy-link={canonical}
+              hidden
+            >
+              Copy link
+            </button>
+            <p class="visually-hidden" aria-live="polite" data-copy-status></p>
+          </div>
+          <a class="post__rss" href="/feed.xml">
+            Follow by RSS
+          </a>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  {more.length > 0 && (
+    <nav class="container post__row post__more" aria-label="More writing">
+      <div class="post__aside" aria-hidden="true" />
+      <div class="post__more-list">
+        {more.map((m) => (
+          <a class="card post__more-card" href={m.post.url}>
+            <span class="small">{m.label}</span>
+            <span class="post__more-title">{m.post.entry.data.title}</span>
+          </a>
+        ))}
+      </div>
+    </nav>
+  )}
+</Base>
+
+<script>
+  import { initPost } from '../lib/post';
+
+  let cleanup: (() => void) | undefined;
+  document.addEventListener('astro:page-load', () => {
+    const article = document.querySelector<HTMLElement>('[data-post]');
+    if (article) cleanup = initPost(article);
+  });
+  document.addEventListener('astro:before-swap', () => {
+    cleanup?.();
+    cleanup = undefined;
+  });
+</script>
+
+<style>
+  /* Rows share the 240px aside column + 56px gap from 1024px. */
+  .post__row {
+    display: flex;
+    gap: 0 56px;
+  }
+
+  .post__aside {
+    flex: 0 0 240px;
+    min-width: 0;
+  }
+
+  .post__head {
+    padding-top: 80px;
+  }
+
+  .post__headmain {
+    flex: 1 1 640px;
+    min-width: 0;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .post__back {
+    align-self: flex-start;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .post__dek {
+    max-width: 40ch;
+    font-size: clamp(21px, 1.9vw, 26px);
+  }
+
+  .post__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+  }
+
+  .post__hero {
+    margin-top: 64px;
+  }
+
+  .post__hero :global(.post__hero-img) {
+    width: 100%;
+    aspect-ratio: 1600 / 750;
+    object-fit: cover;
+  }
+
+  .post__hero figcaption {
+    margin-top: 14px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  .post__hero-caption {
+    flex: 1 1 640px;
+    max-width: var(--measure);
+  }
+
+  .post__body {
+    padding-top: 96px;
+    align-items: flex-start;
+  }
+
+  .post__toc {
+    position: sticky;
+    top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    font-size: 15px;
+  }
+
+  .post__toc-title {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .post__toc ul,
+  .post__toc-sheet ul {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .post__toc a,
+  .post__toc-sheet a {
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+
+  .post__toc a:hover,
+  .post__toc-sheet a:hover,
+  .post__toc a[aria-current],
+  .post__toc-sheet a[aria-current] {
+    color: var(--ink);
+  }
+
+  .post__toc a[aria-current] {
+    font-weight: 600;
+  }
+
+  .post__main {
+    flex: 1 1 640px;
+    min-width: 0;
+    max-width: 996px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .post__toc-sheet {
+    display: none;
+    padding: 0 18px;
+    border-radius: 16px;
+    background: var(--surface);
+  }
+
+  .post__toc-sheet summary {
+    display: flex;
+    align-items: center;
+    height: 52px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .post__toc-sheet ul {
+    padding-bottom: 16px;
+    font-size: 16px;
+  }
+
+  .post__end {
+    max-width: var(--measure);
+    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .post__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .post__useful {
+    gap: 10px;
+    padding: 0 20px;
+  }
+
+  .post__useful-count {
+    font-weight: 500;
+  }
+
+  .post__rss {
+    font-size: 16px;
+    color: var(--link);
+  }
+
+  .post__more {
+    padding-top: 160px;
+  }
+
+  .post__more-list {
+    flex: 1 1 640px;
+    min-width: 0;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .post__more-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .post__more-card:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  .post__more-title {
+    font-size: clamp(26px, 2.6vw, 38px);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  /* Below 1024px: one column; the table of contents becomes a <details>. */
+  @media (max-width: 1023.98px) {
+    .post__aside {
+      display: none;
+    }
+
+    .post__toc-sheet {
+      display: block;
+    }
+  }
+
+  @media (max-width: 719.98px) {
+    .post__head {
+      padding-top: 40px;
+    }
+
+    .post__headmain {
+      gap: 18px;
+    }
+
+    .post__back {
+      font-size: 15px;
+    }
+
+    .post__dek {
+      font-size: 20px;
+    }
+
+    .post__meta {
+      gap: 6px 18px;
+      font-size: 14px;
+    }
+
+    /* Full-bleed hero, 4:3. */
+    .post__hero {
+      margin-top: 32px;
+      padding-inline: 0;
+    }
+
+    .post__hero :global(.post__hero-img) {
+      aspect-ratio: 4 / 3;
+    }
+
+    .post__hero figcaption {
+      margin-top: 10px;
+      padding-inline: var(--gutter);
+      font-size: 14px;
+    }
+
+    .post__body {
+      padding-top: 32px;
+    }
+
+    .post__more {
+      padding-top: 72px;
+    }
+
+    .post__more-card {
+      gap: 8px;
+      padding: 24px;
+      border-radius: 20px;
+    }
+
+    .post__more-title {
+      font-size: 24px;
+    }
+  }
+</style>

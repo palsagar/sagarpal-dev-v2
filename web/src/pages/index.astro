@@ -13,9 +13,16 @@ import { site } from '../data/site';
 import Base from '../layouts/Base.astro';
 import { startYear, yearRange } from '../lib/format';
 import { POSTER_SIZES, heroPosters } from '../lib/hero-poster';
+import { getPosts } from '../lib/posts';
 
-// Phase 4: the three latest published posts from the blog collection.
-const posts: PostRow[] = [];
+// The three latest posts (drafts too under `astro dev`).
+const posts: PostRow[] = (await getPosts()).slice(0, 3).map((p) => ({
+  href: p.url,
+  title: p.entry.data.title,
+  dek: p.entry.data.dek,
+  date: p.entry.data.date,
+  readingMinutes: p.readingMinutes,
+}));
 // Phase 6: the Reading band is a client island that renders only when the API
 // returns at least one "reading now" item. Until then there is nothing to show.
 

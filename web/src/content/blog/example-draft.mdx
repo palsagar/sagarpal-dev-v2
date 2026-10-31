@@ -1,0 +1,89 @@
+---
+title: 'Example draft: every post component'
+dek: 'A hidden test post that exercises figures, sidenotes, equations, code, callouts and the live field. It never publishes.'
+date: 2026-10-30
+tags: [Numerics, GPU]
+# Test fixture for the Phase 4 checks (tests/e2e/dev/post.spec.ts).
+# It must stay a draft: drafts render under `astro dev` only.
+draft: true
+hero:
+  image: ../../assets/fig-mitosis-night.jpg
+  imageDay: ../../assets/fig-mitosis-day.jpg
+  alt: 'Gray–Scott spots, several of them splitting in two, with teal rims and amber cores'
+  caption: 'The mitosis preset, F = 0.0367 and k = 0.0649, after several thousand steps on a periodic grid.'
+---
+
+import loops from '../../assets/project-gray-scott.jpg';
+
+This post exists to check the blog's building blocks in one place. It describes the Gray–Scott model that drives the home page, because a real topic exercises equations and code better than filler would.<Sidenote>The parameter names follow Pearson's 1993 map of the (F, k) plane, which most later work reuses.</Sidenote> It stays a draft, so it shows up under `astro dev` and nowhere else.
+
+## The equations
+
+Two chemical species share a grid. Species $u$ is fed in at rate $F$, species $v$ is removed at rate $F + k$, and the reaction $u + 2v \to 3v$ converts one into the other:<Sidenote>Every value on this site uses the scaling from Karl Sims's tutorial: $D_u = 1$, $D_v = 0.5$ and a time step of one.</Sidenote>
+
+$$
+\frac{\partial u}{\partial t} = D_u \nabla^2 u - u v^2 + F (1 - u) \tag{1}
+$$
+
+$$
+\frac{\partial v}{\partial t} = D_v \nabla^2 v + u v^2 - (F + k)\, v \tag{2}
+$$
+
+Written out on the grid, with the nine-point stencil and an explicit Euler step, one update of $u$ at cell $(i, j)$ is long enough to need sideways scrolling on a phone:
+
+$$
+u_{i,j}^{n+1} = u_{i,j}^{n} + \Delta t \left[ D_u \left( -u_{i,j} + 0.2 \left( u_{i\pm1,j} + u_{i,j\pm1} \right) + 0.05 \left( u_{i\pm1,j\pm1} \right) \right) - u_{i,j} v_{i,j}^2 + F \left( 1 - u_{i,j} \right) \right] \tag{3}
+$$
+
+<Figure
+  src={loops}
+  alt="Spots and loops of a Gray–Scott field in amber and teal on a dark ground"
+  caption="The spots-and-loops preset, F = 0.018 and k = 0.051. One image for both themes."
+/>
+
+## On the GPU
+
+Each cell reads its eight neighbours and writes one value, so the update maps directly to a fragment shader. The state lives in two float textures, and each step reads one and writes the other:
+
+```glsl title="step.frag"
+void main() {
+  vec2 s = texture(uState, vUv).rg;               // u in red, v in green
+  vec2 lap = laplacian(vUv);                      // nine-point stencil
+  float r = s.r * s.g * s.g;
+  float du = 1.0 * lap.r - r + uFk.x * (1.0 - s.r);
+  float dv = 0.5 * lap.g + r - (uFk.x + uFk.y) * s.g;
+  outState = vec4(s + vec2(du, dv), 0.0, 1.0);    // dt = 1, Karl Sims scaling
+}
+```
+
+<Callout title="Keep both species in one texture">
+  Storing $u$ and $v$ in two channels of the same texture halves the texture
+  reads in the stencil, and swapping buffers stays a single pointer flip.
+</Callout>
+
+A reference version in NumPy is useful for checking the shader:
+
+```python
+import numpy as np
+
+def step(u, v, F, k, du=1.0, dv=0.5):
+    lap = lambda a: (-a + 0.2 * sum(np.roll(a, s, (0, 1)) for s in [(1, 0), (-1, 0), (0, 1), (0, -1)])
+                     + 0.05 * sum(np.roll(a, s, (0, 1)) for s in [(1, 1), (1, -1), (-1, 1), (-1, -1)]))
+    r = u * v * v
+    return u + du * lap(u) - r + F * (1 - u), v + dv * lap(v) + r - (F + k) * v
+```
+
+## Try the parameters
+
+The field below runs the same engine as the home page. Move the sliders to cross a pattern boundary, or drag across the field to seed new growth.
+
+<LiveField
+  preset="mitosis"
+  caption="Interactive. With reduced motion, a still frame and a Play button."
+/>
+
+## Checklist
+
+- Inline code such as `uFk` and a [link to the home page](/).
+- Two sidenotes, three numbered equations, two code blocks, one callout.
+- Figure numbers count the hero image as Figure 1.

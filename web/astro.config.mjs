@@ -3,6 +3,12 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
+import { rehypeHeadingIds, unified } from '@astrojs/markdown-remark';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
+import { createCssVariablesTheme } from 'shiki';
+import { remarkPostMeta, shikiFilename } from './src/lib/markdown.ts';
 
 // FastAPI dev server (api/). Only used by `astro dev`; the production build is static.
 const API_ORIGIN = 'http://localhost:8000';
@@ -63,6 +69,31 @@ export default defineConfig({
   trailingSlash: 'always',
   output: 'static',
   integrations: [mdx(), react(), sitemap(), devStyleguide()],
+  markdown: {
+    // Blog posts (Phase 4). The unified processor runs remark/rehype plugins;
+    // Astro 7's default (Sätteri) does not run them.
+    processor: unified({
+      remarkPlugins: [remarkMath, remarkPostMeta],
+      rehypePlugins: [
+        // MathML too, for screen readers (DESIGN.md §9).
+        [rehypeKatex, { output: 'htmlAndMathml' }],
+        // Each heading links to itself. Astro adds heading ids after user
+        // plugins, so run its id pass first.
+        rehypeHeadingIds,
+        [rehypeAutolinkHeadings, { behavior: 'wrap' }],
+      ],
+    }),
+    shikiConfig: {
+      // Token colours are CSS variables mapped to the theme tokens in
+      // styles/prose.css, so code follows the theme toggle with no flash.
+      theme: createCssVariablesTheme({
+        name: 'css-variables',
+        variablePrefix: '--shiki-',
+        fontStyle: true,
+      }),
+      transformers: [shikiFilename],
+    },
+  },
   server: {
     port: 4321,
   },

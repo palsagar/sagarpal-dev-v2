@@ -1,8 +1,8 @@
 // Data collections (REDESIGN_PLAN.md Phase 2). Fields follow the YAML migrated
 // from Jekyll's _data/, plus `id` (the file loader needs one) and the home-page
-// fields noted in each file. The blog collection arrives in Phase 4.
+// fields noted in each file. The blog collection holds the MDX posts (Phase 4).
 import { defineCollection } from 'astro:content';
-import { file } from 'astro/loaders';
+import { file, glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
 const publications = defineCollection({
@@ -76,4 +76,45 @@ const education = defineCollection({
   }),
 });
 
-export const collections = { publications, projects, experience, education };
+/** Fixed topic list. The blog index shows a pill only for topics with posts. */
+export const TOPICS = [
+  'Numerics',
+  'HPC',
+  'Scientific ML',
+  'GPU',
+  'Notes',
+] as const;
+
+const blog = defineCollection({
+  // One file per post; the file name is the slug (src/content/blog/<slug>.mdx).
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/blog' }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      dek: z.string(),
+      date: z.coerce.date(),
+      updated: z.coerce.date().optional(),
+      tags: z.array(z.enum(TOPICS)).min(1),
+      /** Drafts render in `astro dev` only: never in the build, sitemap, RSS or manifest. */
+      draft: z.boolean().default(true),
+      /** Full-width figure under the header. `imageDay` swaps in on the day theme. */
+      hero: z
+        .object({
+          image: image(),
+          imageDay: image().optional(),
+          alt: z.string(),
+          /** With a caption, the hero is Figure 1. */
+          caption: z.string().optional(),
+        })
+        .optional(),
+      toc: z.boolean().default(true),
+    }),
+});
+
+export const collections = {
+  publications,
+  projects,
+  experience,
+  education,
+  blog,
+};
