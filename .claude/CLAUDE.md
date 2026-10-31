@@ -18,7 +18,7 @@ Rules that come from the plan:
 
 ## Status
 
-- Phases 0 and 1 are done. Phase 2 (home page, static parts) is built and tested; its Lighthouse ≥ 95 check has not run yet. Next is Phase 3 (live hero simulation).
+- Phases 0, 1 and 2 are done (Phase 2: home page, static parts; Lighthouse mobile 98/100/96/100). Next is Phase 3 (live hero simulation). Open: the site has no favicon yet (Sagar to provide or approve one).
 
 ## Layout
 
