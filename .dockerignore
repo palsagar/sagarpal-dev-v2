@@ -1,19 +1,26 @@
-# Jekyll build output & caches
-_site
-.jekyll-cache
-.jekyll-metadata
-
-# Bundler / gems
-vendor
-.bundle
-*.gem
-
-# Node (not used by the build, but ignored just in case)
-node_modules
-
-# Local tooling / editor cruft (keep .git — the lastmod hook needs it)
+# Phase 8 writes the new multi-stage Dockerfile; keep the build context lean.
+.git
+.github
 .claude
 .superpowers
-.devcontainer
 .vscode
 .idea
+.DS_Store
+docs
+
+# Dependencies and build output (rebuilt inside the image)
+**/node_modules
+web/dist
+web/.astro
+web/test-results
+web/playwright-report
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+
+# Local data and secrets
+.data
+**/.env
+**/.env.*

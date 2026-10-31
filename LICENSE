@@ -1,6 +1,24 @@
+Copyright (c) 2026 Sagar Pal
+
+This repository contains two kinds of material, under different terms.
+
+1. Source code (for example everything under web/src/ that is not listed in
+   point 2, everything under api/, and the build and tooling files) is
+   licensed under the MIT License, reproduced below.
+
+2. Site content is NOT covered by the MIT License. Site content means the
+   written and visual material of the site: blog posts (web/src/content/),
+   profile, publication and project text (web/src/data/), images and figures
+   (web/src/assets/, web/public/assets/img/, docs/redesign/assets/), and PDFs
+   (web/public/assets/pdfs/). Unless a file states otherwise, site content is
+   (c) Sagar Pal, all rights reserved. Published papers remain the property
+   of their respective copyright holders.
+
+--------------------------------------------------------------------------------
+
 MIT License
 
-Copyright (c) 2021 Cotes Chung
+Copyright (c) 2026 Sagar Pal
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -2,43 +2,60 @@
 
 ## Overview
 
-Personal website for Sagar Pal. Jekyll + Chirpy theme v7.4.1, deployed via GitHub Pages.
+Personal website for Sagar Pal, being rebuilt on branch `redesign`: an Astro 7 front end with React islands (`web/`) and a FastAPI back end (`api/`), shipped later as one Docker image on the Coolify VPS. `main` still holds the old Jekyll + Chirpy site and stays deployable until the cut-over in Phase 8.
 
-## Architecture
+## Read before doing any work (in this order)
 
-- **Data-driven content**: Publications, projects, experience, and education are managed via `_data/*.yml` files. Tab pages use Liquid templates to iterate over these.
-- **No custom theme overrides**: No `_layouts/`, `_includes/`, or `_sass/` directories. All customization is done through `_config.yml`, inline `<style>` blocks, and `_data/` files.
-- **Styling**: Inline `<style>` blocks in page files use Chirpy CSS custom properties (`var(--btn-border-color)`, `var(--link-color)`, `var(--text-muted-color)`, `var(--card-bg)`, `var(--text-color)`) with fallback values for dark/light mode compatibility.
-- **Blog infrastructure preserved**: `_posts/`, Categories, Tags, Archives tabs are intact. Blog posts will appear natively when added.
+1. `REDESIGN_PLAN.md` (repo root): decisions, architecture, phased tasks with acceptance criteria. Tick its boxes as phases finish.
+2. `docs/redesign/DESIGN.md`: design system, page specs, final copy. It wins over the mockups when they disagree.
+3. `docs/redesign/API.md`: FastAPI spec.
+4. `docs/redesign/design-reference/README.md`: how to read the mockup sources (`*.dc.html`).
 
-## Content management
+Rules that come from the plan:
+- Work on `redesign`. Never push to `main`, never force-push.
+- Ask Sagar before deploying, touching DNS/Cloudflare/Coolify, deleting anything outside this repo, or changing a decision in plan §1.
+- Never ship the mockups' placeholder content (DESIGN.md §10, "Must not ship"). Blog and reading list launch empty.
 
-- **Add a publication**: Add entry to `_data/publications.yml`. Set `featured: true` to show on landing page. Put PDF in `assets/pdfs/`.
-- **Add a project**: Add entry to `_data/projects.yml`. It appears automatically on the Projects tab and landing page.
-- **Add experience/education**: Edit `_data/experience.yml` or `_data/education.yml`.
-- **Profile photo**: Must be square crop (`assets/img/prof_pic.jpg`). Non-square images don't fill Chirpy's circular sidebar avatar.
+## Status
 
-## Tab ordering
+- Phase 0 (branch, clean-up, scaffold) is done and passes locally. CI runs on the first push of `redesign`. Next is Phase 1 (design system foundations).
 
-Publications (1), Projects (2), Categories (3), Tags (4), Archives (5). Set via `order:` in each `_tabs/*.md` front matter.
+## Layout
+
+- `web/`: Astro project (npm). `src/pages/` routes, `src/data/*.yml` profile data migrated from Jekyll's `_data/` (publications, projects, experience, education), `public/assets/{pdfs,img}/` files that keep their old public URLs (for example `/assets/pdfs/Sagar_Pal_CV_2025.pdf`). `trailingSlash: 'always'` keeps the old `/projects/` and `/publications/` URLs.
+- `api/`: uv project, Python 3.12. `app/main.py` (app factory), `app/config.py` (pydantic-settings; reads env vars and `api/.env`), `app/db.py` (SQLite engine with the API.md PRAGMAs), `app/routers/`, `migrations/` (Alembic, no versions yet), `tests/`.
+- `.github/workflows/ci.yml`: web job (prettier, eslint, astro check, build, Playwright smoke) and api job (ruff, ruff format, mypy strict, pytest with coverage).
+- Old Jekyll inputs that later phases still need (the JSON-LD `Person` block in `index.html`, social links in `_config.yml` and `_data/contact.yml`) exist only on `main`. Read them with `git show main:index.html` and similar.
 
 ## Local development
 
-Requires Ruby 3.x (not 4.x — Chirpy requires `~> 3.1`). Use `brew install ruby@3.3` on macOS.
+Needs Node ≥ 22.23.4 (Astro 7.4 requirement) and uv. uv fetches Python 3.12 itself.
 
 ```bash
-export PATH="/opt/homebrew/opt/ruby@3.3/bin:$PATH"
-bundle install
-bundle exec jekyll serve
+make install    # npm ci in web/, uv sync in api/
+make dev        # Astro on :4321 (proxies /api, /admin, /feed.xml, /og to :8000) + FastAPI on :8000
+make build      # astro build -> web/dist
+make test       # pytest with coverage, then build + Playwright smoke (preview server on :4322)
+make lint       # prettier --check, eslint, astro check, ruff, ruff format --check, mypy
+make fmt        # prettier --write, ruff --fix, ruff format
 ```
 
-## Key files
+Local DB defaults to `./.data/site.db` (gitignored). Copy `api/.env.example` to `api/.env` to override settings.
 
-- `index.html` — Landing page with hero bio, expertise pills, experience/education timelines, featured publications, side projects
-- `_tabs/publications.md` — Full publications list with stacked cards (PDF download + DOI links)
-- `_tabs/projects.md` — Project card grid (live demo + GitHub links)
-- `_config.yml` — Site title, tagline, description, social links, Google Scholar ID
-- `_data/contact.yml` — Sidebar contact links (GitHub, Twitter, Email, RSS, LinkedIn, Google Scholar)
+Astro 7 quirks that matter for agents:
+- When Astro detects an AI agent, `astro dev` and `astro preview` start in the background and the command exits at once. Stop them with `npx astro dev stop` / `npx astro preview stop` (run in `web/`). `--ignore-lock` forces the foreground; Playwright's `webServer` uses it.
+- With `trailingSlash: 'always'`, Astro's dev server answers 404 for slashless paths like `/api/health` before Vite's proxy runs. The small `proxyBeforeAstro` plugin in `web/astro.config.mjs` moves the proxy first. It finds Vite's proxy by its internal name and throws at start-up if a Vite upgrade renames it.
+
+`README.md` and `DEPLOYMENT.md` still describe the Jekyll site. Rewrite them for the new stack (DEPLOYMENT.md is a Phase 8 task).
+
+## Version pins worth knowing
+
+- TypeScript is pinned to `~6.0.3`. TypeScript 7 (the native Go compiler) is out, but typescript-eslint supports only `<6.1` and `@astrojs/check` only `^5 || ^6`.
+- `eslint-plugin-jsx-a11y` is not installed because it does not support ESLint 10. Accessibility is checked with axe in Phase 9.
+
+## Licence
+
+`LICENSE`: MIT for code; site content (posts, profile text, images, PDFs) is all rights reserved.
 
 ## GPG signing
 
