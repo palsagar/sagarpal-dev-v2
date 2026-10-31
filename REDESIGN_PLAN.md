@@ -1,6 +1,6 @@
 # sagar-pal.dev redesign — build plan
 
-> Status: **design signed off (31 Oct 2026). Phases 0–2 done on branch `redesign`. Phase 3 next.**
+> Status: **design signed off (31 Oct 2026). Phases 0–2 done on branch `redesign`. Phase 3 built; its real-phone frame-rate check is pending. Phase 4 next.**
 > This is the master plan for replacing the Jekyll/Chirpy site with an Astro front end and a FastAPI back end.
 > It is written for Claude Code to execute phase by phase; a human can follow it too.
 
@@ -174,15 +174,17 @@ Each phase lists tasks, then **Done when** criteria. Tick boxes as you go.
 
 ### Phase 3 — Live hero simulation (`HeroField` island)
 Spec in DESIGN.md §5. Summary:
-- [ ] WebGL2 ping-pong Gray–Scott (RGBA16F, or RGBA32F when `EXT_color_buffer_float` is available) with the 9-point Laplacian, Du = 1.0, Dv = 0.5, dt = 1, and 8–16 substeps per frame. Grid ≈ 256 px on the short side for phones, ≈ 512 on desktop.
-- [ ] Presets (buttons with `aria-pressed`): Coral (F 0.0545, k 0.0620), Mitosis (0.0367, 0.0649), Mazes (0.0290, 0.0570), Spots & loops (0.0180, 0.0510). Readout uses tabular figures.
-- [ ] Colour via a 256×1 LUT texture built from the theme's field colormap; rebuild it on theme change.
-- [ ] Pointer/touch drag seeds `v = 1` in a small disc, with no CPU readback.
-- [ ] Start state: six noisy discs, warm-up of about 2,000 steps before the first visible frame. Show the poster until ready, then cross-fade (≤ 400 ms).
-- [ ] Pause when off-screen (IntersectionObserver) or the tab is hidden. `prefers-reduced-motion`: no animation, show the poster plus a "Play simulation" button. No WebGL2: keep the poster and hide the controls. Cap DPR at 1.5.
-- [ ] Load with `client:visible`. The island must not block LCP: the poster `<img>` is the LCP element and is server-rendered with `fetchpriority="high"`.
+- [x] WebGL2 ping-pong Gray–Scott (RGBA16F, or RGBA32F when `EXT_color_buffer_float` is available) with the 9-point Laplacian, Du = 1.0, Dv = 0.5, dt = 1, and 8–16 substeps per frame. Grid ≈ 256 px on the short side for phones, ≈ 512 on desktop.
+- [x] Presets (buttons with `aria-pressed`): Coral (F 0.0545, k 0.0620), Mitosis (0.0367, 0.0649), Mazes (0.0290, 0.0570), Spots & loops (0.0180, 0.0510). Readout uses tabular figures.
+- [x] Colour via a 256×1 LUT texture built from the theme's field colormap; rebuild it on theme change.
+- [x] Pointer/touch drag seeds `v = 1` in a small disc, with no CPU readback.
+- [x] Start state: six noisy discs, warm-up of about 2,000 steps before the first visible frame. Show the poster until ready, then cross-fade (≤ 400 ms).
+- [x] Pause when off-screen (IntersectionObserver) or the tab is hidden. `prefers-reduced-motion`: no animation, show the poster plus a "Play simulation" button. No WebGL2: keep the poster and hide the controls. Cap DPR at 1.5.
+- [x] Load with `client:visible`. The island must not block LCP: the poster `<img>` is the LCP element and is server-rendered with `fetchpriority="high"`.
 
 **Done when:** 60 fps on a 2020-class laptop and ≥ 30 fps on a mid-range phone, verified with the Performance panel. Main-thread long tasks from the island stay under 50 ms each. Reduced-motion and no-WebGL paths are verified. Total island JS ≤ 25 KB gzipped.
+
+*Phase 3 notes (31 Oct 2026):* **plain TypeScript, not a React island** (decided with Sagar): React's client runtime alone is 68 KB gzipped, so a React `HeroField.tsx` could not meet the 25 KB budget. React stays the plan for the other islands. Files: `lib/field-presets.ts` (presets, colormaps), `lib/gray-scott.ts` (WebGL2 engine: RGBA32F with RGBA16F fallback, brush segment in the step shader, bilinear display through a 256×1 LUT), `lib/hero-field.ts` (controls, pointer/touch, IntersectionObserver and visibility pausing, theme LUT swaps, resize, clean-up), and a loader `<script>` in `Hero.astro` that acts like `client:visible`: it imports the engine once the hero is on screen, after the visible poster has decoded and the browser is idle. Shaders compile with `KHR_parallel_shader_compile` polling, because querying `LINK_STATUS` on a cold cache blocked the main thread for 180 ms (M2 Pro). `V_MAX = 0.39` matches the poster's normalisation (99.6th percentile of v = 0.394). Phones (< 720px) use a 256-cell grid and 8 substeps per frame; desktop 512 and 12. The preset controls and Play button are server-rendered `hidden`, so no-JS and no-WebGL2 visitors see the poster only. Phone preset buttons are 44px tall (the mockup's 40px is below DESIGN.md §9's 44px touch minimum). Playwright now defaults to reduced motion so pages do not all run software WebGL at once; motion tests opt in. Measured (headless Chrome on the Apple M2 Pro GPU through Metal): 60 fps at 1440 and 390px, also with 4× CPU throttling; no long tasks from the island (the one 56–64 ms task under 4× throttling is page start-up and also happens with the field off); live 0.85–0.97 s after navigation; island JS 5.3 KB gzipped (loader 1.3 KB + engine 4.0 KB). Checks: `tests/e2e/hero-field.spec.ts`. **Pending:** ≥ 30 fps on a real mid-range phone (GPU speed cannot be emulated); the M2 Pro is also faster than a 2020-class laptop.
 
 ### Phase 4 — Blog
 - [ ] `blog` collection schema: `title`, `dek`, `date`, `updated?`, `tags[]` (from a fixed topic list: Numerics, HPC, Scientific ML, GPU, Notes), `draft` (default `true`), `hero?` (image + alt), `toc` (default `true`). Drafts are visible in dev and excluded from the build, sitemap, RSS and manifest.

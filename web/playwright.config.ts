@@ -16,6 +16,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
+  // Reduced motion by default: the hero simulation then waits for "Play", so
+  // pages do not all run WebGL at once (headless Chromium renders it on the
+  // CPU). Tests about motion opt in with emulateMedia({ reducedMotion: 'no-preference' }).
+  use: { reducedMotion: 'reduce' },
   projects: [
     {
       name: 'build',

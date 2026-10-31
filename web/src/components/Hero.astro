@@ -1,9 +1,12 @@
 ---
 // Home hero (DESIGN.md §7.1.1). Desktop: text column + the field bleeding to the
 // right edge. Phone: the field first, full-bleed, then the text.
-// Phase 2 shows the poster only; Phase 3 adds the live HeroField island and its
-// preset controls on top of it.
+// The poster is server-rendered and stays the LCP element. The live field
+// (lib/hero-field.ts) loads after the page, fades in over it, and reveals the
+// preset controls. Reduced motion or Data Saver: a "Play simulation" button
+// instead. No JS or no WebGL2: the poster only.
 import { elsewhere, site } from '../data/site';
+import { PRESETS, fmt } from '../lib/field-presets';
 import { POSTER_SIZES, heroPosters } from '../lib/hero-poster';
 
 interface Props {
@@ -50,7 +53,7 @@ const social = elsewhere.filter((link) => link.label !== 'RSS');
   </div>
 
   <figure class="hero__field">
-    <div class="hero__frame">
+    <div class="hero__frame" data-hero-field data-state="idle">
       {(['night', 'day'] as const).map((theme) => (
         <picture class={`hero__poster only-${theme}`}>
           <source
@@ -73,6 +76,32 @@ const social = elsewhere.filter((link) => link.label !== 'RSS');
           />
         </picture>
       ))}
+      <canvas class="hero__canvas" aria-hidden="true"></canvas>
+      <div class="hero__controls" hidden>
+        <div class="hero__presets" role="group" aria-label="Pattern preset">
+          {PRESETS.map((p, i) => (
+            <button
+              type="button"
+              class="pill pill--ghost hero__preset"
+              data-preset={p.id}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <p class="hero__readout tabular phone-hidden">
+          <span>
+            F = <span data-readout-f>{fmt(PRESETS[0].F)}</span>
+          </span>
+          <span>
+            k = <span data-readout-k>{fmt(PRESETS[0].k)}</span>
+          </span>
+        </p>
+      </div>
+      <button type="button" class="btn btn--primary btn--sm hero__play" hidden>
+        Play simulation
+      </button>
     </div>
     <figcaption>
       <span class="phone-hidden">
@@ -152,6 +181,73 @@ const social = elsewhere.filter((link) => link.label !== 'RSS');
     object-fit: cover;
   }
 
+  /* ---------- Live field (Phase 3) ---------- */
+
+  .hero__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    touch-action: pan-y;
+    cursor: crosshair;
+    transition: opacity 400ms var(--ease-out);
+  }
+
+  .hero__frame[data-ready] .hero__canvas {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .hero__controls {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    pointer-events: none;
+  }
+
+  .hero__presets,
+  .hero__readout {
+    pointer-events: auto;
+    border-radius: 999px;
+    background: var(--ground);
+  }
+
+  .hero__presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 5px;
+  }
+
+  .hero__preset {
+    height: 36px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  .hero__readout {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    height: 46px;
+    padding: 0 18px;
+    font-size: 14px;
+  }
+
+  .hero__play {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+  }
+
   .hero__field figcaption {
     padding: 14px var(--gutter) 0 0;
     font-size: 14px;
@@ -184,6 +280,31 @@ const social = elsewhere.filter((link) => link.label !== 'RSS');
       height: 400px;
     }
 
+    .hero__controls {
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+    }
+
+    .hero__presets {
+      flex-wrap: nowrap;
+      max-width: 100%;
+      padding: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .hero__preset {
+      flex: 0 0 auto;
+      height: 44px;
+      padding: 0 14px;
+    }
+
+    .hero__play {
+      left: 12px;
+      bottom: 12px;
+    }
+
     .hero__field figcaption {
       padding-top: 10px;
     }
@@ -214,3 +335,70 @@ const social = elsewhere.filter((link) => link.label !== 'RSS');
     }
   }
 </style>
+
+<script>
+  // Loads the live field once the hero is on screen, after the page has loaded
+  // and the browser is idle, so the poster stays the LCP element. Runs again
+  // after each client-router navigation; cleans up before the next swap.
+  let cleanup: (() => void) | undefined;
+
+  const mount = async (root: HTMLElement, focusControls = false) => {
+    const { mountHeroField } = await import('../lib/hero-field');
+    if (root.isConnected)
+      cleanup = await mountHeroField(root, { focusControls });
+  };
+
+  const whenIdle = (fn: () => void) => {
+    const idle = () =>
+      'requestIdleCallback' in window
+        ? requestIdleCallback(fn, { timeout: 2000 })
+        : setTimeout(fn, 200);
+    if (document.readyState === 'complete') idle();
+    else addEventListener('load', idle, { once: true });
+  };
+
+  document.addEventListener('astro:page-load', () => {
+    const root = document.querySelector<HTMLElement>('[data-hero-field]');
+    if (!root) return;
+    if (!('WebGL2RenderingContext' in window)) {
+      root.dataset.state = 'unsupported';
+      return;
+    }
+    const saveData = (
+      navigator as Navigator & { connection?: { saveData?: boolean } }
+    ).connection?.saveData;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || saveData) {
+      const play = root.querySelector<HTMLButtonElement>('.hero__play')!;
+      root.dataset.state = 'play';
+      play.hidden = false;
+      play.addEventListener(
+        'click',
+        () => {
+          play.hidden = true;
+          void mount(root, true);
+        },
+        { once: true },
+      );
+      return;
+    }
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      io.disconnect();
+      // Lazy images do not hold back the load event: wait for the visible
+      // poster itself, so the warm-up never competes with the LCP image.
+      const poster = [...root.querySelectorAll('img')].find(
+        (img) => img.offsetParent !== null,
+      );
+      const decoded = poster ? poster.decode().catch(() => {}) : null;
+      void Promise.resolve(decoded).then(() =>
+        whenIdle(() => void mount(root)),
+      );
+    });
+    io.observe(root);
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanup?.();
+    cleanup = undefined;
+  });
+</script>

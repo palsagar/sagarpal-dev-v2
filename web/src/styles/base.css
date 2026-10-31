@@ -80,6 +80,11 @@ textarea {
   color: inherit;
 }
 
+/* `hidden` wins over component display rules (flex, inline-flex). */
+[hidden] {
+  display: none !important;
+}
+
 /* Theme change: a short colour fade on the page only (§3.6). */
 @media (prefers-reduced-motion: no-preference) {
   body {
