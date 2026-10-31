@@ -18,7 +18,7 @@ Rules that come from the plan:
 
 ## Status
 
-- Phase 0 (branch, clean-up, scaffold) is done and passes locally. CI runs on the first push of `redesign`. Next is Phase 1 (design system foundations).
+- Phase 0 (branch, clean-up, scaffold) is done; CI is green on `redesign`. Next is Phase 1 (design system foundations).
 
 ## Layout
 

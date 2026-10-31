@@ -1,6 +1,6 @@
 # sagar-pal.dev redesign — build plan
 
-> Status: **design signed off (31 Oct 2026). Phase 0 done on branch `redesign` (all checks pass locally; CI runs on the first push). Phase 1 next.**
+> Status: **design signed off (31 Oct 2026). Phase 0 done on branch `redesign` (CI green). Phase 1 next.**
 > This is the master plan for replacing the Jekyll/Chirpy site with an Astro front end and a FastAPI back end.
 > It is written for Claude Code to execute phase by phase; a human can follow it too.
 
