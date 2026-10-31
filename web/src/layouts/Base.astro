@@ -54,6 +54,9 @@ const ogImage = new URL('/assets/img/og-card.png', Astro.site ?? site.url).href;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {/* A coral colony on the night ground, from docs/redesign/scripts/make_assets.py --favicon. */}
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link
       rel="preload"

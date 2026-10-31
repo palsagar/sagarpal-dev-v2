@@ -11,11 +11,15 @@ Outputs (into --out, default ./out):
   field-hero-night.jpg / field-hero-day.jpg   hero poster (also the no-WebGL / reduced-motion fallback)
   fig-mitosis-night.jpg / fig-mitosis-day.jpg  example post figure (F=0.0367, k=0.0649)
 
+Optional: --favicon DIR writes favicon.ico (16/32/48) and apple-touch-icon.png (180): a single
+coral colony (F=0.0545, k=0.062) on the night ground.
+
 Optional: --duotone IN.png OUT.jpg [--invert] recolours a screenshot (e.g. of FlowLab or
 the Gray-Scott app) into the night palette, as used for the project thumbnails.
 
 Usage:
   uv run --with numpy --with scipy --with pillow make_assets.py --out ../assets
+  uv run --with numpy --with scipy --with pillow make_assets.py --favicon ../../../web/public
   uv run --with numpy --with scipy --with pillow make_assets.py --duotone shot.png project.jpg --invert
 """
 import argparse
@@ -117,6 +121,29 @@ def mitosis_field(steps):
     return step(u, v, 0.0367, 0.0649, steps)[1]
 
 
+def favicon_field():
+    """One coral colony (F=0.0545, k=0.062) grown from a noisy central disc, cropped tight."""
+    n = 128
+    rng = np.random.default_rng(5)
+    u = np.ones((n, n), np.float32)
+    v = np.zeros((n, n), np.float32)
+    yy, xx = np.mgrid[0:n, 0:n]
+    m = ((yy - n / 2) ** 2 + (xx - n / 2) ** 2) < (8 * (1 + 0.35 * rng.random((n, n)))) ** 2
+    v[m], u[m] = 1.0, 0.5
+    v += 0.02 * rng.random((n, n), dtype=np.float32)
+    v = step(u, v, 0.0545, 0.062, 2500)[1]
+    c = 12  # crop margin: the colony fills most of the tile
+    return v[c:n - c, c:n - c]
+
+
+def make_favicon(out):
+    os.makedirs(out, exist_ok=True)
+    img = Image.fromarray(bloom(colorize(norm(favicon_field()), NIGHT_FIELD), 2, 0.3))
+    img.resize((180, 180), Image.LANCZOS).save(os.path.join(out, "apple-touch-icon.png"), optimize=True)
+    img.resize((48, 48), Image.LANCZOS).save(os.path.join(out, "favicon.ico"), sizes=[(16, 16), (32, 32), (48, 48)])
+    print("wrote", os.path.join(out, "favicon.ico"), "and apple-touch-icon.png")
+
+
 def save(arr, path, size):
     Image.fromarray(arr).resize(size, Image.LANCZOS).convert("RGB").save(path, quality=88, optimize=True)
     print("wrote", path)
@@ -159,9 +186,12 @@ if __name__ == "__main__":
     p.add_argument("--out", default="out")
     p.add_argument("--quick", action="store_true", help="few steps, for a smoke test")
     p.add_argument("--duotone", nargs=2, metavar=("IN", "OUT"))
+    p.add_argument("--favicon", metavar="DIR")
     p.add_argument("--invert", action="store_true")
     a = p.parse_args()
-    if a.duotone:
+    if a.favicon:
+        make_favicon(a.favicon)
+    elif a.duotone:
         duotone(a.duotone[0], a.duotone[1], a.invert)
     else:
         make_all(a.out, a.quick)
