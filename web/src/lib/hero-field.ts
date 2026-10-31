@@ -4,6 +4,14 @@
 import { PRESETS, fmt, type FieldTheme } from './field-presets';
 import { createEngine, type Grid } from './gray-scott';
 
+declare global {
+  interface Window {
+    /** Set only by tests/e2e/hero-field.spec.ts (headless Chromium renders
+     *  WebGL in software, which the field otherwise refuses). */
+    __heroFieldTest?: { shortSide: number };
+  }
+}
+
 const WARMUP_STEPS = 2000;
 const WARMUP_PER_FRAME = 100;
 const DPR_CAP = 1.5;
@@ -21,7 +29,8 @@ export async function mountHeroField(
   const readK = root.querySelector<HTMLElement>('[data-readout-k]')!;
 
   const phone = matchMedia('(max-width: 719.98px)').matches;
-  const shortSide = phone ? 256 : 512;
+  const testing = window.__heroFieldTest;
+  const shortSide = testing?.shortSide ?? (phone ? 256 : 512);
   const substeps = phone ? 8 : 12;
 
   const box = () => canvas.getBoundingClientRect();
@@ -40,7 +49,9 @@ export async function mountHeroField(
 
   let rect = box();
   sizeCanvas(rect);
-  const engine = await createEngine(canvas, gridFor(rect));
+  const engine = await createEngine(canvas, gridFor(rect), {
+    allowSoftware: !!testing,
+  });
   // The page may have been swapped by the client router while compiling.
   if (engine && !root.isConnected) {
     engine.destroy();
@@ -235,16 +246,18 @@ export async function mountHeroField(
   });
   ro.observe(canvas);
 
-  // Test hooks (tests/e2e/hero-field.spec.ts): freeze the loop, then apply
-  // the pending brush stroke with a single step.
+  // Test hooks, registered only under tests: freeze the loop, then apply the
+  // pending brush stroke with a single step.
   const onFreeze = () => (frozen = true);
   const onTestStep = () => {
     queueBrush();
     engine.step(1);
     engine.render();
   };
-  document.addEventListener('hero-field:test-freeze', onFreeze);
-  document.addEventListener('hero-field:test-step', onTestStep);
+  if (testing) {
+    document.addEventListener('hero-field:test-freeze', onFreeze);
+    document.addEventListener('hero-field:test-step', onTestStep);
+  }
 
   applyTheme();
   wake();

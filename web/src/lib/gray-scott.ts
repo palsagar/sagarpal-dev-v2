@@ -189,18 +189,29 @@ function lut(theme: FieldTheme) {
   return out;
 }
 
-/** Returns null when WebGL2 or a renderable float format is not available. */
+/** Renderers that draw WebGL on the CPU: too slow for the field. */
+const SOFTWARE = /swiftshader|llvmpipe|softpipe|software|basic render/i;
+
+/**
+ * Returns null when WebGL2 or a renderable float format is missing, or when
+ * the browser renders WebGL in software (blocklisted GPU drivers, VMs, CI).
+ */
 export async function createEngine(
   canvas: HTMLCanvasElement,
   initial: Grid,
+  { allowSoftware = false } = {},
 ): Promise<Engine | null> {
   const gl = canvas.getContext('webgl2', {
     alpha: false,
     antialias: false,
     depth: false,
     stencil: false,
+    failIfMajorPerformanceCaveat: !allowSoftware,
   });
   if (!gl) return null;
+  const info = gl.getExtension('WEBGL_debug_renderer_info');
+  const renderer = info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : '';
+  if (!allowSoftware && SOFTWARE.test(String(renderer))) return null;
   const full = gl.getExtension('EXT_color_buffer_float');
   if (!full && !gl.getExtension('EXT_color_buffer_half_float')) return null;
 

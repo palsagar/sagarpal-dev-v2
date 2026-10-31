@@ -7,11 +7,19 @@ import { WIDTHS, expectNoAxeViolations, storeTheme } from './helpers';
 // or "play" (reduced motion, waiting for the button) or "unsupported".
 
 const field = (page: Page) => page.locator('[data-hero-field]');
-// Headless Chromium renders WebGL in software, so warm-up is slow here.
 const READY = { timeout: 30_000 };
+
+/** Headless Chromium renders WebGL in software (SwiftShader), which the field
+ *  refuses in production. Tests opt in, with a small grid to stay fast. */
+async function allowSoftwareGl(page: Page) {
+  await page.addInitScript(() => {
+    window.__heroFieldTest = { shortSide: 96 };
+  });
+}
 
 test.describe('motion allowed', () => {
   test.beforeEach(async ({ page }) => {
+    await allowSoftwareGl(page);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
   });
 
@@ -146,6 +154,7 @@ test.describe('reduced motion', () => {
   test('poster plus "Play simulation"; nothing runs until pressed', async ({
     page,
   }) => {
+    await allowSoftwareGl(page);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     const play = page.getByRole('button', { name: 'Play simulation' });
@@ -182,6 +191,14 @@ test('no WebGL2: poster only, no controls, no Play button', async ({
   ).toBeHidden();
 });
 
+test('software-rendered WebGL: poster only, no controls', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/');
+  await expect(field(page)).toHaveAttribute('data-state', 'unsupported', READY);
+  await expect(page.locator('.hero__poster:visible img')).toBeVisible();
+  await expect(page.locator('.hero__controls')).toBeHidden();
+});
+
 test('without JS: poster only, controls hidden', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
@@ -199,6 +216,7 @@ test('island JS stays within 25 KB gzipped', async ({ page }) => {
     if (!url.endsWith('.js') || url.includes('ClientRouter')) return;
     scripts.set(url, gzipSync(await response.body(), { level: 9 }).length);
   });
+  await allowSoftwareGl(page);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('/');
   await expect(field(page)).toHaveAttribute('data-state', 'running', READY);
