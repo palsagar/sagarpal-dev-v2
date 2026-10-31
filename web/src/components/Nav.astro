@@ -1,0 +1,319 @@
+---
+// Site header (DESIGN.md §6 "Nav"). Desktop: wordmark, links, CV pill, theme toggle.
+// Below 720px: wordmark, theme toggle, "Menu" pill that opens a full-height sheet.
+// Plain bar: no blur, no shadow.
+import ThemeToggle from './ThemeToggle.astro';
+import { elsewhere, primaryNav, site } from '../data/site';
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) =>
+  !href.includes('#') && path.startsWith(href);
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a
+      class="wordmark"
+      href="/"
+      aria-current={path === '/' ? 'page' : undefined}
+    >
+      {site.name}
+    </a>
+    <nav aria-label="Primary" class="site-nav">
+      <ul class="site-nav__links" role="list">
+        {primaryNav.map((item) => (
+          <li>
+            <a
+              class="navlink"
+              href={item.href}
+              aria-current={isCurrent(item.href) ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="site-nav__actions">
+        <a class="btn btn--secondary site-nav__cv" href={site.cv}>
+          CV
+        </a>
+        <ThemeToggle />
+        <button
+          type="button"
+          class="btn btn--secondary site-nav__menu"
+          data-menu-open
+          aria-haspopup="dialog"
+          aria-controls="menu-sheet"
+          aria-expanded="false"
+        >
+          Menu
+        </button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<dialog id="menu-sheet" class="menu-sheet" aria-label="Menu">
+  <div class="menu-sheet__top">
+    <a class="wordmark" href="/">
+      {site.name}
+    </a>
+    <button
+      type="button"
+      class="btn btn--secondary menu-sheet__close"
+      data-menu-close
+    >
+      Close
+    </button>
+  </div>
+  <nav aria-label="Primary">
+    <ul class="menu-sheet__links" role="list">
+      {primaryNav.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            aria-current={isCurrent(item.href) ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))}
+      <li>
+        <a href={site.cv}>CV</a>
+      </li>
+    </ul>
+  </nav>
+  <ul class="menu-sheet__elsewhere" role="list">
+    {elsewhere.map((item) => (
+      <li>
+        <a class="navlink" href={item.href}>
+          {item.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</dialog>
+
+<style>
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding-block: 20px;
+  }
+
+  .wordmark {
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .wordmark:hover {
+    color: var(--ink);
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-size: 16px;
+  }
+
+  .site-nav__links {
+    display: flex;
+    gap: 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-nav__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .site-nav__cv {
+    height: 40px;
+    padding: 0 18px;
+    font-size: 16px;
+  }
+
+  .site-nav__menu {
+    display: none;
+    height: 44px;
+    padding: 0 18px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 719.98px) {
+    .site-header__inner {
+      padding: 12px 16px;
+      gap: 12px;
+    }
+
+    .site-nav__links,
+    .site-nav__cv {
+      display: none;
+    }
+
+    .site-nav__menu {
+      display: inline-flex;
+    }
+  }
+
+  /* ---------- Menu sheet (phone) ---------- */
+
+  .menu-sheet {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 12px 16px 32px;
+    border: 0;
+    background: var(--ground);
+    color: var(--ink);
+    overflow-y: auto;
+  }
+
+  .menu-sheet[open] {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .menu-sheet::backdrop {
+    background: var(--ground);
+  }
+
+  .menu-sheet__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .menu-sheet__close {
+    height: 44px;
+    padding: 0 18px;
+    font-size: 16px;
+  }
+
+  .menu-sheet__links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .menu-sheet__links a {
+    display: block;
+    padding: 6px 0;
+    font-size: 44px;
+    font-weight: 620;
+    font-stretch: 108%;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    text-decoration: none;
+  }
+
+  .menu-sheet__links a[aria-current='page'] {
+    color: var(--link);
+  }
+
+  .menu-sheet__elsewhere {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 20px;
+    margin: auto 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 16px;
+  }
+
+  .menu-sheet__elsewhere a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  :global(html:has(.menu-sheet[open])) {
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  // Native modal <dialog>: showModal() makes the rest of the page inert (focus stays
+  // in the sheet), Esc closes it, and focus returns to the Menu button on close.
+  const sheet = () => document.querySelector<HTMLDialogElement>('#menu-sheet');
+  const opener = () =>
+    document.querySelector<HTMLButtonElement>('[data-menu-open]');
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as Element | null;
+    const dialog = sheet();
+    if (!target || !dialog) return;
+
+    if (target.closest('[data-menu-open]')) {
+      dialog.showModal();
+      opener()?.setAttribute('aria-expanded', 'true');
+    } else if (
+      target.closest('[data-menu-close]') ||
+      target.closest('#menu-sheet a')
+    ) {
+      dialog.close();
+    }
+  });
+
+  // `close` fires for the button, links and Esc alike. It does not bubble, so listen
+  // in the capture phase on document (survives client-router swaps).
+  document.addEventListener(
+    'close',
+    (event) => {
+      if ((event.target as Element | null)?.id === 'menu-sheet') {
+        opener()?.setAttribute('aria-expanded', 'false');
+      }
+    },
+    true,
+  );
+
+  // A modal dialog lets Tab leave for the browser UI; wrap it so focus stays in the sheet.
+  document.addEventListener('keydown', (event) => {
+    const dialog = sheet();
+    if (event.key !== 'Tab' || !dialog?.open) return;
+    const focusable = [
+      ...dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled])',
+      ),
+    ];
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!first || !last) return;
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || !dialog.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (
+      !event.shiftKey &&
+      (active === last || !dialog.contains(active))
+    ) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  // Leaving phone width with the sheet open: close it.
+  window
+    .matchMedia('(min-width: 720px)')
+    .addEventListener('change', (event) => {
+      if (event.matches) sheet()?.close();
+    });
+</script>

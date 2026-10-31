@@ -1,0 +1,87 @@
+/*
+ * Design tokens (DESIGN.md §1, §2, §4).
+ *
+ * Colour tokens apply to any element with [data-theme], not only :root, so a
+ * subtree can render in the other theme (the styleguide shows both themes side
+ * by side). The blocking head script always sets data-theme on <html>; without
+ * JS, :root falls back to night, or to day when the OS prefers light.
+ */
+
+:root,
+[data-theme='night'] {
+  --ground: #0a0e16;
+  --surface: #111823;
+  --surface-2: #1a2330;
+  --surface-3: #232e3d;
+  --ink: #eeeae2;
+  --ink-2: #a0a8b4;
+  --ink-3: #8a93a1;
+  --accent: #f2a64a;
+  --accent-hover: #f6b867;
+  --on-accent: #0a0e16;
+  --link: #f2a64a;
+  --teal: #6cc3ca;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --ground: #f3f4f6;
+    --surface: #e7ebef;
+    --surface-2: #dce2e8;
+    --surface-3: #d0d8e0;
+    --ink: #111925;
+    --ink-2: #4e5866;
+    --ink-3: #56606e;
+    --accent: #f2a64a;
+    --accent-hover: #ee9a33;
+    --on-accent: #111925;
+    --link: #9a520e;
+    --teal: #1f6f7a;
+    color-scheme: light;
+  }
+}
+
+[data-theme='day'] {
+  --ground: #f3f4f6;
+  --surface: #e7ebef;
+  --surface-2: #dce2e8;
+  --surface-3: #d0d8e0;
+  --ink: #111925;
+  --ink-2: #4e5866;
+  --ink-3: #56606e;
+  --accent: #f2a64a;
+  --accent-hover: #ee9a33;
+  --on-accent: #111925;
+  --link: #9a520e;
+  --teal: #1f6f7a;
+  color-scheme: light;
+}
+
+:root {
+  /* Layout (§1) */
+  --container: 1440px;
+  --gutter: clamp(16px, 3vw, 40px);
+  --section-space: 200px;
+  --measure: 680px;
+
+  /* Families (§4). Fallback faces are metric-matched in fonts.css. */
+  --font-sans:
+    'Archivo Variable', 'Archivo Fallback: Helvetica Neue',
+    'Archivo Fallback: Arial', 'Helvetica Neue', Arial, sans-serif;
+  --font-serif:
+    'Source Serif 4 Variable', 'Source Serif 4 Fallback', Georgia, serif;
+  --font-mono:
+    'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Motion (§8) */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 150ms;
+}
+
+/* Phone: below ~720px the nav collapses to the Menu sheet (§1, §6). */
+@media (max-width: 719.98px) {
+  :root {
+    --section-space: 112px;
+  }
+}

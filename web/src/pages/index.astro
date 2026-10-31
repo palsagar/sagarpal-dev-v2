@@ -1,19 +1,31 @@
 ---
-const description =
-  'Sagar Pal works at the intersection of scientific computing, AI for science and high-performance ML systems.';
+// Placeholder home until Phase 2 builds the real sections.
+import Base from '../layouts/Base.astro';
+import { site } from '../data/site';
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
-    <title>Sagar Pal</title>
-  </head>
-  <body>
-    <main>
-      <h1>Sagar Pal</h1>
-      <p>The new site is being built.</p>
-    </main>
-  </body>
-</html>
+<Base footer="full" person>
+  <section class="container placeholder" aria-labelledby="hero-title">
+    <h1 id="hero-title" class="display">
+      Sagar Pal
+    </h1>
+    <p class="statement">
+      I work at the intersection of scientific computing, AI for science and
+      high-performance ML systems.
+    </p>
+    <p>
+      <a class="btn btn--secondary btn--lg" href={site.cv}>
+        Download CV
+      </a>
+    </p>
+  </section>
+</Base>
+
+<style>
+  .placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding-top: 88px;
+  }
+</style>

@@ -1,0 +1,41 @@
+---
+// Dev-only styleguide. Injected at /styleguide/ by the `devStyleguide` integration in
+// astro.config.mjs only for `astro dev`, so it is never built, deployed or put in the sitemap.
+import Base from '../layouts/Base.astro';
+import Specimens from './Specimens.astro';
+---
+
+<Base title="Styleguide" noindex>
+  <div class="container sg-intro">
+    <h1 class="h-section">Styleguide</h1>
+    <p class="statement">
+      Tokens, type and components from DESIGN.md, in both themes. The night and
+      day panels below ignore the page theme; the toggle switches the nav,
+      footer and this header.
+    </p>
+  </div>
+  <Specimens theme="night" />
+  <Specimens theme="day" />
+</Base>
+
+<style>
+  .sg-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding-block: 88px 96px;
+  }
+</style>
+
+<script>
+  // Specimen pills toggle aria-pressed so the selected state can be tried by keyboard.
+  document.addEventListener('click', (event) => {
+    const pill = (event.target as Element | null)?.closest<HTMLButtonElement>(
+      '.sg-theme .pill',
+    );
+    if (!pill) return;
+    pill.parentElement?.querySelectorAll('.pill').forEach((p) => {
+      p.setAttribute('aria-pressed', String(p === pill));
+    });
+  });
+</script>

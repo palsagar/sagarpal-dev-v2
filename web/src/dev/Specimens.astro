@@ -1,0 +1,602 @@
+---
+// One full set of design-system specimens, rendered inside a [data-theme] panel.
+interface Props {
+  theme: 'night' | 'day';
+}
+
+const { theme } = Astro.props;
+
+const tokens = [
+  {
+    name: '--ground',
+    night: '#0A0E16',
+    day: '#F3F4F6',
+    use: 'Page background',
+  },
+  {
+    name: '--surface',
+    night: '#111823',
+    day: '#E7EBEF',
+    use: 'Bands, code, callouts, row hover',
+  },
+  {
+    name: '--surface-2',
+    night: '#1A2330',
+    day: '#DCE2E8',
+    use: 'Secondary pills, inputs, tiles',
+  },
+  {
+    name: '--surface-3',
+    night: '#232E3D',
+    day: '#D0D8E0',
+    use: 'Hover of surface-2',
+  },
+  { name: '--ink', night: '#EEEAE2', day: '#111925', use: 'Text, headings' },
+  {
+    name: '--ink-2',
+    night: '#A0A8B4',
+    day: '#4E5866',
+    use: 'Meta, captions, nav links',
+  },
+  {
+    name: '--ink-3',
+    night: '#8A93A1',
+    day: '#56606E',
+    use: 'Placeholders only',
+  },
+  {
+    name: '--accent',
+    night: '#F2A64A',
+    day: '#F2A64A',
+    use: 'Primary buttons, selected pills',
+  },
+  {
+    name: '--accent-hover',
+    night: '#F6B867',
+    day: '#EE9A33',
+    use: 'Hover of accent fills',
+  },
+  {
+    name: '--on-accent',
+    night: '#0A0E16',
+    day: '#111925',
+    use: 'Text on accent',
+  },
+  {
+    name: '--link',
+    night: '#F2A64A',
+    day: '#9A520E',
+    use: 'Link hover, focus ring, highlights',
+  },
+  {
+    name: '--teal',
+    night: '#6CC3CA',
+    day: '#1F6F7A',
+    use: 'Code keywords, secondary data',
+  },
+];
+
+const colormaps = {
+  night:
+    '#0A0E16 0%, #0C131E 30%, #11414D 42%, #2C9AA6 57%, #6FC0B6 68%, #E39A45 80%, #F7CC88 92%, #FFF4DE 100%',
+  day: '#F3F4F6 0%, #E2EBEE 40%, #93C3CA 56%, #23707C 70%, #12404C 84%, #C9822F 100%',
+};
+
+const contrast = [
+  { fg: 'ink', bg: 'ground', note: 'Running text' },
+  { fg: 'ink-2', bg: 'ground', note: 'Meta, captions' },
+  { fg: 'ink-2', bg: 'surface', note: 'Meta on a band' },
+  { fg: 'link', bg: 'ground', note: 'Link hover, sidenote numbers' },
+  { fg: 'link', bg: 'surface', note: 'Link on a band' },
+  { fg: 'on-accent', bg: 'accent', note: 'Primary button' },
+  { fg: 'ink', bg: 'surface-2', note: 'Secondary button' },
+  { fg: 'teal', bg: 'surface', note: 'Code keyword' },
+];
+
+const type = [
+  {
+    cls: 'display',
+    text: 'Sagar Pal',
+    spec: 'Display (home): clamp(76px, 10.4vw, 156px), 640, wdth 112%, −0.05em / 0.86',
+  },
+  {
+    cls: 'display display--blog',
+    text: 'Writing',
+    spec: 'Display (blog): clamp(72px, 10vw, 148px)',
+  },
+  {
+    cls: 'display display--reading',
+    text: 'What I’m reading',
+    spec: 'Display (reading): clamp(64px, 9vw, 136px), max 9ch',
+  },
+  {
+    cls: 'h-section',
+    text: 'From droplets to materials',
+    spec: 'Section h2: clamp(42px, 4.8vw, 72px), 620, wdth 108%, −0.04em / 0.96',
+  },
+  {
+    cls: 'h-post',
+    text: 'A post title on two lines',
+    spec: 'Post title: clamp(40px, 5vw, 72px), 630, max 16ch',
+  },
+  {
+    cls: 'h-featured',
+    text: 'Featured post title',
+    spec: 'Featured title: clamp(34px, 3.4vw, 50px), 620, wdth 106%',
+  },
+  {
+    cls: 'statement',
+    text: 'I work at the intersection of scientific computing, AI for science and high-performance ML systems.',
+    spec: 'Statement: clamp(21px, 1.95vw, 28px), 400, max 34ch',
+  },
+  {
+    cls: 'dek',
+    text: 'Long-form notes on numerical methods, high-performance computing and machine learning for science.',
+    spec: 'Dek: Source Serif 4, clamp(20px, 1.8vw, 26px)',
+  },
+  {
+    cls: 'list-title',
+    text: 'Simulations and tools',
+    spec: 'List title (home): clamp(25px, 2.4vw, 34px), 580',
+  },
+  {
+    cls: 'card-title',
+    text: 'FlowLab',
+    spec: 'Card h3: 32px (phone 26px), 600',
+  },
+  {
+    cls: '',
+    text: 'Side projects, mostly physics running in a browser tab.',
+    spec: 'Body UI: 18px (phone 17px) / 1.5',
+  },
+  {
+    cls: 'meta',
+    text: '2025 – now',
+    spec: 'Meta: 15px, ink-2, tabular figures',
+  },
+  {
+    cls: 'small',
+    text: 'Set in Archivo and Source Serif 4.',
+    spec: 'Small print: 14px, ink-2',
+  },
+];
+
+const label = theme === 'night' ? 'Night' : 'Day';
+---
+
+<section class="sg-theme" data-theme={theme} aria-labelledby={`sg-${theme}`}>
+  <div class="container sg-stack">
+    <h2 id={`sg-${theme}`} class="h-section">
+      {label}
+    </h2>
+
+    <section class="sg-block" aria-labelledby={`sg-${theme}-colour`}>
+      <h3 id={`sg-${theme}-colour`} class="card-title">
+        Colour tokens
+      </h3>
+      <ul class="sg-swatches" role="list">
+        {tokens.map((t) => (
+          <li class="sg-swatch">
+            <span
+              class="sg-swatch__chip"
+              style={`background: var(${t.name})`}
+            />
+            <code>{t.name}</code>
+            <span class="meta">{t[theme]}</span>
+            <span class="small">{t.use}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="sg-block" aria-labelledby={`sg-${theme}-contrast`}>
+      <h3 id={`sg-${theme}-contrast`} class="card-title">
+        Text on surfaces
+      </h3>
+      <ul class="sg-contrast" role="list">
+        {contrast.map((c) => (
+          <li style={`background: var(--${c.bg}); color: var(--${c.fg})`}>
+            <span class="sg-contrast__pair">
+              {c.fg} on {c.bg}
+            </span>
+            <span>{c.note}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="sg-block" aria-labelledby={`sg-${theme}-field`}>
+      <h3 id={`sg-${theme}-field`} class="card-title">
+        Field colormap
+      </h3>
+      <div
+        class="sg-colormap"
+        style={`background: linear-gradient(90deg, ${colormaps[theme]})`}
+      ></div>
+      <p class="small">
+        Normalised v from 0 to 1. Used by the simulation LUT and the posters.
+      </p>
+    </section>
+
+    <section class="sg-block" aria-labelledby={`sg-${theme}-type`}>
+      <h3 id={`sg-${theme}-type`} class="card-title">
+        Type scale
+      </h3>
+      <ul class="sg-type" role="list">
+        {type.map((t) => (
+          <li>
+            <p class={t.cls}>{t.text}</p>
+            <p class="small">{t.spec}</p>
+          </li>
+        ))}
+        <li>
+          <p class="sg-prose">
+            Prose body is Source Serif 4 at 20px with 1.62 leading, kept to
+            about 68 characters per line. <a href="#main">Text links</a> stay in
+            ink and turn to the link colour on hover.
+          </p>
+          <p class="small">
+            Prose: Source Serif 4, 20px (phone 19px) / 1.62, max 680px
+          </p>
+        </li>
+        <li>
+          <p class="sg-mono">uv run fastapi dev --port 8000</p>
+          <p class="small">
+            JetBrains Mono: real code and terminal fragments only
+          </p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="sg-block" aria-labelledby={`sg-${theme}-buttons`}>
+      <h3 id={`sg-${theme}-buttons`} class="card-title">
+        Buttons
+      </h3>
+      <div class="sg-row">
+        <a class="btn btn--primary btn--lg" href="#main">
+          Read the writing
+        </a>
+        <a class="btn btn--secondary btn--lg" href="#main">
+          Download CV
+        </a>
+      </div>
+      <div class="sg-row">
+        <a class="btn btn--primary" href="#main">
+          Subscribe via RSS
+        </a>
+        <a class="btn btn--secondary" href="#main">
+          Everything I’m reading
+        </a>
+      </div>
+      <div class="sg-row">
+        <a class="btn btn--primary btn--sm" href="#main">
+          Live demo
+        </a>
+        <a class="btn btn--secondary btn--sm" href="#main">
+          Source
+        </a>
+        <a class="btn btn--secondary btn--xs" href="#main">
+          PDF
+        </a>
+        <a class="btn btn--secondary btn--xs" href="#main">
+          DOI
+        </a>
+      </div>
+      <p class="small">Heights 52 / 48 / 44 / 38px. Press scales to 0.98.</p>
+    </section>
+
+    <section class="sg-block" aria-labelledby={`sg-${theme}-pills`}>
+      <h3 id={`sg-${theme}-pills`} class="card-title">
+        Filter pills
+      </h3>
+      <div
+        class="sg-row"
+        role="group"
+        aria-label={`Type filter specimen (${label})`}
+      >
+        <button type="button" class="pill" aria-pressed="true">
+          All <span class="pill__count">12</span>
+        </button>
+        <button type="button" class="pill" aria-pressed="false">
+          Books <span class="pill__count">4</span>
+        </button>
+        <button type="button" class="pill" aria-pressed="false">
+          Papers <span class="pill__count">6</span>
+        </button>
+        <button type="button" class="pill" aria-pressed="false">
+          Articles <span class="pill__count">2</span>
+        </button>
+      </div>
+      <div
+        class="sg-row sg-ghost-group"
+        role="group"
+        aria-label={`Pattern preset specimen (${label})`}
+      >
+        <button
+          type="button"
+          class="pill pill--ghost sg-preset"
+          aria-pressed="true"
+        >
+          Coral
+        </button>
+        <button
+          type="button"
+          class="pill pill--ghost sg-preset"
+          aria-pressed="false"
+        >
+          Mitosis
+        </button>
+        <button
+          type="button"
+          class="pill pill--ghost sg-preset"
+          aria-pressed="false"
+        >
+          Mazes
+        </button>
+        <button
+          type="button"
+          class="pill pill--ghost sg-preset"
+          aria-pressed="false"
+        >
+          Spots &amp; loops
+        </button>
+      </div>
+      <p class="small">
+        Click to toggle aria-pressed. Ghost pills sit on a solid ground pill
+        inside the hero.
+      </p>
+    </section>
+
+    <section class="sg-block" aria-labelledby={`sg-${theme}-links`}>
+      <h3 id={`sg-${theme}-links`} class="card-title">
+        Links and focus
+      </h3>
+      <div class="sg-row">
+        <a class="navlink" href="#main">
+          Nav link
+        </a>
+        <a class="navlink" href="#main" aria-current="page">
+          Current page
+        </a>
+        <a href="#main">All posts</a>
+        <span class="btn btn--secondary sg-focus">Focus ring</span>
+        <span class="icon-btn" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          >
+            <circle cx="12" cy="12" r="4.5"></circle>
+            <path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"></path>
+          </svg>
+        </span>
+      </div>
+      <p class="small">
+        Focus ring: 2px link colour, offset 3px, no transition. Tab through this
+        page to see it.
+      </p>
+    </section>
+
+    <section class="sg-block" aria-labelledby={`sg-${theme}-rows`}>
+      <h3 id={`sg-${theme}-rows`} class="card-title">
+        Row link
+      </h3>
+      <ul class="sg-list" role="list">
+        <li>
+          <a class="row-link sg-row-link" href="#main">
+            <span class="meta">12 Oct</span>
+            <span class="sg-row-link__body">
+              <span class="row-link__title list-title--blog">
+                Row title in ink, link colour on hover
+              </span>
+              <span class="sg-row-link__dek">
+                The whole row is one link. Hover adds the surface tone step.
+              </span>
+            </span>
+            <span class="meta">9 min read</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="sg-block" aria-labelledby={`sg-${theme}-surfaces`}>
+      <h3 id={`sg-${theme}-surfaces`} class="card-title">
+        Surfaces
+      </h3>
+      <ul class="sg-surfaces" role="list">
+        <li style="background: var(--ground)">ground</li>
+        <li style="background: var(--surface)">surface</li>
+        <li style="background: var(--surface-2)">surface-2</li>
+        <li style="background: var(--surface-3)">surface-3</li>
+      </ul>
+      <div class="card">
+        <p class="card-title">Card</p>
+        <p>
+          Surface, radius 24px, padding 36px 40px. Used for previous and next
+          posts.
+        </p>
+      </div>
+    </section>
+  </div>
+</section>
+
+<style>
+  .sg-theme {
+    background: var(--ground);
+    color: var(--ink);
+    padding-block: 96px;
+  }
+
+  .sg-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+  }
+
+  .sg-block {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .sg-swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sg-swatch__chip {
+    height: 72px;
+    margin-bottom: 8px;
+    border-radius: 16px;
+    outline: 1px solid var(--surface-3);
+    outline-offset: -1px;
+  }
+
+  .sg-swatch code {
+    font-family: var(--font-mono);
+    font-size: 14px;
+  }
+
+  .sg-contrast {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-contrast li {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 20px 24px;
+    border-radius: 16px;
+    font-size: 16px;
+  }
+
+  .sg-contrast__pair {
+    font-weight: 600;
+  }
+
+  .sg-colormap {
+    height: 56px;
+  }
+
+  .sg-type {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-type li {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sg-prose {
+    max-width: var(--measure);
+    font-family: var(--font-serif);
+    font-size: 20px;
+    line-height: 1.62;
+  }
+
+  .sg-mono {
+    font-family: var(--font-mono);
+    font-size: 14.5px;
+  }
+
+  .sg-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+  }
+
+  .sg-ghost-group {
+    align-self: flex-start;
+    gap: 4px;
+    padding: 5px;
+    border-radius: 999px;
+    background: var(--ground);
+    outline: 1px solid var(--surface-3);
+  }
+
+  .sg-preset {
+    height: 36px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  .sg-focus {
+    outline: 2px solid var(--link);
+    outline-offset: 3px;
+  }
+
+  .sg-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-row-link {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 48px;
+  }
+
+  .sg-row-link > .meta:first-child {
+    flex: 0 0 7rem;
+    padding-top: 6px;
+  }
+
+  .sg-row-link__body {
+    flex: 1 1 440px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sg-row-link__dek {
+    color: var(--ink-2);
+  }
+
+  .sg-surfaces {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(160px, 100%), 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-surfaces li {
+    display: flex;
+    align-items: flex-end;
+    height: 120px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    font-size: 15px;
+    outline: 1px solid var(--surface-3);
+    outline-offset: -1px;
+  }
+</style>

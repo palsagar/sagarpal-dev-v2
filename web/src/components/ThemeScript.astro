@@ -1,0 +1,59 @@
+---
+// Blocking theme bootstrap (DESIGN.md §3). Rendered inline at the top of <head>
+// so data-theme is set before the first paint: no flash of the wrong theme.
+//
+// - Stored choice (localStorage.theme) wins; otherwise follow the OS.
+// - While the visitor has not chosen, follow OS changes live.
+// - On client-router swaps, carry the current theme into the incoming document.
+// - window.__theme.set(theme) is the only writer; ThemeToggle uses it.
+---
+
+<script is:inline>
+  (() => {
+    const COLORS = { night: '#0A0E16', day: '#F3F4F6' };
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
+
+    const stored = () => {
+      try {
+        const t = localStorage.getItem('theme');
+        return t === 'day' || t === 'night' ? t : null;
+      } catch {
+        return null;
+      }
+    };
+
+    const apply = (doc, theme) => {
+      doc.documentElement.dataset.theme = theme;
+      doc.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+        m.setAttribute('content', COLORS[theme]);
+      });
+    };
+
+    const preferred = () => stored() ?? (mq.matches ? 'day' : 'night');
+
+    apply(document, preferred());
+
+    // The client router may re-run inline scripts; register listeners once.
+    if (window.__theme) return;
+
+    window.__theme = {
+      get: () => document.documentElement.dataset.theme,
+      set: (theme) => {
+        try {
+          localStorage.setItem('theme', theme);
+        } catch {
+          // Storage blocked: the choice lasts for this page view only.
+        }
+        apply(document, theme);
+      },
+    };
+
+    mq.addEventListener('change', () => {
+      if (!stored()) apply(document, preferred());
+    });
+
+    document.addEventListener('astro:before-swap', (event) => {
+      apply(event.newDocument, document.documentElement.dataset.theme);
+    });
+  })();
+</script>

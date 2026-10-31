@@ -18,11 +18,14 @@ Rules that come from the plan:
 
 ## Status
 
-- Phase 0 (branch, clean-up, scaffold) is done; CI is green on `redesign`. Next is Phase 1 (design system foundations).
+- Phase 0 (branch, clean-up, scaffold) and Phase 1 (design system foundations) are done. Next is Phase 2 (home page, static parts).
 
 ## Layout
 
 - `web/`: Astro project (npm). `src/pages/` routes, `src/data/*.yml` profile data migrated from Jekyll's `_data/` (publications, projects, experience, education), `public/assets/{pdfs,img}/` files that keep their old public URLs (for example `/assets/pdfs/Sagar_Pal_CV_2025.pdf`). `trailingSlash: 'always'` keeps the old `/projects/` and `/publications/` URLs.
+- Design system (`web/src/`): `styles/tokens.css` (colour tokens on any `[data-theme]` element, layout, font stacks), `styles/fonts.css` (Fontsource + Capsize-matched fallbacks), `styles/base.css` (reset, type role classes such as `.display`, `.h-section`, `.statement`, `.dek`, `.meta`; `.btn--primary/--secondary` with `--lg/--sm/--xs`; `.pill` with `aria-pressed`; `.row-link`; `.band`, `.card`; `.only-night/.only-day`; phone breakpoint `max-width: 719.98px`). `layouts/Base.astro` (head, SEO, JSON-LD via `person` prop, `ClientRouter`, skip link, focus to `<main>` after navigation; `footer="full"` on home, `"compact"` elsewhere). `components/ThemeScript.astro` (blocking head script; `window.__theme.get/set` is the only theme writer), `ThemeToggle.astro`, `Nav.astro` (phone Menu sheet is a native modal `<dialog>` with a Tab wrap), `Footer.astro`. `data/site.ts` holds name, links, CV path, nav and JSON-LD.
+- Styleguide: `src/dev/styleguide.astro`, served at `/styleguide/` by `astro dev` only. Add each new component's specimens to `src/dev/Specimens.astro`.
+- Playwright has two projects: `build` (against `astro preview` on :4322) and `dev` (against `astro dev` on :4323, files under `tests/e2e/dev/`). `tests/e2e/helpers.ts` has the axe and no-sideways-scroll checks.
 - `api/`: uv project, Python 3.12. `app/main.py` (app factory), `app/config.py` (pydantic-settings; reads env vars and `api/.env`), `app/db.py` (SQLite engine with the API.md PRAGMAs), `app/routers/`, `migrations/` (Alembic, no versions yet), `tests/`.
 - `.github/workflows/ci.yml`: web job (prettier, eslint, astro check, build, Playwright smoke) and api job (ruff, ruff format, mypy strict, pytest with coverage).
 - Old Jekyll inputs that later phases still need (the JSON-LD `Person` block in `index.html`, social links in `_config.yml` and `_data/contact.yml`) exist only on `main`. Read them with `git show main:index.html` and similar.

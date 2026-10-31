@@ -1,0 +1,92 @@
+---
+// Theme toggle (DESIGN.md §3.2, §6): sun icon in night, moon in day.
+// Hidden without JS (it could not do anything there).
+---
+
+<button
+  type="button"
+  class="icon-btn theme-toggle"
+  data-theme-toggle
+  aria-label="Switch to day theme"
+>
+  <svg
+    class="theme-toggle__sun"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4.5"></circle>
+    <path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"></path>
+  </svg>
+  <svg
+    class="theme-toggle__moon"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path>
+  </svg>
+</button>
+
+<style>
+  :global(:root:not([data-theme])) .theme-toggle {
+    display: none;
+  }
+
+  :global([data-theme='night']) .theme-toggle__moon,
+  :global([data-theme='day']) .theme-toggle__sun {
+    display: none;
+  }
+
+  @media (max-width: 719.98px) {
+    .theme-toggle {
+      width: 44px;
+      height: 44px;
+    }
+  }
+</style>
+
+<script>
+  type Theme = 'night' | 'day';
+  type ThemeApi = { get: () => Theme; set: (theme: Theme) => void };
+
+  const api = () => (window as unknown as { __theme?: ThemeApi }).__theme;
+
+  const syncLabels = () => {
+    const next = api()?.get() === 'day' ? 'night' : 'day';
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')
+      .forEach((btn) => {
+        btn.setAttribute('aria-label', `Switch to ${next} theme`);
+      });
+  };
+
+  // Delegated, so it keeps working after client-router swaps.
+  document.addEventListener('click', (event) => {
+    const btn = (event.target as Element | null)?.closest(
+      '[data-theme-toggle]',
+    );
+    const theme = api();
+    if (!btn || !theme) return;
+    theme.set(theme.get() === 'day' ? 'night' : 'day');
+  });
+
+  // Covers toggles, OS changes and swaps alike.
+  new MutationObserver(syncLabels).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  });
+  document.addEventListener('astro:page-load', syncLabels);
+  syncLabels();
+</script>

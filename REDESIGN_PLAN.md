@@ -1,6 +1,6 @@
 # sagar-pal.dev redesign — build plan
 
-> Status: **design signed off (31 Oct 2026). Phase 0 done on branch `redesign` (CI green). Phase 1 next.**
+> Status: **design signed off (31 Oct 2026). Phases 0–1 done on branch `redesign`. Phase 2 next.**
 > This is the master plan for replacing the Jekyll/Chirpy site with an Astro front end and a FastAPI back end.
 > It is written for Claude Code to execute phase by phase; a human can follow it too.
 
@@ -150,15 +150,17 @@ Each phase lists tasks, then **Done when** criteria. Tick boxes as you go.
 **Done when:** `make dev` serves an Astro placeholder page and `/api/health` returns `{"status":"ok"}`. CI is green. No Jekyll files remain except the migrated data and assets.
 
 ### Phase 1 — Design system foundations
-- [ ] `styles/tokens.css`: every token in DESIGN.md §2 for `[data-theme="night"]` and `[data-theme="day"]`, plus a `prefers-color-scheme` fallback for no-JS.
-- [ ] Theme bootstrapping (DESIGN.md §3): blocking inline `<head>` script → `data-theme` on `<html>`; toggle button; persistence in `localStorage` (wrapped in try/catch); follow OS changes until the user picks; set `color-scheme`; update `<meta name="theme-color">`.
-- [ ] Fonts via Fontsource: `@fontsource-variable/archivo/wdth.css` (wdth + wght), `@fontsource-variable/source-serif-4/opsz.css`, `@fontsource-variable/jetbrains-mono`. Preload the Archivo woff2 used above the fold. `font-display: swap` with metric-matched fallbacks (`size-adjust`) to keep CLS low.
-- [ ] `Base.astro` (head, SEO meta, JSON-LD Person carried over from today's `index.html`, Umami placeholder comment), `Nav.astro` (desktop links, phone Menu sheet), `Footer.astro` (links, name filled with the field image via `background-clip: text`, colophon).
-- [ ] Buttons/pills, link styles, focus ring, row hover, surfaces, from DESIGN.md §6.
-- [ ] A dev-only `/styleguide` page (excluded from the sitemap and the production build) showing tokens, type scale and components in both themes.
-- [ ] View transitions (Astro's client router) for page-to-page navigation. Ensure the theme script reruns or persists across swaps, and that focus moves to `<main>`.
+- [x] `styles/tokens.css`: every token in DESIGN.md §2 for `[data-theme="night"]` and `[data-theme="day"]`, plus a `prefers-color-scheme` fallback for no-JS.
+- [x] Theme bootstrapping (DESIGN.md §3): blocking inline `<head>` script → `data-theme` on `<html>`; toggle button; persistence in `localStorage` (wrapped in try/catch); follow OS changes until the user picks; set `color-scheme`; update `<meta name="theme-color">`.
+- [x] Fonts via Fontsource: `@fontsource-variable/archivo/wdth.css` (wdth + wght), `@fontsource-variable/source-serif-4/opsz.css`, `@fontsource-variable/jetbrains-mono`. Preload the Archivo woff2 used above the fold. `font-display: swap` with metric-matched fallbacks (`size-adjust`) to keep CLS low.
+- [x] `Base.astro` (head, SEO meta, JSON-LD Person carried over from today's `index.html`, Umami placeholder comment), `Nav.astro` (desktop links, phone Menu sheet), `Footer.astro` (links, name filled with the field image via `background-clip: text`, colophon).
+- [x] Buttons/pills, link styles, focus ring, row hover, surfaces, from DESIGN.md §6.
+- [x] A dev-only `/styleguide` page (excluded from the sitemap and the production build) showing tokens, type scale and components in both themes.
+- [x] View transitions (Astro's client router) for page-to-page navigation. Ensure the theme script reruns or persists across swaps, and that focus moves to `<main>`.
 
 **Done when:** `/styleguide` matches DESIGN.md in both themes. The toggle flips the theme instantly with no flash on reload. Axe reports zero contrast violations.
+
+*Phase 1 notes (31 Oct 2026):* tokens apply to any `[data-theme]` element (not only `:root`), so the styleguide renders both themes side by side; the no-JS fallback is as specified. The styleguide is injected only by `astro dev` (`devStyleguide` integration in `astro.config.mjs`), so it can never build or ship; it covers the Phase 1 components, and later phases add theirs. Fallback font metrics come from Capsize. On phones the footer name is sized to fit the column (the 92px mockup value overflows a 390px screen by 48px; the mockup clipped it). Nav "Projects"/"Papers" point to `/#work` and `/#papers`, as in the mockups. Checks: `tests/e2e/theme.spec.ts`, `layout.spec.ts`, `dev/styleguide.spec.ts` (axe: zero violations in both themes at 390/768/1440, with the Menu sheet open, and on both styleguide panels).
 
 ### Phase 2 — Home page (static parts)
 - [ ] Data collections with zod schemas for publications, projects, experience, education (fields exactly as in today's YAML; add `image` to projects).

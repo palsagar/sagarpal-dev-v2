@@ -1,0 +1,40 @@
+/*
+ * Self-hosted fonts via Fontsource (no Google Fonts: GDPR and speed, plan §1).
+ * Archivo carries the wdth + wght axes; Source Serif 4 carries opsz + wght.
+ */
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/source-serif-4/opsz.css';
+@import '@fontsource-variable/jetbrains-mono/index.css';
+
+/*
+ * Metric-matched fallbacks keep layout shift low while the web fonts swap in.
+ * Values come from Capsize (@capsizecss/core createFontStack with
+ * @capsizecss/metrics for archivo, sourceSerif4, helveticaNeue, arial, georgia).
+ * Recompute them if a family changes.
+ */
+@font-face {
+  font-family: 'Archivo Fallback: Helvetica Neue';
+  src: local('Helvetica Neue'), local('HelveticaNeue');
+  ascent-override: 89.7955%;
+  descent-override: 21.4773%;
+  line-gap-override: 0%;
+  size-adjust: 97.7778%;
+}
+
+@font-face {
+  font-family: 'Archivo Fallback: Arial';
+  src: local('Arial'), local('ArialMT');
+  ascent-override: 88.9575%;
+  descent-override: 21.2769%;
+  line-gap-override: 0%;
+  size-adjust: 98.6988%;
+}
+
+@font-face {
+  font-family: 'Source Serif 4 Fallback';
+  src: local('Georgia');
+  ascent-override: 96.4195%;
+  descent-override: 31.1781%;
+  line-gap-override: 0%;
+  size-adjust: 107.4471%;
+}

@@ -37,12 +37,32 @@ function proxyBeforeAstro() {
   };
 }
 
+/**
+ * Serves the design-system styleguide at /styleguide/ during `astro dev` only.
+ * It is never part of `astro build`, so it cannot ship or reach the sitemap.
+ * @returns {import('astro').AstroIntegration}
+ */
+function devStyleguide() {
+  return {
+    name: 'dev-styleguide',
+    hooks: {
+      'astro:config:setup': ({ command, injectRoute }) => {
+        if (command !== 'dev') return;
+        injectRoute({
+          pattern: '/styleguide',
+          entrypoint: './src/dev/styleguide.astro',
+        });
+      },
+    },
+  };
+}
+
 export default defineConfig({
   site: 'https://sagar-pal.dev',
   // Keeps the old Chirpy URLs (/projects/, /publications/) unchanged.
   trailingSlash: 'always',
   output: 'static',
-  integrations: [mdx(), react(), sitemap()],
+  integrations: [mdx(), react(), sitemap(), devStyleguide()],
   server: {
     port: 4321,
   },
