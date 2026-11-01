@@ -1,0 +1,196 @@
+---
+// Home Reading band (DESIGN.md §7.1.4, Main.dc.html, HomeMobile.dc.html):
+// up to three "reading now" items from GET /api/reading?status=reading.
+// It stays hidden until the API returns at least one item, so an empty list,
+// an API error or no JS all leave it out. Below the fold, so no CLS concern.
+// Item titles link to the reading page, not to the item.
+---
+
+<section
+  id="reading"
+  class="band reading-band"
+  aria-labelledby="reading-title"
+  data-reading-band
+  hidden
+>
+  <div class="container reading-band__inner">
+    <div class="reading-band__intro">
+      <h2 id="reading-title" class="h-section">
+        Reading
+      </h2>
+      <p class="reading-band__lede phone-hidden">
+        Books, papers and long reads on my desk right now, each with a line on
+        why it's there.
+      </p>
+      <a class="btn btn--secondary reading-band__more" href="/what-im-reading/">
+        Everything I'm reading
+      </a>
+    </div>
+    <ul class="reading-band__list" role="list" data-list></ul>
+  </div>
+  <template data-tpl="row">
+    <li class="reading-band__item">
+      <span class="reading-band__kind" data-f="kind"></span>
+      <div class="reading-band__main">
+        <a
+          class="reading-band__title"
+          href="/what-im-reading/"
+          data-f="title"
+        ></a>
+        <span class="reading-band__by" data-f="by"></span>
+        <p class="reading-band__note phone-hidden" data-f="note"></p>
+      </div>
+    </li>
+  </template>
+</section>
+
+<script>
+  import { initReadingBand } from '../lib/reading-band';
+
+  let cleanup: (() => void) | undefined;
+  document.addEventListener('astro:page-load', () => {
+    const band = document.querySelector<HTMLElement>('[data-reading-band]');
+    if (band) cleanup = initReadingBand(band);
+  });
+  document.addEventListener('astro:before-swap', () => {
+    cleanup?.();
+    cleanup = undefined;
+  });
+</script>
+
+<style>
+  .reading-band {
+    margin-top: var(--section-space);
+  }
+
+  .reading-band__inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 48px 96px;
+  }
+
+  .reading-band__intro {
+    flex: 1 1 300px;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .reading-band__lede {
+    font-size: 20px;
+    line-height: 1.5;
+  }
+
+  .reading-band__list {
+    flex: 2 1 560px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .reading-band__item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 32px;
+  }
+
+  .reading-band__kind {
+    flex: 0 0 6rem;
+    padding-top: 5px;
+    font-size: 15px;
+    color: var(--ink-2);
+  }
+
+  .reading-band__main {
+    flex: 1 1 380px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .reading-band__title {
+    font-size: 25px;
+    font-weight: 560;
+    letter-spacing: -0.015em;
+    line-height: 1.22;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .reading-band__title:hover {
+    color: var(--link);
+  }
+
+  .reading-band__by {
+    font-size: 16px;
+    color: var(--ink-2);
+  }
+
+  .reading-band__note {
+    max-width: 58ch;
+    margin-top: 6px;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  @media (max-width: 719.98px) {
+    /* Phone: h2, the list, then the button (HomeMobile.dc.html). */
+    .reading-band {
+      padding-block: 72px;
+    }
+
+    .reading-band__inner {
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .reading-band__intro {
+      display: contents;
+    }
+
+    .reading-band__more {
+      order: 1;
+      align-self: flex-start;
+      padding: 0 20px;
+    }
+
+    .reading-band__list {
+      flex: none;
+      gap: 28px;
+    }
+
+    .reading-band__item {
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .reading-band__kind,
+    .reading-band__main {
+      flex: none;
+    }
+
+    .reading-band__kind {
+      padding-top: 0;
+      font-size: 14px;
+    }
+
+    .reading-band__main {
+      gap: 4px;
+    }
+
+    .reading-band__title {
+      font-size: 21px;
+    }
+
+    .reading-band__by {
+      font-size: 15px;
+    }
+  }
+</style>

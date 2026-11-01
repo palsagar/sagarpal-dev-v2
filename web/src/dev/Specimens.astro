@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import CareerList from '../components/CareerList.astro';
 import PaperList from '../components/PaperList.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import ReadingCover from '../components/ReadingCover.astro';
 import WritingList from '../components/WritingList.astro';
 import Callout from '../components/post/Callout.astro';
 import Figure from '../components/post/Figure.astro';
@@ -480,6 +481,31 @@ const devPosts = [
       <PaperList papers={papers} />
     </section>
 
+    <section class="sg-block" aria-labelledby={`sg-${theme}-reading`}>
+      <h3 id={`sg-${theme}-reading`} class="card-title">
+        Reading covers
+      </h3>
+      <p class="small">
+        ReadingCover: the lead size (first "Reading now" item) and the 150px
+        tile, for a book and for a paper or article. Reading page items and the
+        home Reading band are filled at run time from /api/reading.
+      </p>
+      <div class="sg-covers">
+        <div class="sg-covers__lead">
+          <ReadingCover kind="book" top="Author Name" title="Book title" lead />
+        </div>
+        <div class="sg-covers__lead">
+          <ReadingCover kind="doc" top="arXiv 0000.00000" title="Paper" lead />
+        </div>
+        <div class="sg-covers__tile">
+          <ReadingCover kind="book" top="Author Name" title="Book title" />
+        </div>
+        <div class="sg-covers__tile">
+          <ReadingCover kind="doc" top="example.org" title="Article" />
+        </div>
+      </div>
+    </section>
+
     <section class="sg-block" aria-labelledby={`sg-${theme}-post`}>
       <h3 id={`sg-${theme}-post`} class="card-title">
         Post components
@@ -619,6 +645,22 @@ const devPosts = [
   .sg-mono {
     font-family: var(--font-mono);
     font-size: 14.5px;
+  }
+
+  .sg-covers {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 32px;
+  }
+
+  .sg-covers__lead {
+    flex: 0 1 300px;
+    min-width: 0;
+  }
+
+  .sg-covers__tile {
+    flex: 0 0 150px;
   }
 
   .sg-row {

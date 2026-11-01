@@ -17,3 +17,7 @@ export function startYear(period: string): number {
 export function doiLabel(doi: string): 'arXiv' | 'DOI' {
   return /10\.48550\/arXiv\./i.test(doi) ? 'arXiv' : 'DOI';
 }
+
+/** "Oct" (en-US: en-GB writes "Sept"). */
+export const monthAbbr = (d: Date) =>
+  d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' });

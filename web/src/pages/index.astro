@@ -8,6 +8,7 @@ import CareerList, { type CareerRow } from '../components/CareerList.astro';
 import Hero from '../components/Hero.astro';
 import PaperList from '../components/PaperList.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import ReadingBand from '../components/ReadingBand.astro';
 import WritingList, { type PostRow } from '../components/WritingList.astro';
 import { site } from '../data/site';
 import Base from '../layouts/Base.astro';
@@ -23,8 +24,6 @@ const posts: PostRow[] = (await getPosts()).slice(0, 3).map((p) => ({
   date: p.entry.data.date,
   readingMinutes: p.readingMinutes,
 }));
-// Phase 6: the Reading band is a client island that renders only when the API
-// returns at least one "reading now" item. Until then there is nothing to show.
 
 // getCollection() does not keep file order, so sort explicitly.
 const projects = (await getCollection('projects')).sort(
@@ -156,6 +155,8 @@ const preload = {
       </div>
     </section>
   )}
+
+  <ReadingBand />
 
   <section id="work" class="container section" aria-labelledby="work-title">
     <div class="section-head" data-reveal="0">

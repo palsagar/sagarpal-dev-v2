@@ -1,0 +1,108 @@
+---
+// Typographic cover for the reading page (DESIGN.md §6): an amber 3:4 tile
+// for books (author top, title bottom), a surface tile at 1:1.414 for papers
+// and articles (identifier or domain top, short title bottom). `lead` is the
+// large size used by the first "Reading now" item; the default is the 150px
+// tile. lib/reading-page.ts clones it from a <template> and fills the
+// [data-f] fields, adding .cover--lead for the lead item. A real cover
+// (an <img> from cover_url) uses the same classes so the sizes match.
+interface Props {
+  kind: 'book' | 'doc';
+  top?: string;
+  title?: string;
+  lead?: boolean;
+}
+
+const { kind, top, title, lead = false } = Astro.props;
+---
+
+<div
+  class:list={['cover', `cover--${kind}`, { 'cover--lead': lead }]}
+  data-cover={kind}
+  aria-hidden="true"
+>
+  <span class="cover__top" data-f="top">
+    {top}
+  </span>
+  <span class="cover__title" data-f="name">
+    {title}
+  </span>
+</div>
+
+<style>
+  .cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .cover__title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
+  .cover--book {
+    aspect-ratio: 3 / 4;
+    padding: 16px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .cover--book .cover__title {
+    font-size: 17px;
+    font-weight: 680;
+    font-stretch: 108%;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  .cover--doc {
+    aspect-ratio: 1 / 1.414;
+    padding: 18px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 13px;
+  }
+
+  .cover--doc .cover__title {
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 640;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+
+  .cover--lead.cover--book {
+    padding: 36px;
+    font-size: 16px;
+  }
+
+  .cover--lead.cover--book .cover__title {
+    -webkit-line-clamp: 6;
+    font-size: clamp(34px, 3.2vw, 48px);
+    letter-spacing: -0.04em;
+    line-height: 0.98;
+  }
+
+  .cover--lead.cover--doc {
+    max-width: 360px;
+    padding: 28px;
+    font-size: 15px;
+  }
+
+  .cover--lead.cover--doc .cover__title {
+    -webkit-line-clamp: 6;
+    font-size: clamp(28px, 2.6vw, 40px);
+    font-weight: 660;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+  }
+</style>

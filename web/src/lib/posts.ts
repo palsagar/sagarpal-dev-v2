@@ -1,6 +1,7 @@
 // Blog posts for pages, the home Writing section and content-manifest.json.
 // Drafts are included only under `astro dev` (REDESIGN_PLAN.md Phase 4).
 import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { monthAbbr } from './format';
 
 export interface Post {
   entry: CollectionEntry<'blog'>;
@@ -62,6 +63,4 @@ export const shortDate = (d: Date) =>
 /** "12 Oct" */
 export const dayMonth = (d: Date) => `${d.getUTCDate()} ${monthAbbr(d)}`;
 
-/** "Oct" (en-US: en-GB writes "Sept"). */
-export const monthAbbr = (d: Date) =>
-  d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' });
+export { monthAbbr };

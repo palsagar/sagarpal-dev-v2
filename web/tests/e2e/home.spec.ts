@@ -1,5 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { THEMES, WIDTHS, storeTheme } from './helpers';
+import {
+  THEMES,
+  WIDTHS,
+  expectNoAxeViolations,
+  expectNoHorizontalScroll,
+  storeTheme,
+} from './helpers';
+import { ITEMS, mockReading } from './reading-fixtures';
 
 // Home page, static parts (REDESIGN_PLAN.md Phase 2, DESIGN.md §7.1 and §10).
 // The blog launches empty, so these checks assume 0 published posts.
@@ -89,13 +96,14 @@ test('sections appear in order; Writing and Reading are hidden when empty', asyn
   page,
 }) => {
   await page.goto('/');
-  await expect(page.locator('main h2')).toHaveText([
+  await expect(page.locator('main h2:visible')).toHaveText([
     'From droplets to materials',
     'Simulations and tools',
     'Papers',
   ]);
   await expect(page.locator('#writing')).toHaveCount(0);
-  await expect(page.locator('#reading')).toHaveCount(0);
+  // `astro preview` has no API, so the Reading band stays hidden.
+  await expect(page.locator('#reading')).toBeHidden();
   await expect(page.locator('#work')).toHaveCount(1);
   await expect(page.locator('#papers')).toHaveCount(1);
 });
@@ -282,8 +290,10 @@ for (const [label, width] of Object.entries(WIDTHS)) {
   test(`layout at ${label}: headings ≤ 2 lines, nothing overflows, equal outer margins`, async ({
     page,
   }) => {
+    await mockReading(page, ITEMS);
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
+    await expect(page.locator('#reading')).toBeVisible();
     for (const h of await lineCounts(page, 'main h1, main h2, main h3')) {
       expect(h.lines, `"${h.text}" lines`).toBeLessThanOrEqual(2);
       expect(h.overflow, `"${h.text}" overflow`).toBeLessThanOrEqual(0);
@@ -302,7 +312,7 @@ for (const [label, width] of Object.entries(WIDTHS)) {
     for (const m of margins) expect(m).toBeLessThanOrEqual(1);
     // Text starts at the same x in the hero, the sections and the footer.
     const lefts = await page.$$eval(
-      '#hero-title, .path__portrait, #work-title, #papers-title, footer nav',
+      '#hero-title, .path__portrait, #reading-title, #work-title, #papers-title, footer nav',
       (els) => els.map((el) => Math.round(el.getBoundingClientRect().left)),
     );
     expect(new Set(lefts).size, `lefts ${lefts.join(',')}`).toBe(1);
@@ -341,4 +351,95 @@ test('without JS every section is visible', async ({ browser }) => {
   await expect(page.locator('#papers .section-head')).toHaveCSS('opacity', '1');
   await expect(page.locator('.hero__poster img:visible')).toHaveCount(1);
   await context.close();
+});
+
+test.describe('reading band', () => {
+  const band = (page: Page) => page.locator('#reading');
+
+  test('hidden when nothing is being read', async ({ page }) => {
+    await mockReading(
+      page,
+      ITEMS.filter((i) => i.status !== 'reading'),
+    );
+    await page.goto('/');
+    // data-state is set once the script has handled the response.
+    await expect(band(page)).toHaveAttribute('data-state', 'empty');
+    await expect(band(page)).toBeHidden();
+    await expect(band(page).getByRole('listitem')).toHaveCount(0);
+  });
+
+  test('shows up to three "reading now" items, linking to the reading page', async ({
+    page,
+  }) => {
+    const requests: string[] = [];
+    const extra = { ...ITEMS[0], id: 99, title: 'Test Fourth Item' };
+    await mockReading(page, [...ITEMS, extra], { requests });
+    await page.setViewportSize({ width: WIDTHS.desktop, height: 900 });
+    await page.goto('/');
+    await expect(band(page)).toBeVisible();
+    expect(requests).toEqual(['/api/reading?status=reading']);
+
+    await expect(page.locator('main h2:visible')).toHaveText([
+      'From droplets to materials',
+      'Reading',
+      'Simulations and tools',
+      'Papers',
+    ]);
+    await expect(
+      band(page).getByText(
+        "Books, papers and long reads on my desk right now, each with a line on why it's there.",
+      ),
+    ).toBeVisible();
+    await expect(
+      band(page).getByRole('link', { name: "Everything I'm reading" }),
+    ).toHaveAttribute('href', '/what-im-reading/');
+
+    const rows = band(page).getByRole('listitem');
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(0)).toContainText('Book');
+    await expect(
+      rows.nth(0).getByRole('link', { name: 'Test Book Being Read' }),
+    ).toHaveAttribute('href', '/what-im-reading/');
+    await expect(rows.nth(0)).toContainText('Ada Author, 1997');
+    await expect(
+      rows.nth(0).getByText('Test note for the book on the desk.'),
+    ).toBeVisible();
+    await expect(rows.nth(1)).toContainText('Paper');
+    await expect(rows.nth(2)).toContainText('Article');
+    await expect(band(page)).not.toContainText('Test Fourth Item');
+  });
+
+  test('phone: no notes or sentence, button after the list', async ({
+    page,
+  }) => {
+    await mockReading(page, ITEMS);
+    await page.setViewportSize({ width: WIDTHS.phone, height: 900 });
+    await page.goto('/');
+    await expect(band(page)).toBeVisible();
+    await expect(
+      band(page).getByText('Test note for the book on the desk.'),
+    ).toBeHidden();
+    await expect(band(page).getByText(/on my desk right now/)).toBeHidden();
+    const list = await band(page).locator('ul').boundingBox();
+    const button = await band(page)
+      .getByRole('link', { name: "Everything I'm reading" })
+      .boundingBox();
+    expect(button!.y).toBeGreaterThan(list!.y + list!.height);
+  });
+
+  for (const theme of THEMES) {
+    for (const [label, width] of Object.entries(WIDTHS)) {
+      test(`${label} (${theme}): no sideways scroll, no axe violations`, async ({
+        page,
+      }) => {
+        await mockReading(page, ITEMS);
+        await storeTheme(page, theme);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+        await expect(band(page)).toBeVisible();
+        await expectNoHorizontalScroll(page);
+        await expectNoAxeViolations(page, '#reading');
+      });
+    }
+  }
 });

@@ -1,0 +1,677 @@
+---
+// What I'm reading (DESIGN.md §7.4, Reading.dc.html). The page is a static
+// shell: header, a skeleton, the empty and error states, and <template>s for
+// the items. lib/reading-page.ts fetches GET /api/reading at run time (so
+// items added in the admin show without a rebuild), fills the sections and
+// runs the type filter.
+//
+// No layout shift (REDESIGN_PLAN.md Phase 6): the filter pills keep their
+// space while invisible, and [data-reading] has a minimum height that keeps
+// the footer below the fold in every state.
+import ReadingCover from '../../components/ReadingCover.astro';
+import Base from '../../layouts/Base.astro';
+
+const FILTERS = [
+  { kind: 'all', label: 'All' },
+  { kind: 'book', label: 'Books' },
+  { kind: 'paper', label: 'Papers' },
+  { kind: 'article', label: 'Articles' },
+];
+---
+
+<Base
+  title="What I'm reading"
+  description="Books, papers and long reads on physics, computing and learning machines, each with a line on why it's here."
+>
+  <section class="container reading-head" aria-labelledby="page-title">
+    <div class="reading-head__text">
+      <h1 id="page-title" class="display display--reading">
+        What I'm reading
+      </h1>
+      <p class="reading-head__lede">
+        Books, papers and long reads on physics, computing and learning
+        machines, each with a line on why it's here.
+      </p>
+    </div>
+    <div
+      class="reading-filter"
+      role="group"
+      aria-label="Filter by type"
+      data-reading-filter
+    >
+      {FILTERS.map((f) => (
+        <button
+          type="button"
+          class="pill"
+          data-kind={f.kind}
+          aria-pressed={f.kind === 'all' ? 'true' : 'false'}
+        >
+          <span>{f.label}</span> <span class="pill__count" data-count />
+        </button>
+      ))}
+    </div>
+  </section>
+
+  <div class="reading-body" data-reading aria-busy="true">
+    <div
+      class="container reading-skel"
+      data-show="loading"
+      data-reading-skeleton
+      aria-hidden="true"
+    >
+      <span class="skel reading-skel__h2"></span>
+      <div class="reading-skel__row">
+        <span class="skel reading-skel__cover"></span>
+        <div class="reading-skel__lines">
+          <span class="skel reading-skel__line"></span>
+          <span class="skel reading-skel__line reading-skel__line--long"></span>
+          <span class="skel reading-skel__line"></span>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      <p class="container reading-line">The reading list needs JavaScript.</p>
+      <style is:inline>
+        [data-reading-skeleton] {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+
+    <section
+      class="container reading-empty"
+      aria-labelledby="empty-title"
+      data-show="empty"
+      hidden
+    >
+      <h2 id="empty-title" class="reading-empty__title">
+        Nothing on the shelf yet.
+      </h2>
+      <p class="reading-empty__body">Check back soon.</p>
+    </section>
+
+    <p class="container reading-line" data-show="error" hidden>
+      The reading list did not load. Please try again later.
+    </p>
+
+    <div data-show="ready" hidden>
+      <section
+        class="container reading-now"
+        aria-labelledby="now-title"
+        data-section="reading"
+      >
+        <h2 id="now-title" class="reading-h2">
+          Reading now
+        </h2>
+        <div class="reading-now__grid">
+          <div class="reading-now__lead" data-f="lead"></div>
+          <div class="reading-now__others" data-f="others"></div>
+        </div>
+      </section>
+
+      <section
+        class="container reading-done"
+        aria-labelledby="done-title"
+        data-section="finished"
+      >
+        <h2 id="done-title" class="reading-h2">
+          Finished
+        </h2>
+        <div class="reading-done__years" data-f="years"></div>
+      </section>
+
+      <section
+        class="reading-next"
+        aria-labelledby="next-title"
+        data-section="queued"
+      >
+        <div class="container reading-next__inner">
+          <h2 id="next-title" class="reading-h2">
+            Up next
+          </h2>
+          <ul class="reading-next__list" role="list" data-f="queue"></ul>
+        </div>
+      </section>
+    </div>
+
+    <p class="visually-hidden" aria-live="polite" data-reading-status></p>
+
+    <template data-tpl="lead">
+      <article class="reading-lead">
+        <div class="reading-lead__cover" data-f="cover"></div>
+        <div class="reading-text">
+          <span class="reading-label" data-f="label"></span>
+          <a class="reading-title reading-title--lead" data-f="title"></a>
+          <span class="reading-by" data-f="by"></span>
+          <p class="reading-note reading-note--lead" data-f="note"></p>
+        </div>
+      </article>
+    </template>
+
+    <template data-tpl="item">
+      <article class="reading-item">
+        <div class="reading-item__cover" data-f="cover"></div>
+        <div class="reading-text reading-item__text">
+          <span class="reading-label" data-f="label"></span>
+          <a class="reading-title" data-f="title"></a>
+          <span class="reading-by" data-f="by"></span>
+          <p class="reading-note" data-f="note"></p>
+        </div>
+      </article>
+    </template>
+
+    <template data-tpl="cover-book">
+      <ReadingCover kind="book" />
+    </template>
+    <template data-tpl="cover-doc">
+      <ReadingCover kind="doc" />
+    </template>
+
+    <template data-tpl="cover-img">
+      <img
+        class="cover cover--img"
+        data-cover="img"
+        alt=""
+        loading="lazy"
+        decoding="async"
+        referrerpolicy="no-referrer"
+      />
+    </template>
+
+    <template data-tpl="year">
+      <div class="reading-year">
+        <h3 class="reading-year__title tabular" data-f="year"></h3>
+        <ul class="reading-year__list" role="list" data-f="rows"></ul>
+      </div>
+    </template>
+
+    <template data-tpl="row">
+      <li>
+        <a class="row-link reading-row" data-f="row">
+          <span class="reading-row__month" data-f="month"></span>
+          <span class="reading-row__main">
+            <span
+              class="reading-row__title row-link__title"
+              data-f="title"
+            ></span>
+            <span class="reading-by" data-f="by"></span>
+            <span class="reading-row__note" data-f="note"></span>
+          </span>
+          <span class="reading-row__type" data-f="type"></span>
+        </a>
+      </li>
+    </template>
+
+    <template data-tpl="queued">
+      <li class="reading-next__item">
+        <span class="reading-label" data-f="type"></span>
+        <a class="reading-next__title" data-f="title"></a>
+        <span class="reading-by" data-f="by"></span>
+      </li>
+    </template>
+  </div>
+</Base>
+
+<script>
+  import { initReadingPage } from '../../lib/reading-page';
+
+  let cleanup: (() => void) | undefined;
+  document.addEventListener('astro:page-load', () => {
+    const body = document.querySelector<HTMLElement>('[data-reading]');
+    const filter = document.querySelector<HTMLElement>('[data-reading-filter]');
+    if (body && filter) cleanup = initReadingPage(body, filter);
+  });
+  document.addEventListener('astro:before-swap', () => {
+    cleanup?.();
+    cleanup = undefined;
+  });
+</script>
+
+<style>
+  /* ---------- Header ---------- */
+
+  .reading-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 40px 72px;
+    padding-top: 96px;
+  }
+
+  .reading-head__text {
+    flex: 7 1 560px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .reading-head__lede {
+    max-width: 36ch;
+    font-size: clamp(20px, 1.8vw, 26px);
+    line-height: 1.35;
+  }
+
+  .reading-filter {
+    flex: 5 1 360px;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Invisible but keeping its space until the list has loaded. */
+  .reading-filter:not([data-ready]) {
+    visibility: hidden;
+  }
+
+  /* ---------- Body and states ---------- */
+
+  .reading-body {
+    min-height: max(480px, 60vh);
+  }
+
+  .skel {
+    display: block;
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .reading-skel {
+    padding-top: 120px;
+  }
+
+  .reading-skel__h2 {
+    width: min(300px, 70%);
+    height: 48px;
+  }
+
+  .reading-skel__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px 72px;
+    margin-top: 48px;
+  }
+
+  .reading-skel__cover {
+    flex: 4 1 360px;
+    max-width: 520px;
+    height: 420px;
+    border-radius: 0;
+  }
+
+  .reading-skel__lines {
+    flex: 6 1 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .reading-skel__line {
+    width: 60%;
+    height: 22px;
+  }
+
+  .reading-skel__line--long {
+    width: 90%;
+    height: 32px;
+  }
+
+  .reading-line {
+    padding-top: 120px;
+    font-size: 18px;
+    color: var(--ink-2);
+  }
+
+  .reading-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 120px;
+  }
+
+  .reading-empty__title {
+    font-size: clamp(28px, 2.6vw, 36px);
+    font-weight: 620;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  .reading-empty__body {
+    font-size: 18px;
+  }
+
+  /* ---------- Shared item text ---------- */
+
+  .reading-h2 {
+    margin-bottom: 48px;
+    font-size: clamp(36px, 3.6vw, 52px);
+    font-weight: 620;
+    font-stretch: 106%;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  .reading-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .reading-label {
+    font-size: 15px;
+    color: var(--ink-2);
+  }
+
+  .reading-title {
+    font-size: 25px;
+    font-weight: 580;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .reading-title--lead {
+    font-size: 28px;
+    line-height: 1.15;
+  }
+
+  a.reading-title:hover,
+  a.reading-next__title:hover {
+    color: var(--link);
+  }
+
+  .reading-by {
+    font-size: 16px;
+    color: var(--ink-2);
+  }
+
+  .reading-note {
+    max-width: 48ch;
+    margin-top: 8px;
+    font-family: var(--font-serif);
+    font-size: 19px;
+    line-height: 1.55;
+  }
+
+  .reading-note--lead {
+    max-width: 44ch;
+  }
+
+  /* ---------- Reading now ---------- */
+
+  .reading-now {
+    padding-top: 120px;
+  }
+
+  .reading-now__grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 56px 72px;
+  }
+
+  .reading-now__lead {
+    flex: 4 1 360px;
+    min-width: 0;
+    max-width: 520px;
+  }
+
+  .reading-now__others {
+    flex: 6 1 480px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+  }
+
+  .reading-lead {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .reading-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 24px 32px;
+  }
+
+  .reading-item__cover {
+    flex: 0 0 150px;
+  }
+
+  .reading-item__text {
+    flex: 1 1 280px;
+  }
+
+  /* ---------- Real covers (typographic ones: ReadingCover.astro) ---------- */
+
+  .cover--img {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+    background: var(--surface-2);
+  }
+
+  .cover--img[data-shape='book'] {
+    aspect-ratio: 3 / 4;
+  }
+
+  .cover--img[data-shape='doc'] {
+    aspect-ratio: 1 / 1.414;
+  }
+
+  .cover--img.cover--lead[data-shape='doc'] {
+    max-width: 360px;
+  }
+
+  /* ---------- Finished ---------- */
+
+  .reading-done {
+    padding-top: 200px;
+  }
+
+  .reading-done__years {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+  }
+
+  .reading-year {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px 48px;
+  }
+
+  .reading-year__title {
+    flex: 0 0 240px;
+    font-size: 36px;
+    font-weight: 560;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--ink-2);
+  }
+
+  .reading-year__list {
+    flex: 1 1 560px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Same box for link rows and plain rows; only links get the hover. */
+  .reading-row {
+    --row-pad-x: min(24px, var(--gutter));
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 40px;
+    padding: 22px var(--row-pad-x);
+    margin: 0 calc(-1 * var(--row-pad-x));
+  }
+
+  .reading-row__month {
+    flex: 0 0 4.5rem;
+    padding-top: 4px;
+    font-size: 16px;
+    color: var(--ink-2);
+  }
+
+  .reading-row__main {
+    flex: 1 1 420px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .reading-row__title {
+    font-size: 23px;
+    font-weight: 570;
+    letter-spacing: -0.015em;
+    line-height: 1.22;
+    overflow-wrap: anywhere;
+  }
+
+  .reading-row__note {
+    max-width: 60ch;
+    margin-top: 4px;
+    font-family: var(--font-serif);
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .reading-row__type {
+    flex: 0 0 auto;
+    padding-top: 4px;
+    font-size: 15px;
+    color: var(--ink-2);
+  }
+
+  /* ---------- Up next ---------- */
+
+  .reading-next {
+    margin-top: 200px;
+    background: var(--surface);
+  }
+
+  .reading-next__inner {
+    padding-block: 112px;
+  }
+
+  .reading-next__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+    gap: 40px 48px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .reading-next__item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .reading-next__title {
+    font-size: 22px;
+    font-weight: 570;
+    letter-spacing: -0.015em;
+    line-height: 1.22;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  /* ---------- Phone ---------- */
+
+  @media (max-width: 719.98px) {
+    .reading-head__lede {
+      font-size: 20px;
+    }
+
+    .reading-now,
+    .reading-skel,
+    .reading-empty,
+    .reading-line {
+      padding-top: 80px;
+    }
+
+    .reading-done {
+      padding-top: 112px;
+    }
+
+    .reading-next {
+      margin-top: 112px;
+    }
+
+    .reading-next__inner {
+      padding-block: 72px;
+    }
+
+    .reading-h2 {
+      margin-bottom: 32px;
+    }
+
+    .reading-title--lead {
+      font-size: 25px;
+    }
+
+    .reading-title {
+      font-size: 22px;
+    }
+
+    .reading-note {
+      font-size: 18px;
+    }
+
+    .reading-now__grid,
+    .reading-now__others {
+      gap: 48px;
+    }
+
+    .reading-item__cover {
+      flex-basis: 120px;
+    }
+
+    .reading-skel__cover {
+      height: 320px;
+    }
+
+    .reading-done__years {
+      gap: 56px;
+    }
+
+    .reading-year__title {
+      flex: none;
+      font-size: 30px;
+    }
+
+    .reading-row {
+      flex-direction: column;
+    }
+
+    .reading-row__month,
+    .reading-row__main {
+      flex: none;
+      padding-top: 0;
+    }
+
+    .reading-row__title {
+      font-size: 21px;
+    }
+
+    .reading-row__note {
+      font-size: 17px;
+    }
+  }
+</style>
