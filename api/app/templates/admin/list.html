@@ -1,0 +1,49 @@
+{% extends "admin/base.html" %}
+{% block title %}Reading list{% endblock %}
+{% macro row(r, deleted=false) %}
+<li class="item" id="item-{{ r.item.id }}">
+  <p class="item__title">{{ r.item.title }}{% if not r.item.published %}<span class="tag">Hidden</span>{% endif %}</p>
+  <p class="item__meta">{{ r.label }}{% if r.item.authors %}, {{ r.item.authors }}{% endif %}</p>
+  <div class="item__actions">
+    {% if deleted %}
+    <form class="inline" method="post" action="/admin/items/{{ r.item.id }}/restore">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button class="btn btn--sm" type="submit">Restore</button>
+    </form>
+    <a class="btn btn--sm btn--danger" href="/admin/items/{{ r.item.id }}/purge">Delete permanently</a>
+    {% else %}
+    <a class="btn btn--sm" href="/admin/items/{{ r.item.id }}" aria-label="Edit {{ r.item.title }}">Edit</a>
+    <form class="inline" method="post" action="/admin/items/{{ r.item.id }}/delete">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <button class="btn btn--sm btn--danger" type="submit" aria-label="Delete {{ r.item.title }}">Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</li>
+{% endmacro %}
+{% block content %}
+<div class="bar">
+  <h1>Reading list</h1>
+  <form class="inline" method="post" action="/admin/logout">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button class="btn btn--sm" type="submit">Sign out</button>
+  </form>
+</div>
+<p><a class="btn btn--primary" href="/admin/items/new">New item</a></p>
+{% for title, rows in groups %}
+<section aria-labelledby="group-{{ loop.index }}">
+  <h2 id="group-{{ loop.index }}">{{ title }}</h2>
+  {% if rows %}
+  <ul class="items">{% for r in rows %}{{ row(r) }}{% endfor %}</ul>
+  {% else %}
+  <p class="empty">Nothing here.</p>
+  {% endif %}
+</section>
+{% endfor %}
+{% if deleted %}
+<section id="deleted" aria-labelledby="group-deleted">
+  <h2 id="group-deleted">Deleted</h2>
+  <ul class="items">{% for r in deleted %}{{ row(r, deleted=true) }}{% endfor %}</ul>
+</section>
+{% endif %}
+{% endblock %}

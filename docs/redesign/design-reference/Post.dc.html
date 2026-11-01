@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gray–Scott in 200 lines of WGSL — Sagar Pal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:var(--ink)}a:hover{color:var(--link)}
+:focus-visible{outline:2px solid var(--link);outline-offset:3px}
+.navlink{color:var(--ink-2);text-decoration:none}.navlink:hover{color:var(--ink)}
+.prose a{color:var(--link);text-decoration-thickness:1px;text-underline-offset:3px}
+.toclink{color:var(--ink-2);text-decoration:none}.toclink:hover{color:var(--ink)}
+.pill-surface:hover{background:var(--surface-2);color:var(--ink)}
+.useful:hover{background:var(--accent-hover)}
+input[type=range]{accent-color:var(--link)}
+</style>
+</helmet>
+<div style="--ground: {{tk.ground}}; --surface: {{tk.surface}}; --surface-2: {{tk.surface2}}; --surface-3: {{tk.surface3}}; --ink: {{tk.ink}}; --ink-2: {{tk.ink2}}; --ink-3: {{tk.ink3}}; --accent: {{tk.accent}}; --accent-hover: {{tk.accentHover}}; --on-accent: {{tk.onAccent}}; --link: {{tk.link}}; --teal: {{tk.teal}}; color-scheme: {{tk.scheme}}; background: var(--ground); color: var(--ink); font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: clip">
+
+<header style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 20px clamp(16px, 3vw, 40px); display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap">
+<a href="Main.dc.html" style="font-size: 18px; font-weight: 650; letter-spacing: -0.01em; text-decoration: none; color: var(--ink)">Sagar Pal</a>
+<nav aria-label="Primary" style="display: flex; align-items: center; gap: 28px; flex-wrap: wrap; font-size: 16px">
+<a href="Blog.dc.html" aria-current="page" style="color: var(--ink); text-decoration: none; font-weight: 600">Writing</a>
+<a class="navlink" href="Reading.dc.html">Reading</a>
+<a class="navlink" href="Main.dc.html#work">Projects</a>
+<a class="navlink" href="Main.dc.html#papers">Papers</a>
+<div style="display: flex; align-items: center; gap: 8px">
+<a class="pill-surface" href="#cv" style="display: inline-flex; align-items: center; height: 40px; padding: 0 18px; border-radius: 999px; background: var(--surface); color: var(--ink); text-decoration: none; font-weight: 500">CV</a>
+<button type="button" aria-label="{{toggleLabel}}" onClick="{{toggleTheme}}" style="width: 40px; height: 40px; border-radius: 999px; border: 0; background: var(--surface-2); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer">
+<sc-if value="{{isNight}}" hint-placeholder-val="{{true}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"></path></svg></sc-if>
+<sc-if value="{{isDay}}" hint-placeholder-val="{{false}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+</button>
+</div>
+</nav>
+</header>
+
+<main>
+<article>
+<header style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 80px clamp(16px, 3vw, 40px) 0; display: flex; flex-wrap: wrap; gap: 0 56px">
+<div aria-hidden="true" style="flex: 0 1 240px"></div>
+<div style="flex: 1 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 28px; max-width: 1000px">
+<a href="Blog.dc.html" class="navlink" style="font-size: 16px; font-weight: 500">All writing</a>
+<h1 style="margin: 0; font-size: clamp(40px, 5vw, 72px); font-weight: 630; font-stretch: 108%; letter-spacing: -0.045em; line-height: 0.98; max-width: 16ch">Gray–Scott in 200 lines of WGSL</h1>
+<p style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: clamp(21px, 1.9vw, 26px); line-height: 1.4; max-width: 40ch">A reaction–diffusion solver written as WebGPU compute shaders, and what ping-pong buffers teach you about GPU memory.</p>
+<div style="display: flex; gap: 8px 28px; flex-wrap: wrap; font-size: 15px; color: var(--ink-2); font-variant-numeric: tabular-nums">
+<span>12 October 2026</span>
+<span>14 min read</span>
+<span>2,140 reads</span>
+<span>Numerics, GPU</span>
+</div>
+</div>
+</header>
+
+<figure style="max-width: 1440px; margin: 64px auto 0; box-sizing: border-box; padding: 0 clamp(16px, 3vw, 40px)">
+<img src="{{fig1Img}}" alt="A Gray–Scott field of spots, some mid-division, with teal rims and amber cores" style="width: 100%; aspect-ratio: 1600 / 750; object-fit: cover; display: block">
+<figcaption style="display: flex; flex-wrap: wrap; gap: 0 56px; margin-top: 14px; font-size: 15px; line-height: 1.5; color: var(--ink-2)"><span aria-hidden="true" style="flex: 0 1 240px"></span><span style="flex: 1 1 640px; max-width: 680px">Figure 1. Spots dividing at F = 0.0367, k = 0.0649 after 9,000 steps on a 640 × 300 periodic grid.</span></figcaption>
+</figure>
+
+<div style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 96px clamp(16px, 3vw, 40px) 0; display: flex; flex-wrap: wrap; gap: 48px 56px; align-items: flex-start">
+<nav aria-labelledby="toc-title" style="flex: 0 1 240px; min-width: 200px; display: flex; flex-direction: column; gap: 14px; font-size: 15px">
+<h2 id="toc-title" style="margin: 0; font-size: 15px; font-weight: 600; color: var(--ink)">On this page</h2>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+<li><a href="#model" aria-current="location" style="color: var(--ink); text-decoration: none; font-weight: 600">The model</a></li>
+<li><a class="toclink" href="#pingpong">Ping-pong buffers</a></li>
+<li><a class="toclink" href="#try">Choosing F and k</a></li>
+<li><a class="toclink" href="#next">What's next</a></li>
+</ul>
+</nav>
+
+<div class="prose" style="flex: 1 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 28px; font-family: 'Source Serif 4', Georgia, serif; font-size: 20px; line-height: 1.62">
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px 56px; align-items: flex-start">
+<p style="flex: 1 1 520px; max-width: 680px; margin: 0">Reaction–diffusion systems are the rare corner of physics where two lines of PDE produce something that looks alive. The Gray–Scott model has two species, <i>u</i> and <i>v</i>, feeding and consuming each other on a grid.<sup style="font-family: 'Archivo', sans-serif; font-size: 13px; color: var(--link); font-weight: 600"><a href="#n1" style="text-decoration: none">1</a></sup> Change two numbers and spots that divide like cells turn into labyrinths, then into travelling waves.</p>
+<aside id="n1" style="flex: 0 1 260px; font-family: 'Archivo', sans-serif; font-size: 15px; line-height: 1.5; color: var(--ink-2)"><span style="color: var(--link); font-weight: 600">1</span> J. E. Pearson mapped the (F, k) plane into a dozen pattern families in “Complex Patterns in a Simple System”, Science 261 (1993).</aside>
+</div>
+
+<h2 id="model" style="margin: 28px 0 0; font-family: 'Archivo', sans-serif; font-size: 34px; font-weight: 620; letter-spacing: -0.03em; line-height: 1.1">The model</h2>
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px 56px; align-items: flex-start">
+<p style="flex: 1 1 520px; max-width: 680px; margin: 0">Each species diffuses at its own rate. The reaction turns <i>u</i> into <i>v</i> at rate <i>uv</i><sup>2</sup>, fresh <i>u</i> is fed in at rate <i>F</i>, and <i>v</i> is removed at rate <i>F</i> + <i>k</i>:<sup style="font-family: 'Archivo', sans-serif; font-size: 13px; color: var(--link); font-weight: 600"><a href="#n2" style="text-decoration: none">2</a></sup></p>
+<aside id="n2" style="flex: 0 1 260px; font-family: 'Archivo', sans-serif; font-size: 15px; line-height: 1.5; color: var(--ink-2)"><span style="color: var(--link); font-weight: 600">2</span> The values used throughout follow Karl Sims's reaction–diffusion tutorial: <i>D<sub>u</sub></i> = 1.0, <i>D<sub>v</sub></i> = 0.5 and Δ<i>t</i> = 1 on a unit grid.</aside>
+</div>
+
+<div role="math" aria-label="du by dt equals D u times laplacian of u minus u v squared plus F times one minus u. dv by dt equals D v times laplacian of v plus u v squared minus F plus k times v." style="max-width: 680px; display: flex; flex-direction: column; gap: 14px; padding: 8px 0; font-size: 23px; overflow-x: auto">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 24px"><span style="display: inline-flex; align-items: center; gap: 10px; white-space: nowrap"><span style="display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15"><span>∂<i>u</i></span><span style="border-top: 1.5px solid var(--ink); padding-top: 2px">∂<i>t</i></span></span> = <i>D<sub>u</sub></i> ∇<sup>2</sup><i>u</i> − <i>uv</i><sup>2</sup> + <i>F</i>(1 − <i>u</i>)</span><span style="font-size: 18px; color: var(--ink-2)">(1)</span></div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 24px"><span style="display: inline-flex; align-items: center; gap: 10px; white-space: nowrap"><span style="display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15"><span>∂<i>v</i></span><span style="border-top: 1.5px solid var(--ink); padding-top: 2px">∂<i>t</i></span></span> = <i>D<sub>v</sub></i> ∇<sup>2</sup><i>v</i> + <i>uv</i><sup>2</sup> − (<i>F</i> + <i>k</i>)<i>v</i></span><span style="font-size: 18px; color: var(--ink-2)">(2)</span></div>
+</div>
+
+<p style="max-width: 680px; margin: 0">On a GPU the Laplacian is a nine-point stencil: weight −1 at the centre, 0.2 on the four edges and 0.05 on the four corners. Everything else is pointwise, which is exactly the shape of work a compute shader likes.</p>
+
+<h2 id="pingpong" style="margin: 28px 0 0; font-family: 'Archivo', sans-serif; font-size: 34px; font-weight: 620; letter-spacing: -0.03em; line-height: 1.1">Ping-pong buffers</h2>
+
+<p style="max-width: 680px; margin: 0">A dispatch can't safely read and write the same texture, so the state lives in two. Each step reads one and writes the other, then the bind groups swap. The whole update is ten lines:</p>
+
+<figure style="max-width: 760px; margin: 0; display: flex; flex-direction: column; gap: 8px">
+<figcaption style="font-family: 'Archivo', sans-serif; font-size: 14px; color: var(--ink-2)">step.wgsl</figcaption>
+<pre style="margin: 0; background: var(--surface); color: var(--ink); padding: 24px 28px; border-radius: 16px; font: 14.5px/1.7 'JetBrains Mono', ui-monospace, monospace; overflow-x: auto"><span style="color: var(--teal)">@compute @workgroup_size</span>(8, 8)
+<span style="color: var(--teal)">fn</span> step(<span style="color: var(--ink-2)">@builtin(global_invocation_id)</span> id: vec3&lt;u32&gt;) {
+  <span style="color: var(--teal)">let</span> p   = vec2&lt;i32&gt;(id.xy);
+  <span style="color: var(--teal)">let</span> s   = textureLoad(src, p, 0).xy;
+  <span style="color: var(--teal)">let</span> lap = laplacian(p);
+  <span style="color: var(--teal)">let</span> r   = s.x * s.y * s.y;
+  <span style="color: var(--teal)">let</span> du  = P.du * lap.x - r + P.f * (1.0 - s.x);
+  <span style="color: var(--teal)">let</span> dv  = P.dv * lap.y + r - (P.f + P.k) * s.y;
+  textureStore(dst, p, vec4(s + P.dt * vec2(du, dv), 0.0, 1.0));
+}</pre>
+</figure>
+
+<aside style="max-width: 680px; background: var(--surface); border-radius: 16px; padding: 24px 28px; display: flex; flex-direction: column; gap: 6px; font-family: 'Archivo', sans-serif; font-size: 17px; line-height: 1.55">
+<strong style="font-weight: 620; font-size: 18px">Pack both species in one texture</strong>
+<span>Keeping <i>u</i> and <i>v</i> in the red and green channels of one rg32float texture halves the loads in the stencil, and the swap stays a single bind-group flip.</span>
+</aside>
+
+<h2 id="try" style="margin: 28px 0 0; font-family: 'Archivo', sans-serif; font-size: 34px; font-weight: 620; letter-spacing: -0.03em; line-height: 1.1">Choosing F and k</h2>
+
+<p style="max-width: 680px; margin: 0">Small moves in the (<i>F</i>, <i>k</i>) plane cross pattern boundaries. The field below runs the same shader as this post; drag the sliders and watch it reorganise.</p>
+
+<figure style="max-width: 760px; margin: 0; display: flex; flex-direction: column; gap: 16px; font-family: 'Archivo', sans-serif">
+<img src="{{fieldImg}}" alt="Live Gray–Scott field: colonies with teal rims and amber cores" style="width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; border-radius: 16px">
+<div style="display: flex; flex-wrap: wrap; gap: 16px 32px">
+<div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 6px">
+<label for="f-range" style="display: flex; justify-content: space-between; font-size: 15px"><span>Feed rate F</span><span style="font-variant-numeric: tabular-nums; color: var(--ink-2)">{{fText}}</span></label>
+<input id="f-range" type="range" min="10" max="80" step="1" value="{{fVal}}" onChange="{{onF}}" style="width: 100%">
+</div>
+<div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 6px">
+<label for="k-range" style="display: flex; justify-content: space-between; font-size: 15px"><span>Kill rate k</span><span style="font-variant-numeric: tabular-nums; color: var(--ink-2)">{{kText}}</span></label>
+<input id="k-range" type="range" min="45" max="70" step="1" value="{{kVal}}" onChange="{{onK}}" style="width: 100%">
+</div>
+</div>
+<figcaption style="font-size: 15px; color: var(--ink-2)">Figure 2. Interactive. Reduced-motion visitors see a still frame and a Play button.</figcaption>
+</figure>
+
+<h2 id="next" style="margin: 28px 0 0; font-family: 'Archivo', sans-serif; font-size: 34px; font-weight: 620; letter-spacing: -0.03em; line-height: 1.1">What's next</h2>
+<p style="max-width: 680px; margin: 0">The same ping-pong structure carries straight over to a Navier–Stokes solver, where the interesting part becomes the pressure projection. That's the next post.</p>
+
+<div style="max-width: 680px; margin-top: 40px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; font-family: 'Archivo', sans-serif">
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<button class="useful" type="button" aria-pressed="{{liked}}" onClick="{{toggleLike}}" style="height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 600 16px 'Archivo', sans-serif; display: inline-flex; align-items: center; gap: 10px; cursor: pointer">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11v9H4v-9h3zM7 11l4-7c1.7 0 2.6 1 2.3 2.6L12.8 10H19a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7"></path></svg>
+<span>Useful</span><span style="font-variant-numeric: tabular-nums; font-weight: 500">{{likes}}</span>
+</button>
+<button class="pill-surface" type="button" style="height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--surface); color: var(--ink); font: 500 16px 'Archivo', sans-serif; cursor: pointer">Copy link</button>
+</div>
+<a href="#rss" style="font-size: 16px; color: var(--link)">Follow by RSS</a>
+</div>
+</div>
+</div>
+</article>
+
+<nav aria-label="More writing" style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 160px clamp(16px, 3vw, 40px) 0; display: flex; flex-wrap: wrap; gap: 0 56px">
+<div aria-hidden="true" style="flex: 0 1 240px"></div>
+<a href="Post.dc.html" style="flex: 1 1 640px; max-width: 1000px; display: flex; flex-direction: column; gap: 10px; text-decoration: none; background: var(--surface); border-radius: 24px; padding: 36px 40px">
+<span style="font-size: 15px; color: var(--ink-2)">Previous post</span>
+<span style="font-size: clamp(26px, 2.6vw, 38px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1">From DFT labels to production MLIPs</span>
+</a>
+</nav>
+</main>
+
+<footer style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 160px clamp(16px, 3vw, 40px) 40px; display: flex; justify-content: space-between; align-items: center; gap: 16px 32px; flex-wrap: wrap; font-size: 16px">
+<nav aria-label="Elsewhere" style="display: flex; gap: 24px; flex-wrap: wrap">
+<a class="navlink" href="https://github.com/palsagar">GitHub</a>
+<a class="navlink" href="https://linkedin.com/in/spal220493">LinkedIn</a>
+<a class="navlink" href="https://scholar.google.com/citations?user=PtMicc0AAAAJ">Google Scholar</a>
+<a class="navlink" href="mailto:sagar2204pal@gmail.com">Email</a>
+<a class="navlink" href="#rss">RSS</a>
+</nav>
+<span style="color: var(--ink-2)">Sagar Pal, Paris, 2026</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["night","day"],"default":"night"},"$preview":{"width":1440,"height":4200}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { f: 37, k: 60, liked: false, theme: null };
+  }
+  renderVals() {
+    const f = this.state.f / 1000;
+    const k = this.state.k / 1000;
+    const theme = this.state.theme || this.props.theme || 'night';
+    const TK = {
+      night: { scheme: 'dark', ground: '#0A0E16', surface: '#111823', surface2: '#1A2330', surface3: '#232E3D', ink: '#EEEAE2', ink2: '#A0A8B4', ink3: '#8A93A1', accent: '#F2A64A', accentHover: '#F6B867', onAccent: '#0A0E16', link: '#F2A64A', teal: '#6CC3CA' },
+      day: { scheme: 'light', ground: '#F3F4F6', surface: '#E7EBEF', surface2: '#DCE2E8', surface3: '#D0D8E0', ink: '#111925', ink2: '#4E5866', ink3: '#56606E', accent: '#F2A64A', accentHover: '#EE9A33', onAccent: '#111925', link: '#9A520E', teal: '#1F6F7A' }
+    };
+    return {
+      tk: TK[theme],
+      isNight: theme === 'night',
+      isDay: theme === 'day',
+      toggleLabel: theme === 'night' ? 'Switch to day theme' : 'Switch to night theme',
+      toggleTheme: () => this.setState({ theme: theme === 'night' ? 'day' : 'night' }),
+      fieldImg: theme === 'night' ? '/_blob/40813c46a1c75d0fd522dfd0d0bc7414' : '/_blob/7a87896c02709481adb079cb1b9b79be',
+      fig1Img: theme === 'night' ? '/_blob/ac55cd7207977ca2f420825075fa57a4' : '/_blob/70de8d55278ed2a084e28b3b088e7554',
+      fVal: this.state.f,
+      kVal: this.state.k,
+      fText: f.toFixed(3),
+      kText: k.toFixed(3),
+      onF: (e) => this.setState({ f: Number(e.target.value) }),
+      onK: (e) => this.setState({ k: Number(e.target.value) }),
+      liked: this.state.liked,
+      likes: this.state.liked ? 39 : 38,
+      toggleLike: () => this.setState({ liked: !this.state.liked })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+---
+// Base layout: head (SEO meta, theme bootstrap, fonts, JSON-LD), nav, main, footer.
+import { ClientRouter, fade } from 'astro:transitions';
+import archivoLatin from '../assets/fonts/archivo-latin-trimmed.woff2?url';
+import Footer from '../components/Footer.astro';
+import Nav from '../components/Nav.astro';
+import ThemeScript from '../components/ThemeScript.astro';
+import { personJsonLd, site } from '../data/site';
+import '../styles/fonts.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+
+interface Props {
+  /** Page name; rendered as "{title} — Sagar Pal". Omit on the home page. */
+  title?: string;
+  description?: string;
+  footer?: 'full' | 'compact';
+  /** Emit the JSON-LD Person block (home page). */
+  person?: boolean;
+  /** Not indexed and no canonical URL (404). */
+  noindex?: boolean;
+  /** Open Graph image path, served by FastAPI (API.md §4). */
+  image?: string;
+  /** Open Graph type: posts are articles. */
+  type?: 'website' | 'article';
+}
+
+const {
+  title,
+  description = site.description,
+  footer = 'compact',
+  person = false,
+  noindex = false,
+  image = '/og/default.png',
+  type = 'website',
+} = Astro.props;
+
+const fullTitle = title
+  ? `${title} — ${site.name}`
+  : `${site.name} — Scientific computing, AI for science, HPC`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
+const ogImage = new URL(image, Astro.site ?? site.url).href;
+---
+
+<!doctype html>
+<html lang="en" transition:animate={fade({ duration: '220ms' })}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <ThemeScript />
+    <meta
+      name="theme-color"
+      content="#0A0E16"
+      media="(prefers-color-scheme: dark)"
+    />
+    <meta
+      name="theme-color"
+      content="#F3F4F6"
+      media="(prefers-color-scheme: light)"
+    />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {!noindex && <link rel="canonical" href={canonical} />}
+    {/* A coral colony on the night ground, from docs/redesign/scripts/make_assets.py --favicon. */}
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link
+      rel="preload"
+      href={archivoLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${site.name} — Writing`}
+      href="/feed.xml"
+    />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    {!noindex && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {person && (
+      <script
+        is:inline
+        type="application/ld+json"
+        set:html={JSON.stringify(personJsonLd)}
+      />
+    )}
+
+    <slot name="head" />
+    <ClientRouter />
+    {/* Umami: FastAPI injects its <script> before </head> at runtime when UMAMI_DOMAIN and UMAMI_ID are set (API.md §6). */}
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      Skip to content
+    </a>
+    <Nav />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer variant={footer} />
+
+    <script>
+      // After a client-router navigation, move focus to <main> so keyboard and
+      // screen-reader users start at the new content (unless a #fragment is targeted).
+      document.addEventListener('astro:after-swap', () => {
+        if (window.location.hash) return;
+        document
+          .querySelector<HTMLElement>('main')
+          ?.focus({ preventScroll: true });
+      });
+
+      // Umami counts a page view when the URL changes through history.pushState or
+      // history.replaceState. Back and Forward change it through popstate, which Umami
+      // does not watch. After such a move, write the current history entry again with
+      // replaceState: the browser and the router see no change, and Umami counts the
+      // page with the correct referrer. umami.track() would not work here: it reports
+      // the last URL that Umami saw through its history hook, which is the page the
+      // visitor left.
+      let traversed = false;
+      document.addEventListener('astro:before-preparation', (event) => {
+        traversed = event.navigationType === 'traverse';
+      });
+      document.addEventListener('astro:page-load', () => {
+        if (!traversed || !('umami' in window)) return;
+        traversed = false;
+        history.replaceState(history.state, '', location.href);
+      });
+
+      // Section entrances (DESIGN.md §8): blocks marked [data-reveal] that start
+      // below the fold fade and rise in once, when they scroll into view.
+      // Content above the fold, reduced motion and no-JS all skip it.
+      document.addEventListener('astro:page-load', () => {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.remove('reveal-pre');
+              observer.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px' },
+        );
+        document.addEventListener(
+          'astro:before-swap',
+          () => observer.disconnect(),
+          { once: true },
+        );
+        for (const el of document.querySelectorAll<HTMLElement>(
+          '[data-reveal]',
+        )) {
+          if (el.getBoundingClientRect().top < window.innerHeight) continue;
+          el.style.setProperty('--reveal-i', el.dataset.reveal || '0');
+          el.classList.add('reveal-pre');
+          observer.observe(el);
+        }
+      });
+    </script>
+  </body>
+</html>

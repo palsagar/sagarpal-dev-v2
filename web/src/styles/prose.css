@@ -1,0 +1,301 @@
+/*
+ * Post body (DESIGN.md §4 "Prose", §6 Code block, Display math, Sidenote;
+ * §7.3). Loaded by layouts/Post.astro only.
+ *
+ * The prose column is a size container. At 996px or wider (680px measure +
+ * 56px gap + 260px note) sidenotes float into the right margin; narrower,
+ * they sit inline under their line.
+ */
+
+.prose {
+  container: prose / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  line-height: 1.62;
+}
+
+.prose > :where(p, ul, ol, blockquote, h2, h3, h4, table, hr) {
+  max-width: var(--measure);
+}
+
+.prose :where(h2, h3, h4) {
+  font-family: var(--font-sans);
+  font-weight: 620;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  scroll-margin-top: 24px;
+}
+
+.prose h2 {
+  margin-top: 28px;
+  font-size: 34px;
+}
+
+.prose h3 {
+  margin-top: 12px;
+  font-size: 25px;
+  letter-spacing: -0.02em;
+}
+
+/* Headings link to themselves (rehype-autolink-headings, "wrap"). */
+.prose h2 > a,
+.prose h3 > a,
+.prose h4 > a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.prose h2 > a:hover,
+.prose h3 > a:hover,
+.prose h4 > a:hover {
+  color: var(--link);
+}
+
+.prose a {
+  color: var(--link);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.prose :where(ul, ol) {
+  padding-left: 1.3em;
+}
+
+.prose li + li {
+  margin-top: 8px;
+}
+
+.prose blockquote {
+  padding-left: 24px;
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.prose hr {
+  width: 100%;
+  height: 1px;
+  border: 0;
+  background: var(--surface-2);
+}
+
+/* ---------- Code ---------- */
+
+.prose :not(pre) > code {
+  padding: 0.1em 0.35em;
+  border-radius: 6px;
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+}
+
+/* Shiki's css-variables theme (astro.config.mjs), mapped to the tokens. */
+.astro-code {
+  --shiki-foreground: var(--ink);
+  --shiki-background: var(--surface);
+  --shiki-token-keyword: var(--teal);
+  --shiki-token-string: var(--link);
+  --shiki-token-string-expression: var(--link);
+  --shiki-token-comment: var(--ink-2);
+  --shiki-token-constant: var(--ink);
+  --shiki-token-function: var(--ink);
+  --shiki-token-parameter: var(--ink);
+  --shiki-token-punctuation: var(--ink);
+  --shiki-token-link: var(--link);
+}
+
+.prose pre {
+  max-width: 760px;
+  margin: 0;
+  padding: 24px 28px;
+  border-radius: 16px;
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  font: inherit;
+}
+
+.code-figure {
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.code-figure figcaption {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+/* ---------- Display math (KaTeX) ---------- */
+
+.prose .katex {
+  font-size: 1.15em;
+}
+
+.prose .katex-display {
+  max-width: var(--measure);
+  margin: 0;
+  padding: 8px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.prose .katex-display > .katex {
+  text-align: left;
+}
+
+.prose .katex .tag {
+  color: var(--ink-2);
+}
+
+/* KaTeX pins the equation number to the right edge of the box. When the
+ * equation is wider than the box and scrolls, grow the box to the equation
+ * and keep room for the number after it, so the two never overlap. */
+.prose .katex-display > .katex > .katex-html {
+  width: max-content;
+  min-width: 100%;
+}
+
+.prose .katex-display > .katex > .katex-html:has(> .tag) {
+  padding-right: 3em;
+}
+
+/* ---------- Sidenotes ---------- */
+
+.sn-ref {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 0;
+}
+
+.sn-ref__link {
+  padding: 0 1px;
+  color: var(--link);
+  text-decoration: none;
+}
+
+.sn-ref__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--link);
+  font: 600 13px var(--font-sans);
+  vertical-align: 2px;
+  cursor: pointer;
+}
+
+.sn-ref__btn:hover {
+  background: var(--surface-3);
+}
+
+/* Inline: a block under its line. */
+.sidenote {
+  display: block;
+  margin: 12px 0 4px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.sidenote__n {
+  color: var(--link);
+  font-weight: 600;
+}
+
+/* With JS (lib/post.ts sets data-sidenotes): collapsed behind the button. */
+.prose[data-sidenotes] .sn-ref {
+  vertical-align: baseline;
+}
+
+.prose[data-sidenotes] .sn-ref__link,
+.prose[data-sidenotes] .sidenote__n,
+.prose[data-sidenotes] .sidenote:not(.is-open) {
+  display: none;
+}
+
+/* Margin notes when the column has room, with or without JS. */
+@container prose (min-width: 996px) {
+  .prose .sidenote,
+  .prose[data-sidenotes] .sidenote:not(.is-open) {
+    display: block;
+    float: right;
+    clear: right;
+    width: 260px;
+    margin: 0 -316px 0 0;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  .prose[data-sidenotes] .sn-ref {
+    vertical-align: super;
+  }
+
+  .prose[data-sidenotes] .sn-ref__link,
+  .prose[data-sidenotes] .sidenote__n {
+    display: inline;
+  }
+
+  .prose .sn-ref__btn {
+    display: none;
+  }
+}
+
+/* ---------- Phone ---------- */
+
+@media (max-width: 719.98px) {
+  .prose {
+    gap: 22px;
+    font-size: 19px;
+    line-height: 1.6;
+  }
+
+  .prose h2 {
+    margin-top: 20px;
+    font-size: 28px;
+  }
+
+  .prose h3 {
+    font-size: 22px;
+  }
+
+  /* Code goes full-bleed and scrolls inside its own box. */
+  .prose pre {
+    max-width: none;
+    margin-inline: calc(-1 * var(--gutter));
+    padding: 18px var(--gutter);
+    border-radius: 0;
+    font-size: 13px;
+  }
+
+  /* Math gets its own surface box and scrolls inside it. */
+  .prose .katex-display {
+    padding: 16px;
+    border-radius: 14px;
+    background: var(--surface);
+  }
+
+  .prose .katex {
+    font-size: 1em;
+  }
+}

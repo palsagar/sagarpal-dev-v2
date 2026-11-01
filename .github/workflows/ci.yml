@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, redesign]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Web (lint, typecheck, build, smoke)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run fmt:check
+      - run: npm run lint
+      - run: npm run check
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      # The `api` Playwright project runs FastAPI (tests/e2e/api/serve.sh).
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: api/uv.lock
+      - run: uv sync --locked
+        working-directory: api
+      - run: npm run test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          retention-days: 7
+
+  api:
+    name: API (lint, typecheck, test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v7
+      # setup-uv publishes only exact version tags (no moving `v10`).
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: api/uv.lock
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy app tests
+      - run: uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=90
+
+  image:
+    name: Docker image (build, start, health)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t sagar-pal-dev .
+      - name: Start the image and wait until its health check passes
+        # Throwaway values: the app refuses to start without its three secrets.
+        run: |
+          docker run -d --name site -p 8000:8000 \
+            -e HASH_SECRET=ci-only-hash-secret-0123456789abcdef \
+            -e SESSION_SECRET=ci-only-session-secret-0123456789abc \
+            -e ADMIN_PASSWORD_HASH=ci-only-not-a-real-hash \
+            sagar-pal-dev
+          for _ in $(seq 1 60); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' site)" = healthy ] && break
+            sleep 1
+          done
+          docker logs site
+          [ "$(docker inspect -f '{{.State.Health.Status}}' site)" = healthy ]
+          curl -fsS http://localhost:8000/api/health
+          curl -fsS -o /dev/null http://localhost:8000/publications/
+          docker image ls sagar-pal-dev

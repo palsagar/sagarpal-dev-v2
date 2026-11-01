@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Sagar Pal — Writing</title>
+    <link>{{ site_url }}/</link>
+    <description>Long-form notes on numerical methods, high-performance computing and machine learning for science.</description>
+    <language>en</language>
+    <atom:link href="{{ site_url }}/feed.xml" rel="self" type="application/rss+xml"/>
+{%- if last_build %}
+    <lastBuildDate>{{ last_build }}</lastBuildDate>
+{%- endif %}
+{%- for item in items %}
+    <item>
+      <title>{{ item.title }}</title>
+      <link>{{ item.link }}</link>
+      <guid isPermaLink="true">{{ item.link }}</guid>
+      <pubDate>{{ item.pub_date }}</pubDate>
+      <description>{{ item.dek }}</description>
+{%- for tag in item.tags %}
+      <category>{{ tag }}</category>
+{%- endfor %}
+    </item>
+{%- endfor %}
+  </channel>
+</rss>

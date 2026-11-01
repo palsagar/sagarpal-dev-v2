@@ -1,0 +1,34 @@
+---
+// <Sidenote> in posts (DESIGN.md §6). Write it inline, inside a paragraph:
+//   text.<Sidenote>The note.</Sidenote> More text.
+// When the prose column has room (container query, styles/prose.css): a
+// superscript link and the note in the right margin. Otherwise the note sits
+// inline under its line; with JS it is collapsed behind a round button with
+// aria-expanded (lib/post.ts). Without JS it stays open.
+// `n` comes from remarkPostMeta in lib/markdown.ts.
+interface Props {
+  n?: string;
+}
+
+const n = Astro.props.n ?? '';
+const id = `sn-${n}`;
+---
+
+<sup class="sn-ref">
+  <a class="sn-ref__link" href={`#${id}`}>
+    {n}
+  </a>
+  <button
+    type="button"
+    class="sn-ref__btn"
+    aria-expanded="false"
+    aria-controls={id}
+    aria-label={`Show note ${n}`}
+    hidden
+  >
+    {n}
+  </button>
+</sup>
+<span class="sidenote" id={id} role="note">
+  <span class="sidenote__n">{n}</span> <slot />
+</span>

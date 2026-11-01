@@ -1,0 +1,55 @@
+[project]
+name = "sagar-pal-api"
+version = "0.1.0"
+description = "FastAPI back end for sagar-pal.dev"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.162.0",
+    "uvicorn>=0.54.0",
+    "sqlalchemy>=2.1",
+    "alembic>=1.20",
+    "pydantic-settings>=2.16",
+    "jinja2>=3.1.6",
+    "pillow>=13.0.0",
+    "httpx>=0.28.1",
+    "argon2-cffi>=25.1.0",
+    "itsdangerous>=2.2.0",
+    "python-multipart>=0.0.33",
+]
+
+[dependency-groups]
+dev = [
+    # `fastapi dev` (make dev) and its reloader; not needed in the image.
+    "fastapi[standard-no-fastapi-cloud-cli]>=0.162.0",
+    "pytest>=9.2.0",
+    "pytest-cov>=7.1.0",
+    "httpx>=0.28.1",
+    "ruff>=0.17.3",
+    "mypy>=2.4.1",
+    "freezegun>=1.5.5",
+]
+
+[tool.uv]
+package = false
+
+[tool.fastapi]
+entrypoint = "app.main:app"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+# The site's copy uses the en dash (Gray–Scott) and the multiplication sign on purpose.
+allowed-confusables = ["–", "×"]
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["app"]

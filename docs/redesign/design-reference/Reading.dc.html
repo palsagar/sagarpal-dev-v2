@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>What I'm reading — Sagar Pal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:var(--ink)}a:hover{color:var(--link)}
+:focus-visible{outline:2px solid var(--link);outline-offset:3px}
+.navlink{color:var(--ink-2);text-decoration:none}.navlink:hover{color:var(--ink)}
+.row:hover{background:var(--surface)}
+.row:hover .rowtitle{color:var(--link)}
+.pill-surface:hover{background:var(--surface-3);color:var(--ink)}
+</style>
+</helmet>
+<div style="--ground: {{tk.ground}}; --surface: {{tk.surface}}; --surface-2: {{tk.surface2}}; --surface-3: {{tk.surface3}}; --ink: {{tk.ink}}; --ink-2: {{tk.ink2}}; --ink-3: {{tk.ink3}}; --accent: {{tk.accent}}; --accent-hover: {{tk.accentHover}}; --on-accent: {{tk.onAccent}}; --link: {{tk.link}}; --teal: {{tk.teal}}; color-scheme: {{tk.scheme}}; background: var(--ground); color: var(--ink); font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: clip">
+
+<header style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 20px clamp(16px, 3vw, 40px); display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap">
+<a href="Main.dc.html" style="font-size: 18px; font-weight: 650; letter-spacing: -0.01em; text-decoration: none; color: var(--ink)">Sagar Pal</a>
+<nav aria-label="Primary" style="display: flex; align-items: center; gap: 28px; flex-wrap: wrap; font-size: 16px">
+<a class="navlink" href="Blog.dc.html">Writing</a>
+<a href="Reading.dc.html" aria-current="page" style="color: var(--ink); text-decoration: none; font-weight: 600">Reading</a>
+<a class="navlink" href="Main.dc.html#work">Projects</a>
+<a class="navlink" href="Main.dc.html#papers">Papers</a>
+<div style="display: flex; align-items: center; gap: 8px">
+<a class="pill-surface" href="#cv" style="display: inline-flex; align-items: center; height: 40px; padding: 0 18px; border-radius: 999px; background: var(--surface-2); color: var(--ink); text-decoration: none; font-weight: 500">CV</a>
+<button type="button" aria-label="{{toggleLabel}}" onClick="{{toggleTheme}}" style="width: 40px; height: 40px; border-radius: 999px; border: 0; background: var(--surface-2); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer">
+<sc-if value="{{isNight}}" hint-placeholder-val="{{true}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"></path></svg></sc-if>
+<sc-if value="{{isDay}}" hint-placeholder-val="{{false}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+</button>
+</div>
+</nav>
+</header>
+
+<main>
+<section aria-labelledby="page-title" style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 96px clamp(16px, 3vw, 40px) 0; display: flex; flex-wrap: wrap; gap: 40px 72px; align-items: flex-end">
+<div style="flex: 7 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 32px">
+<h1 id="page-title" style="margin: 0; font-size: clamp(64px, 9vw, 136px); font-weight: 640; font-stretch: 112%; letter-spacing: -0.05em; line-height: 0.88; max-width: 9ch">What I'm reading</h1>
+<p style="margin: 0; font-size: clamp(20px, 1.8vw, 26px); line-height: 1.35; max-width: 36ch">Books, papers and long reads on physics, computing and learning machines, each with a line on why it's here.</p>
+</div>
+<div role="group" aria-label="Filter by type" style="flex: 5 1 360px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-start">
+<sc-for list="{{types}}" as="t" hint-placeholder-count="4">
+<sc-if value="{{t.on}}" hint-placeholder-val="{{false}}">
+<button type="button" aria-pressed="true" onClick="{{t.pick}}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 600 16px 'Archivo', sans-serif; display: inline-flex; align-items: center; gap: 8px; cursor: pointer"><span>{{t.label}}</span><span style="font-weight: 500; font-variant-numeric: tabular-nums">{{t.count}}</span></button>
+</sc-if>
+<sc-if value="{{t.off}}" hint-placeholder-val="{{true}}">
+<button type="button" aria-pressed="false" onClick="{{t.pick}}" style="height: 44px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--surface-2); color: var(--ink); font: 500 16px 'Archivo', sans-serif; display: inline-flex; align-items: center; gap: 8px; cursor: pointer"><span>{{t.label}}</span><span style="color: var(--ink-2); font-variant-numeric: tabular-nums">{{t.count}}</span></button>
+</sc-if>
+</sc-for>
+</div>
+</section>
+
+<section aria-labelledby="now-title" style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 120px clamp(16px, 3vw, 40px) 0">
+<h2 id="now-title" style="margin: 0 0 48px; font-size: clamp(36px, 3.6vw, 52px); font-weight: 620; font-stretch: 106%; letter-spacing: -0.035em; line-height: 1">Reading now</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 56px 72px; align-items: flex-start">
+<sc-if value="{{showBook}}" hint-placeholder-val="{{true}}">
+<article style="flex: 4 1 360px; min-width: 0; max-width: 520px; display: flex; flex-direction: column; gap: 24px">
+<div aria-hidden="true" style="aspect-ratio: 3 / 4; background: var(--accent); color: var(--on-accent); padding: 36px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between">
+<span style="font-size: 16px; font-weight: 500">Richard Hamming</span>
+<span style="font-size: clamp(34px, 3.2vw, 48px); font-weight: 680; font-stretch: 108%; letter-spacing: -0.04em; line-height: 0.98">The Art of Doing Science and Engineering</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 15px; color: var(--ink-2)">Book, started October 2026</span>
+<a href="#book" style="font-size: 28px; font-weight: 580; letter-spacing: -0.02em; line-height: 1.15; text-decoration: none">The Art of Doing Science and Engineering</a>
+<span style="font-size: 16px; color: var(--ink-2)">Richard Hamming, 1997</span>
+<p style="margin: 8px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 19px; line-height: 1.55; max-width: 44ch">On choosing important problems. I reread it every few years and underline different things each time.</p>
+</div>
+</article>
+</sc-if>
+<div style="flex: 6 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 56px">
+<sc-if value="{{showPaper}}" hint-placeholder-val="{{true}}">
+<article style="display: flex; flex-wrap: wrap; gap: 24px 32px; align-items: flex-start">
+<div aria-hidden="true" style="flex: 0 0 150px; aspect-ratio: 1 / 1.414; background: var(--surface-2); padding: 18px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; font-size: 13px; color: var(--ink-2)">
+<span>arXiv 2206.07697</span>
+<span style="font-size: 17px; font-weight: 640; color: var(--ink); line-height: 1.1; letter-spacing: -0.01em">MACE</span>
+</div>
+<div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 15px; color: var(--ink-2)">Paper, started September 2026</span>
+<a href="#paper" style="font-size: 25px; font-weight: 580; letter-spacing: -0.02em; line-height: 1.2; text-decoration: none">MACE: Higher order equivariant message passing neural networks for fast and accurate force fields</a>
+<span style="font-size: 16px; color: var(--ink-2)">Batatia, Kovács, Simm, Ortner, Csányi, 2022</span>
+<p style="margin: 8px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 19px; line-height: 1.55; max-width: 48ch">The equivariant baseline every new interatomic potential gets measured against.</p>
+</div>
+</article>
+</sc-if>
+<sc-if value="{{showArticle}}" hint-placeholder-val="{{true}}">
+<article style="display: flex; flex-wrap: wrap; gap: 24px 32px; align-items: flex-start">
+<div aria-hidden="true" style="flex: 0 0 150px; aspect-ratio: 1 / 1.414; background: var(--surface-2); padding: 18px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; font-size: 13px; color: var(--ink-2)">
+<span>incompleteideas.net</span>
+<span style="font-size: 17px; font-weight: 640; color: var(--ink); line-height: 1.1; letter-spacing: -0.01em">The Bitter Lesson</span>
+</div>
+<div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 15px; color: var(--ink-2)">Article, reread October 2026</span>
+<a href="#article" style="font-size: 25px; font-weight: 580; letter-spacing: -0.02em; line-height: 1.2; text-decoration: none">The Bitter Lesson</a>
+<span style="font-size: 16px; color: var(--ink-2)">Rich Sutton, 2019</span>
+<p style="margin: 8px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 19px; line-height: 1.55; max-width: 48ch">Short, uncomfortable, and still the best argument for building the infrastructure first.</p>
+</div>
+</article>
+</sc-if>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="done-title" style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 200px clamp(16px, 3vw, 40px) 0">
+<h2 id="done-title" style="margin: 0 0 48px; font-size: clamp(36px, 3.6vw, 52px); font-weight: 620; font-stretch: 106%; letter-spacing: -0.035em; line-height: 1">Finished</h2>
+<div style="display: flex; flex-direction: column; gap: 80px">
+<sc-for list="{{years}}" as="y" hint-placeholder-count="2">
+<div style="display: flex; flex-wrap: wrap; gap: 16px 48px; align-items: flex-start">
+<h3 style="flex: 0 0 240px; margin: 0; font-size: 36px; font-weight: 560; letter-spacing: -0.03em; color: var(--ink-2); font-variant-numeric: tabular-nums; line-height: 1.1">{{y.year}}</h3>
+<ul style="flex: 1 1 560px; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+<sc-for list="{{y.items}}" as="it" hint-placeholder-count="3">
+<li><a class="row" href="#item" style="display: flex; flex-wrap: wrap; gap: 6px 40px; padding: 22px 24px; margin: 0 -24px; border-radius: 20px; text-decoration: none; color: var(--ink)">
+<span style="flex: 0 0 4.5rem; color: var(--ink-2); font-size: 16px; padding-top: 4px">{{it.month}}</span>
+<span style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 6px"><span class="rowtitle" style="font-size: 23px; font-weight: 570; letter-spacing: -0.015em; line-height: 1.22">{{it.title}}</span><span style="font-size: 16px; color: var(--ink-2)">{{it.by}}</span><span style="font-family: 'Source Serif 4', Georgia, serif; font-size: 18px; line-height: 1.5; max-width: 60ch; margin-top: 4px">{{it.note}}</span></span>
+<span style="flex: 0 0 auto; color: var(--ink-2); font-size: 15px; padding-top: 4px">{{it.type}}</span>
+</a></li>
+</sc-for>
+</ul>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section aria-labelledby="next-title" style="margin-top: 200px; background: var(--surface)">
+<div style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 112px clamp(16px, 3vw, 40px)">
+<h2 id="next-title" style="margin: 0 0 48px; font-size: clamp(36px, 3.6vw, 52px); font-weight: 620; font-stretch: 106%; letter-spacing: -0.035em; line-height: 1">Up next</h2>
+<ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 40px 48px">
+<sc-for list="{{queue}}" as="it" hint-placeholder-count="4">
+<li style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 15px; color: var(--ink-2)">{{it.type}}</span>
+<span style="font-size: 22px; font-weight: 570; letter-spacing: -0.015em; line-height: 1.22">{{it.title}}</span>
+<span style="font-size: 16px; color: var(--ink-2)">{{it.by}}</span>
+</li>
+</sc-for>
+</ul>
+</div>
+</section>
+</main>
+
+<footer style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 120px clamp(16px, 3vw, 40px) 40px; display: flex; justify-content: space-between; align-items: center; gap: 16px 32px; flex-wrap: wrap; font-size: 16px">
+<nav aria-label="Elsewhere" style="display: flex; gap: 24px; flex-wrap: wrap">
+<a class="navlink" href="https://github.com/palsagar">GitHub</a>
+<a class="navlink" href="https://linkedin.com/in/spal220493">LinkedIn</a>
+<a class="navlink" href="https://scholar.google.com/citations?user=PtMicc0AAAAJ">Google Scholar</a>
+<a class="navlink" href="mailto:sagar2204pal@gmail.com">Email</a>
+<a class="navlink" href="#rss">RSS</a>
+</nav>
+<span style="color: var(--ink-2)">Sagar Pal, Paris, 2026</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["night","day"],"default":"night"},"$preview":{"width":1440,"height":3600}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { type: 'All', theme: null };
+  }
+  renderVals() {
+    const finished = [
+      { year: '2026', month: 'Sep', type: 'Paper', title: 'GFlowNet Foundations', by: 'Bengio, Lahlou, Deleu, Hu, Tiwari, Bengio, 2021', note: 'The cleanest statement of why sampling proportionally to reward beats maximising it for discovery.' },
+      { year: '2026', month: 'Aug', type: 'Book', title: 'Physical Hydrodynamics', by: 'Guyon, Hulin, Petit, Mitescu', note: 'Order-of-magnitude physics before equations. The book I wish I had read first.' },
+      { year: '2026', month: 'Jun', type: 'Article', title: 'Making Deep Learning Go Brrrr From First Principles', by: 'Horace He, 2022', note: 'Compute, memory bandwidth, overhead: the roofline model for people who train models.' },
+      { year: '2026', month: 'Apr', type: 'Paper', title: 'The Open Catalyst 2020 (OC20) Dataset and Community Challenges', by: 'Chanussot et al., 2021', note: 'Where most of today’s catalysis MLIP benchmarks start.' },
+      { year: '2025', month: 'Nov', type: 'Book', title: 'Statistical Mechanics: Entropy, Order Parameters, and Complexity', by: 'James Sethna, 2006', note: 'Statistical physics taught through problems that still feel modern.' },
+      { year: '2025', month: 'Sep', type: 'Paper', title: 'E(n) Equivariant Graph Neural Networks', by: 'Satorras, Hoogeboom, Welling, 2021', note: 'Equivariance without spherical harmonics, and the trade-offs that come with it.' }
+    ];
+    const queue = [
+      { type: 'Book', title: 'Turbulent Flows', by: 'Stephen B. Pope' },
+      { type: 'Paper', title: 'Orb: A Fast, Scalable Neural Network Potential', by: 'Neumann et al., 2024' },
+      { type: 'Article', title: 'The Scaling Hypothesis', by: 'Gwern Branwen, 2020' },
+      { type: 'Book', title: 'The Feynman Lectures on Physics, Vol. II', by: 'Feynman, Leighton, Sands' }
+    ];
+    const now = [{ type: 'Book' }, { type: 'Paper' }, { type: 'Article' }];
+    const all = finished.concat(queue, now);
+    const count = (t) => all.filter((x) => t === 'All' || x.type === t.replace(/s$/, '')).length;
+    const sel = this.state.type;
+    const keep = (x) => sel === 'All' || x.type === sel.replace(/s$/, '');
+    const years = ['2026', '2025']
+      .map((yr) => ({ year: yr, items: finished.filter((x) => x.year === yr && keep(x)) }))
+      .filter((y) => y.items.length > 0);
+    const theme = this.state.theme || this.props.theme || 'night';
+    const TK = {
+      night: { scheme: 'dark', ground: '#0A0E16', surface: '#111823', surface2: '#1A2330', surface3: '#232E3D', ink: '#EEEAE2', ink2: '#A0A8B4', ink3: '#8A93A1', accent: '#F2A64A', accentHover: '#F6B867', onAccent: '#0A0E16', link: '#F2A64A', teal: '#6CC3CA' },
+      day: { scheme: 'light', ground: '#F3F4F6', surface: '#E7EBEF', surface2: '#DCE2E8', surface3: '#D0D8E0', ink: '#111925', ink2: '#4E5866', ink3: '#56606E', accent: '#F2A64A', accentHover: '#EE9A33', onAccent: '#111925', link: '#9A520E', teal: '#1F6F7A' }
+    };
+    return {
+      tk: TK[theme],
+      isNight: theme === 'night',
+      isDay: theme === 'day',
+      toggleLabel: theme === 'night' ? 'Switch to day theme' : 'Switch to night theme',
+      toggleTheme: () => this.setState({ theme: theme === 'night' ? 'day' : 'night' }),
+      types: ['All', 'Books', 'Papers', 'Articles'].map((t) => ({
+        label: t,
+        count: count(t),
+        on: t === sel,
+        off: t !== sel,
+        pick: () => this.setState({ type: t })
+      })),
+      showBook: keep({ type: 'Book' }),
+      showPaper: keep({ type: 'Paper' }),
+      showArticle: keep({ type: 'Article' }),
+      years: years,
+      queue: queue.filter(keep)
+    };
+  }
+}
+</script>
+</body>
+</html>

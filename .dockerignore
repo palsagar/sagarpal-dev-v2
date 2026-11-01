@@ -1,19 +1,23 @@
-# Jekyll build output & caches
-_site
-.jekyll-cache
-.jekyll-metadata
+# Only web/, api/ and deploy/ go into the build, without local builds, caches or secrets.
+*
+!web/
+!api/
+!deploy/
 
-# Bundler / gems
-vendor
-.bundle
-*.gem
-
-# Node (not used by the build, but ignored just in case)
-node_modules
-
-# Local tooling / editor cruft (keep .git — the lastmod hook needs it)
-.claude
-.superpowers
-.devcontainer
-.vscode
-.idea
+web/node_modules/
+web/dist/
+web/.astro/
+web/tests/
+web/test-results/
+web/playwright-report/
+web/blob-report/
+api/.venv/
+api/tests/
+api/.env
+api/.env.*
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage
+**/.DS_Store

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blog post on a phone — Sagar Pal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:var(--ink)}a:hover{color:var(--link)}
+:focus-visible{outline:2px solid var(--link);outline-offset:3px}
+.navlink{color:var(--ink-2);text-decoration:none}
+.prose a{color:var(--link)}
+</style>
+</helmet>
+<div style="--ground: {{tk.ground}}; --surface: {{tk.surface}}; --surface-2: {{tk.surface2}}; --surface-3: {{tk.surface3}}; --ink: {{tk.ink}}; --ink-2: {{tk.ink2}}; --ink-3: {{tk.ink3}}; --accent: {{tk.accent}}; --accent-hover: {{tk.accentHover}}; --on-accent: {{tk.onAccent}}; --link: {{tk.link}}; --teal: {{tk.teal}}; color-scheme: {{tk.scheme}}; width: 390px; min-height: 3000px; box-sizing: border-box; background: var(--ground); color: var(--ink); font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif; font-size: 17px; line-height: 1.5; -webkit-font-smoothing: antialiased; overflow: hidden">
+
+<header style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; gap: 12px">
+<a href="HomeMobile.dc.html" style="font-size: 18px; font-weight: 650; letter-spacing: -0.01em; text-decoration: none">Sagar Pal</a>
+<div style="display: flex; gap: 8px">
+<button type="button" aria-label="{{toggleLabel}}" onClick="{{toggleTheme}}" style="width: 44px; height: 44px; border-radius: 999px; border: 0; background: var(--surface-2); color: var(--ink); display: inline-flex; align-items: center; justify-content: center">
+<sc-if value="{{isNight}}" hint-placeholder-val="{{true}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"></path></svg></sc-if>
+<sc-if value="{{isDay}}" hint-placeholder-val="{{false}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+</button>
+<button type="button" aria-expanded="false" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--surface-2); color: var(--ink); font: 500 16px 'Archivo', sans-serif">Menu</button>
+</div>
+</header>
+
+<main>
+<article>
+<header style="padding: 40px 16px 0; display: flex; flex-direction: column; gap: 18px">
+<a href="Blog.dc.html" class="navlink" style="font-size: 15px; font-weight: 500">All writing</a>
+<h1 style="margin: 0; font-size: 40px; font-weight: 630; font-stretch: 106%; letter-spacing: -0.045em; line-height: 1">Gray–Scott in 200 lines of WGSL</h1>
+<p style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 20px; line-height: 1.4">A reaction–diffusion solver written as WebGPU compute shaders, and what ping-pong buffers teach you about GPU memory.</p>
+<div style="display: flex; gap: 6px 18px; flex-wrap: wrap; font-size: 14px; color: var(--ink-2)"><span>12 Oct 2026</span><span>14 min read</span><span>2,140 reads</span></div>
+</header>
+
+<figure style="margin: 32px 0 0">
+<img src="/_blob/7584d50266de59135c885d8e22e09824" alt="Spots and loops of a Gray–Scott field in amber and teal on dark" style="width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block">
+<figcaption style="padding: 10px 16px 0; font-size: 14px; line-height: 1.5; color: var(--ink-2)">Figure 1. Spots and loops at F = 0.018, k = 0.051.</figcaption>
+</figure>
+
+<details style="margin: 32px 16px 0; background: var(--surface); border-radius: 16px; padding: 0 18px">
+<summary style="height: 52px; display: flex; align-items: center; font-size: 16px; font-weight: 500; cursor: pointer">On this page</summary>
+<ul style="list-style: none; margin: 0; padding: 0 0 16px; display: flex; flex-direction: column; gap: 10px; font-size: 16px"><li><a href="#m-model" style="text-decoration: none">The model</a></li><li><a href="#m-pp" style="text-decoration: none; color: var(--ink-2)">Ping-pong buffers</a></li><li><a href="#m-try" style="text-decoration: none; color: var(--ink-2)">Choosing F and k</a></li></ul>
+</details>
+
+<div class="prose" style="padding: 32px 16px 0; display: flex; flex-direction: column; gap: 22px; font-family: 'Source Serif 4', Georgia, serif; font-size: 19px; line-height: 1.6">
+<p style="margin: 0">Reaction–diffusion systems are the rare corner of physics where two lines of PDE produce something that looks alive. The Gray–Scott model has two species, <i>u</i> and <i>v</i>, feeding and consuming each other on a grid.<button type="button" aria-expanded="{{noteOpen}}" onClick="{{toggleNote}}" aria-label="Show note 1" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin-left: 4px; border: 0; border-radius: 999px; background: var(--surface-2); color: var(--link); font: 600 13px 'Archivo', sans-serif; vertical-align: 2px; cursor: pointer">1</button></p>
+<sc-if value="{{noteOpen}}" hint-placeholder-val="{{true}}">
+<aside style="background: var(--surface); border-radius: 14px; padding: 14px 16px; font-family: 'Archivo', sans-serif; font-size: 15px; line-height: 1.5; color: var(--ink-2)">J. E. Pearson mapped the (F, k) plane into a dozen pattern families in “Complex Patterns in a Simple System”, Science 261 (1993).</aside>
+</sc-if>
+
+<h2 id="m-model" style="margin: 20px 0 0; font-family: 'Archivo', sans-serif; font-size: 28px; font-weight: 620; letter-spacing: -0.03em; line-height: 1.1">The model</h2>
+<p style="margin: 0">The reaction turns <i>u</i> into <i>v</i> at rate <i>uv</i><sup>2</sup>, fresh <i>u</i> is fed in at rate <i>F</i>, and <i>v</i> is removed at rate <i>F</i> + <i>k</i>:</p>
+<div role="math" aria-label="du by dt equals D u laplacian u minus u v squared plus F times one minus u" style="overflow-x: auto; background: var(--surface); border-radius: 14px; padding: 16px; font-size: 19px; white-space: nowrap"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15"><span>∂<i>u</i></span><span style="border-top: 1.5px solid var(--ink); padding-top: 2px">∂<i>t</i></span></span> = <i>D<sub>u</sub></i> ∇<sup>2</sup><i>u</i> − <i>uv</i><sup>2</sup> + <i>F</i>(1 − <i>u</i>)</span></div>
+
+<h2 id="m-pp" style="margin: 20px 0 0; font-family: 'Archivo', sans-serif; font-size: 28px; font-weight: 620; letter-spacing: -0.03em; line-height: 1.1">Ping-pong buffers</h2>
+<p style="margin: 0">A dispatch can't safely read and write the same texture, so the state lives in two. Each step reads one and writes the other.</p>
+<pre style="margin: 0 -16px; background: var(--surface); color: var(--ink); padding: 18px 16px; font: 13px/1.7 'JetBrains Mono', ui-monospace, monospace; overflow-x: auto"><span style="color: var(--teal)">let</span> r  = s.x * s.y * s.y;
+<span style="color: var(--teal)">let</span> du = P.du * lap.x - r + P.f * (1.0 - s.x);
+<span style="color: var(--teal)">let</span> dv = P.dv * lap.y + r - (P.f + P.k) * s.y;
+textureStore(dst, p, vec4(s + P.dt * vec2(du, dv), 0.0, 1.0));</pre>
+
+<div style="margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap; font-family: 'Archivo', sans-serif">
+<button type="button" aria-pressed="{{liked}}" onClick="{{toggleLike}}" style="height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 600 16px 'Archivo', sans-serif; display: inline-flex; align-items: center; gap: 10px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 11v9H4v-9h3zM7 11l4-7c1.7 0 2.6 1 2.3 2.6L12.8 10H19a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7"></path></svg>
+<span>Useful</span><span style="font-weight: 500; font-variant-numeric: tabular-nums">{{likes}}</span>
+</button>
+<button type="button" style="height: 48px; padding: 0 20px; border: 0; border-radius: 999px; background: var(--surface-2); color: var(--ink); font: 500 16px 'Archivo', sans-serif">Copy link</button>
+</div>
+</div>
+</article>
+
+<nav aria-label="More writing" style="padding: 72px 16px 0">
+<a href="PostMobile.dc.html" style="display: flex; flex-direction: column; gap: 8px; text-decoration: none; background: var(--surface); border-radius: 20px; padding: 24px">
+<span style="font-size: 14px; color: var(--ink-2)">Previous post</span>
+<span style="font-size: 24px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15">From DFT labels to production MLIPs</span>
+</a>
+</nav>
+</main>
+
+<footer style="padding: 72px 16px 32px; display: flex; flex-direction: column; gap: 16px; font-size: 16px">
+<nav aria-label="Elsewhere" style="display: flex; gap: 12px 20px; flex-wrap: wrap">
+<a class="navlink" href="https://github.com/palsagar">GitHub</a>
+<a class="navlink" href="https://linkedin.com/in/spal220493">LinkedIn</a>
+<a class="navlink" href="https://scholar.google.com/citations?user=PtMicc0AAAAJ">Scholar</a>
+<a class="navlink" href="#rss">RSS</a>
+</nav>
+<span style="color: var(--ink-2); font-size: 14px">Sagar Pal, Paris, 2026</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["night","day"],"default":"night"},"$preview":{"width":390,"height":3000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { noteOpen: true, liked: false, theme: null };
+  }
+  renderVals() {
+    const theme = this.state.theme || this.props.theme || 'night';
+    const TK = {
+      night: { scheme: 'dark', ground: '#0A0E16', surface: '#111823', surface2: '#1A2330', surface3: '#232E3D', ink: '#EEEAE2', ink2: '#A0A8B4', ink3: '#8A93A1', accent: '#F2A64A', accentHover: '#F6B867', onAccent: '#0A0E16', link: '#F2A64A', teal: '#6CC3CA' },
+      day: { scheme: 'light', ground: '#F3F4F6', surface: '#E7EBEF', surface2: '#DCE2E8', surface3: '#D0D8E0', ink: '#111925', ink2: '#4E5866', ink3: '#56606E', accent: '#F2A64A', accentHover: '#EE9A33', onAccent: '#111925', link: '#9A520E', teal: '#1F6F7A' }
+    };
+    return {
+      tk: TK[theme],
+      isNight: theme === 'night',
+      isDay: theme === 'day',
+      toggleLabel: theme === 'night' ? 'Switch to day theme' : 'Switch to night theme',
+      toggleTheme: () => this.setState({ theme: theme === 'night' ? 'day' : 'night' }),
+      noteOpen: this.state.noteOpen,
+      toggleNote: () => this.setState({ noteOpen: !this.state.noteOpen }),
+      liked: this.state.liked,
+      likes: this.state.liked ? 39 : 38,
+      toggleLike: () => this.setState({ liked: !this.state.liked })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+---
+// Career list (DESIGN.md §7.1.2): years column + role, ", Org" in --ink-2.
+// `phoneLimit` hides the rows after the first n on phones.
+export interface CareerRow {
+  years: string;
+  role: string;
+  org: string;
+}
+
+interface Props {
+  rows: CareerRow[];
+  phoneLimit?: number;
+}
+
+const { rows, phoneLimit = rows.length } = Astro.props;
+---
+
+<ul class="career" role="list">
+  {rows.map((row, i) => (
+    <li class:list={{ 'phone-hidden': i >= phoneLimit }}>
+      <span class="career__years tabular">{row.years}</span>
+      <span class="career__role">
+        <span class="career__title">{row.role}</span>
+        <span class="career__org">, {row.org}</span>
+      </span>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .career {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-width: 760px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .career li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 32px;
+    padding: 14px 0;
+  }
+
+  .career__years {
+    flex: 0 0 8.5rem;
+    font-size: 16px;
+    color: var(--ink-2);
+  }
+
+  .career__role {
+    flex: 1 1 320px;
+    min-width: 0;
+  }
+
+  .career__title {
+    font-weight: 560;
+  }
+
+  .career__org {
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 719.98px) {
+    .career {
+      gap: 14px;
+    }
+
+    .career li {
+      flex-direction: column;
+      gap: 0;
+      padding: 0;
+    }
+
+    .career__years {
+      flex: none;
+      font-size: 14px;
+    }
+
+    .career__role {
+      flex: none;
+    }
+  }
+</style>

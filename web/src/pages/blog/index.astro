@@ -1,0 +1,527 @@
+---
+// Blog index (DESIGN.md §7.2, Blog.dc.html): title and sentence, search and
+// topic pills, the latest post featured, the rest grouped by year.
+// With no posts: the empty state, without search or filters.
+// Filtering is lib/blog-filter.ts; without JS every post stays listed and
+// the search and pills stay hidden.
+import fieldDay from '../../assets/fig-mitosis-day.jpg';
+import fieldNight from '../../assets/fig-mitosis-night.jpg';
+import ThemedPicture from '../../components/ThemedPicture.astro';
+import { TOPICS } from '../../content.config';
+import Base from '../../layouts/Base.astro';
+import {
+  dayMonth,
+  getPosts,
+  isoDate,
+  longDate,
+  type Post,
+} from '../../lib/posts';
+
+const posts = await getPosts();
+const [featured, ...rest] = posts;
+const topics = TOPICS.filter((t) =>
+  posts.some((p) => p.entry.data.tags.includes(t)),
+);
+const years = [
+  ...new Set(rest.map((p) => p.entry.data.date.getUTCFullYear())),
+].map((year) => ({
+  year,
+  posts: rest.filter((p) => p.entry.data.date.getUTCFullYear() === year),
+}));
+
+/** Data the filter reads: lower-case title and dek, and the topics. */
+const item = (p: Post) => ({
+  'data-post-item': '',
+  'data-slug': p.slug,
+  'data-text': `${p.entry.data.title} ${p.entry.data.dek}`.toLowerCase(),
+  'data-tags': p.entry.data.tags.join('|'),
+});
+---
+
+<Base
+  title="Writing"
+  description="Long-form notes on numerical methods, high-performance computing and machine learning for science."
+>
+  <section class="container blog-head" aria-labelledby="page-title">
+    <div class="blog-head__text">
+      <h1 id="page-title" class="display display--blog">
+        Writing
+      </h1>
+      <p class="blog-head__lede">
+        Long-form notes on numerical methods, high-performance computing and
+        machine learning for science.
+      </p>
+    </div>
+    {featured && (
+      <div class="blog-head__tools" data-blog-tools hidden>
+        <form role="search" class="blog-search" data-blog-search>
+          <label for="post-search">Search posts</label>
+          <div class="blog-search__field">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="M20 20l-4.2-4.2" />
+            </svg>
+            <input
+              id="post-search"
+              type="search"
+              placeholder="Laplacian, MPI, equivariance…"
+              autocomplete="off"
+            />
+          </div>
+        </form>
+        <div class="blog-topics" role="group" aria-label="Filter by topic">
+          {['All', ...topics].map((t) => (
+            <button
+              type="button"
+              class="pill blog-topic"
+              data-topic={t}
+              aria-pressed={t === 'All' ? 'true' : 'false'}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+  </section>
+
+  {featured ? (
+    <>
+      <section
+        class="container blog-featured"
+        aria-labelledby="latest-title"
+        {...item(featured)}
+      >
+        <a
+          class:list={[
+            'row-link blog-featured__link',
+            { 'blog-featured__link--text': !featured.entry.data.hero },
+          ]}
+          href={featured.url}
+        >
+          {featured.entry.data.hero && (
+            <ThemedPicture
+              src={featured.entry.data.hero.image}
+              srcDay={featured.entry.data.hero.imageDay}
+              alt={featured.entry.data.hero.alt}
+              sizes="(min-width: 1440px) 780px, (min-width: 1000px) 56vw, 100vw"
+              class="blog-featured__img"
+              priority
+            />
+          )}
+          <span class="blog-featured__text">
+            <time
+              class="meta blog-featured__date"
+              datetime={isoDate(featured.entry.data.date)}
+            >
+              {longDate(featured.entry.data.date)}
+            </time>
+            <span id="latest-title" class="h-featured row-link__title">
+              {featured.entry.data.title}
+            </span>
+            <span class="blog-featured__dek">{featured.entry.data.dek}</span>
+            <span class="meta blog-featured__meta">
+              <span>{featured.readingMinutes} min read</span>
+              {featured.entry.data.tags.map((t) => (
+                <span>{t}</span>
+              ))}
+            </span>
+          </span>
+        </a>
+      </section>
+
+      <section class="container blog-years" aria-label="All posts">
+        {years.map((y) => (
+          <div class="blog-year" data-year-group>
+            <h2 class="blog-year__title tabular">{y.year}</h2>
+            <ul class="blog-year__list" role="list">
+              {y.posts.map((p) => (
+                <li {...item(p)}>
+                  <a class="row-link blog-row" href={p.url}>
+                    <time
+                      class="blog-row__date tabular"
+                      datetime={isoDate(p.entry.data.date)}
+                    >
+                      {dayMonth(p.entry.data.date)}
+                    </time>
+                    <span class="blog-row__main">
+                      <span class="list-title list-title--blog row-link__title">
+                        {p.entry.data.title}
+                      </span>
+                      <span class="blog-row__dek">{p.entry.data.dek}</span>
+                    </span>
+                    <span class="meta blog-row__meta">
+                      <span>{p.readingMinutes} min read</span>
+                      <span>{p.entry.data.tags.join(', ')}</span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <div class="blog-none" data-blog-none hidden>
+          <p class="blog-none__text" aria-live="polite" data-blog-none-text></p>
+          <button
+            type="button"
+            class="btn btn--secondary btn--sm"
+            data-blog-reset
+          >
+            Clear search and filters
+          </button>
+        </div>
+      </section>
+    </>
+  ) : (
+    <section class="container blog-empty" aria-labelledby="empty-title">
+      <div class="blog-empty__text">
+        <h2 id="empty-title" class="blog-empty__title">
+          Nothing published yet.
+        </h2>
+        <p class="blog-empty__body">
+          The first post is on its way. Subscribe to the RSS feed to get it when
+          it lands.
+        </p>
+        <a class="btn btn--primary" href="/feed.xml">
+          Subscribe via RSS
+        </a>
+      </div>
+      <ThemedPicture
+        src={fieldNight}
+        srcDay={fieldDay}
+        alt=""
+        sizes="(min-width: 1000px) 560px, 100vw"
+        widths={[480, 800, 1200]}
+        class="blog-empty__img"
+        priority
+      />
+    </section>
+  )}
+</Base>
+
+<script>
+  import { initBlogFilter } from '../../lib/blog-filter';
+
+  let cleanup: (() => void) | undefined;
+  document.addEventListener('astro:page-load', () => {
+    const tools = document.querySelector<HTMLElement>('[data-blog-tools]');
+    if (tools) cleanup = initBlogFilter(tools);
+  });
+  document.addEventListener('astro:before-swap', () => {
+    cleanup?.();
+    cleanup = undefined;
+  });
+</script>
+
+<style>
+  .blog-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 48px 72px;
+    padding-top: 96px;
+  }
+
+  .blog-head__text {
+    flex: 7 1 520px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .blog-head__lede {
+    max-width: 34ch;
+    font-size: clamp(20px, 1.8vw, 26px);
+    line-height: 1.35;
+  }
+
+  .blog-head__tools {
+    flex: 5 1 380px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .blog-search {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .blog-search label {
+    font-size: 15px;
+    color: var(--ink-2);
+  }
+
+  .blog-search__field {
+    position: relative;
+  }
+
+  .blog-search__field svg {
+    position: absolute;
+    left: 18px;
+    top: 17px;
+    color: var(--ink-2);
+  }
+
+  .blog-search input {
+    width: 100%;
+    height: 52px;
+    padding: 0 20px 0 48px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 17px;
+  }
+
+  .blog-search input::placeholder {
+    color: var(--ink-3);
+  }
+
+  .blog-search input:focus-visible {
+    outline-offset: 2px;
+  }
+
+  .blog-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .blog-topic {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 15px;
+  }
+
+  @media (max-width: 719.98px) {
+    .blog-topic {
+      height: 44px;
+    }
+  }
+
+  /* ---------- Featured ---------- */
+
+  .blog-featured {
+    padding-top: 120px;
+  }
+
+  .blog-featured__link {
+    --row-pad-x: min(20px, var(--gutter));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 32px 56px;
+    padding-block: 20px;
+    border-radius: 24px;
+  }
+
+  .blog-featured__link :global(.blog-featured__img) {
+    flex: 7 1 520px;
+    min-width: 0;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  /* Both theme <picture>s are flex items; only one shows. */
+  .blog-featured__link :global(picture) {
+    flex: 7 1 520px;
+    min-width: 0;
+  }
+
+  .blog-featured__text {
+    flex: 5 1 360px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .blog-featured__link--text .blog-featured__text {
+    max-width: 900px;
+  }
+
+  .blog-featured__date {
+    font-size: 16px;
+  }
+
+  .blog-featured__dek {
+    max-width: 40ch;
+    font-size: 20px;
+    line-height: 1.5;
+  }
+
+  .blog-featured__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  /* ---------- Years ---------- */
+
+  .blog-years {
+    display: flex;
+    flex-direction: column;
+    gap: 96px;
+    padding-top: 120px;
+  }
+
+  .blog-years:not(
+    :has([data-year-group]:not([hidden]), .blog-none:not([hidden]))
+  ) {
+    display: none;
+  }
+
+  .blog-year {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 24px 48px;
+  }
+
+  .blog-year__title {
+    flex: 0 0 240px;
+    font-size: clamp(44px, 4.4vw, 64px);
+    font-weight: 600;
+    font-stretch: 106%;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .blog-year__list {
+    flex: 1 1 560px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .blog-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 40px;
+    padding-block: 24px;
+  }
+
+  .blog-row__date {
+    flex: 0 0 5rem;
+    padding-top: 6px;
+    font-size: 16px;
+    color: var(--ink-2);
+  }
+
+  .blog-row__main {
+    flex: 1 1 400px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .blog-row__dek {
+    max-width: 62ch;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  .blog-row__meta {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    padding-top: 8px;
+  }
+
+  @media (max-width: 719.98px) {
+    .blog-row {
+      flex-direction: column;
+    }
+
+    .blog-row__date,
+    .blog-row__main {
+      flex: none;
+    }
+
+    .blog-row__meta {
+      flex-direction: row;
+      gap: 16px;
+      padding-top: 0;
+    }
+  }
+
+  .blog-none {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 48px 0;
+  }
+
+  .blog-none__text {
+    font-size: 24px;
+  }
+
+  /* ---------- Empty state ---------- */
+
+  .blog-empty {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 48px 72px;
+    padding-top: 120px;
+  }
+
+  .blog-empty__text {
+    flex: 7 1 520px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .blog-empty__title {
+    font-size: clamp(28px, 2.6vw, 36px);
+    font-weight: 620;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  .blog-empty__body {
+    max-width: 44ch;
+    font-size: 18px;
+  }
+
+  .blog-empty__text .btn {
+    margin-top: 8px;
+  }
+
+  .blog-empty :global(picture) {
+    flex: 5 1 380px;
+    min-width: 0;
+  }
+
+  .blog-empty :global(.blog-empty__img) {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+</style>

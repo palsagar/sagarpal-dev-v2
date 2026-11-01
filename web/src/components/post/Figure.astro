@@ -1,0 +1,71 @@
+---
+// <Figure> in posts (DESIGN.md §6): 16px corners, caption prefixed "Figure n."
+// (n comes from remarkPostMeta in lib/markdown.ts). `wide` spans the prose
+// column including the sidenote margin. Caption from the `caption` prop or
+// the element's children.
+import type { ImageMetadata } from 'astro';
+import ThemedPicture from '../ThemedPicture.astro';
+
+interface Props {
+  src: ImageMetadata;
+  srcDay?: ImageMetadata;
+  alt: string;
+  caption?: string;
+  wide?: boolean;
+  n?: string;
+}
+
+const { src, srcDay, alt, caption, wide = false, n } = Astro.props;
+const hasCaption = !!caption || Astro.slots.has('default');
+---
+
+<figure class:list={['post-figure', { 'post-figure--wide': wide }]}>
+  <ThemedPicture
+    src={src}
+    srcDay={srcDay}
+    alt={alt}
+    sizes={
+      wide
+        ? '(min-width: 1024px) 1000px, 100vw'
+        : '(min-width: 1024px) 760px, 100vw'
+    }
+    class="post-figure__img"
+  />
+  {hasCaption && (
+    <figcaption>
+      {n && <span>Figure {n}. </span>}
+      {caption ?? <slot />}
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .post-figure {
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .post-figure--wide {
+    max-width: none;
+  }
+
+  .post-figure :global(.post-figure__img) {
+    width: 100%;
+    border-radius: 16px;
+  }
+
+  figcaption {
+    max-width: var(--measure);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  /* Children captions arrive wrapped in <p> by MDX. */
+  figcaption :global(p) {
+    display: inline;
+  }
+</style>

@@ -1,0 +1,63 @@
+---
+// Projects (DESIGN.md §7.5): the home "Simulations and tools" section at full
+// length, with each project's longer description. Keeps the old /projects/ URL.
+import ProjectGrid from '../../components/ProjectGrid.astro';
+import Base from '../../layouts/Base.astro';
+import { getProjects } from '../../lib/profile';
+
+const projects = await getProjects();
+---
+
+<Base
+  title="Simulations and tools"
+  description="Side projects by Sagar Pal, mostly physics running in a browser tab: WebGPU fluid and reaction–diffusion simulators, a CLI and a finance simulator."
+>
+  <section class="container page-head" aria-labelledby="page-title">
+    <h1 id="page-title" class="display display--blog page-head__title">
+      Simulations and tools
+    </h1>
+    <p class="page-head__lede">
+      Side projects, mostly physics running in a browser tab.
+    </p>
+  </section>
+
+  <section class="container page-body" aria-label="Projects">
+    <ProjectGrid projects={projects} full level={2} priority />
+  </section>
+</Base>
+
+<style>
+  .page-head {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding-top: 96px;
+  }
+
+  .page-head__title {
+    max-width: 10ch;
+  }
+
+  .page-head__lede {
+    max-width: 34ch;
+    font-size: clamp(20px, 1.8vw, 26px);
+    line-height: 1.35;
+  }
+
+  .page-body {
+    padding-top: 120px;
+  }
+
+  @media (max-width: 719.98px) {
+    /* "Simulations" is one long word (about 5.66em): at the phone display size
+       (76px) it is wider than a 390px screen. Sized to the column so it ends
+       inside it, not in the right gutter. */
+    .page-head__title {
+      font-size: min(76px, calc((100vw - 2 * var(--gutter)) / 5.75));
+    }
+
+    .page-body {
+      padding-top: 80px;
+    }
+  }
+</style>

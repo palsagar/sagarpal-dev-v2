@@ -1,0 +1,150 @@
+---
+// Footer (DESIGN.md §6). "full": links row, the name filled with the field image
+// (background-clip: text), colophon. "compact" (subpages): links + "Sagar Pal, Paris, YYYY".
+import { getImage } from 'astro:assets';
+import fieldFill from '../assets/project-gray-scott.jpg';
+import { elsewhere, site } from '../data/site';
+
+interface Props {
+  variant?: 'full' | 'compact';
+}
+
+const { variant = 'full' } = Astro.props;
+const year = new Date().getFullYear();
+// The fill loads with the page, so it is kept small: 800px (the size the project
+// card also uses) and only seen through the letters. AVIF where supported, WebP otherwise.
+const fill =
+  variant === 'full'
+    ? await Promise.all(
+        (['avif', 'webp'] as const).map((format) =>
+          getImage({ src: fieldFill, width: 800, format }),
+        ),
+      )
+    : null;
+---
+
+<footer
+  class="site-footer container"
+  style={
+    fill
+      ? `--name-fill: url(${fill[1].src}); --name-fill-set: image-set(url(${fill[0].src}) type("image/avif"), url(${fill[1].src}) type("image/webp"))`
+      : undefined
+  }
+>
+  <div class="site-footer__row">
+    <nav aria-label="Elsewhere">
+      <ul class="site-footer__links" role="list">
+        {elsewhere.map((item) => (
+          <li>
+            <a class="navlink" href={item.href}>
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <span class="site-footer__place tabular">
+      {variant === 'compact'
+        ? `${site.name}, ${site.city}, ${year}`
+        : `${site.city}, ${year}`}
+    </span>
+  </div>
+  {variant === 'full' && (
+    <>
+      <p class="site-footer__name" aria-hidden="true">
+        {site.name}
+      </p>
+      <p class="site-footer__colophon">
+        Set in Archivo and Source Serif 4. Every pattern on this site is a
+        solution of the Gray–Scott equations.
+      </p>
+    </>
+  )}
+</footer>
+
+<style>
+  .site-footer {
+    padding-top: var(--section-space);
+    padding-bottom: 40px;
+  }
+
+  .site-footer__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 32px;
+    font-size: 16px;
+  }
+
+  .site-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__place {
+    color: var(--ink-2);
+  }
+
+  .site-footer__name {
+    margin-top: 40px;
+    /* background-clip: text only paints inside the box; with line-height 0.82 the
+       descender of "g" falls outside it. The padding gives it room (and clearance
+       above the colophon). */
+    padding-bottom: 0.2em;
+    font-size: clamp(72px, 17.6vw, 262px);
+    font-weight: 720;
+    font-stretch: 115%;
+    letter-spacing: -0.06em;
+    line-height: 0.82;
+    white-space: nowrap;
+    color: var(--ink);
+    background-image: var(--name-fill);
+    background-size: cover;
+    background-position: 50% 40%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Inside @supports: an image-set() the browser rejects would leave the
+     transparent text with no fill at all. */
+  @supports (background-image: image-set(url('x.avif') type('image/avif'))) {
+    .site-footer__name {
+      background-image: var(--name-fill-set);
+    }
+  }
+
+  .site-footer__colophon {
+    margin-top: 32px;
+    font-size: 14px;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 719.98px) {
+    .site-footer {
+      padding-bottom: 32px;
+    }
+
+    .site-footer__links {
+      gap: 12px 20px;
+    }
+
+    .site-footer__name {
+      margin-top: 32px;
+      /* "Sagar Pal" at 720 / 112% is ~4.6em wide: fill the column exactly, never overflow. */
+      font-size: calc((100vw - 2 * var(--gutter)) / 4.65);
+      font-stretch: 112%;
+      line-height: 0.85;
+    }
+
+    .site-footer__colophon {
+      margin-top: 20px;
+      font-size: 13px;
+    }
+  }
+</style>

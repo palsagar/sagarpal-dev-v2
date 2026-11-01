@@ -1,0 +1,32 @@
+---
+// One page per published post (drafts too under `astro dev`).
+import { render } from 'astro:content';
+import Callout from '../../components/post/Callout.astro';
+import Figure from '../../components/post/Figure.astro';
+import LiveField from '../../components/post/LiveField.astro';
+import Sidenote from '../../components/post/Sidenote.astro';
+import Post from '../../layouts/Post.astro';
+import { getPosts, type Post as PostData } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  // Newest first: the next (newer) post is before, the previous (older) after.
+  return posts.map((post, i) => ({
+    params: { slug: post.slug },
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+interface Props {
+  post: PostData;
+  newer?: PostData;
+  older?: PostData;
+}
+
+const { post, newer, older } = Astro.props;
+const { Content, headings } = await render(post.entry);
+---
+
+<Post post={post} headings={headings} newer={newer} older={older}>
+  <Content components={{ Callout, Figure, LiveField, Sidenote }} />
+</Post>

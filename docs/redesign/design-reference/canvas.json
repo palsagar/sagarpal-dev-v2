@@ -1,0 +1,31 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-31T20:45:00Z" },
+  "title": "sagar-pal.dev redesign",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 6900, "title": "Home — night", "expand": "fill", "is_interactive": true },
+    "Blog.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 3300, "title": "/blog — night", "expand": "fill", "is_interactive": true },
+    "Post.dc.html": { "x": 3040, "y": 0, "w": 1440, "h": 4200, "title": "/blog/[slug] — night", "expand": "fill", "is_interactive": true },
+    "Reading.dc.html": { "x": 4560, "y": 0, "w": 1440, "h": 3600, "title": "/what-im-reading — night", "expand": "fill", "is_interactive": true },
+    "HomeMobile.dc.html": { "x": 6080, "y": 0, "w": 390, "h": 4300, "title": "Home, phone — night", "is_interactive": true },
+    "PostMobile.dc.html": { "x": 6550, "y": 0, "w": 390, "h": 3000, "title": "/blog/[slug], phone — night", "is_interactive": true },
+    "MainDay.dc.html": { "x": 0, "y": 7340, "w": 1440, "h": 6900, "title": "Home — day", "expand": "fill", "is_interactive": true },
+    "BlogDay.dc.html": { "x": 1520, "y": 7340, "w": 1440, "h": 3300, "title": "/blog — day", "expand": "fill", "is_interactive": true },
+    "PostDay.dc.html": { "x": 3040, "y": 7340, "w": 1440, "h": 4200, "title": "/blog/[slug] — day", "expand": "fill", "is_interactive": true },
+    "ReadingDay.dc.html": { "x": 4560, "y": 7340, "w": 1440, "h": 3600, "title": "/what-im-reading — day", "expand": "fill", "is_interactive": true },
+    "HomeMobileDay.dc.html": { "x": 6080, "y": 7340, "w": 390, "h": 4300, "title": "Home, phone — day", "is_interactive": true },
+    "PostMobileDay.dc.html": { "x": 6550, "y": 7340, "w": 390, "h": 3000, "title": "/blog/[slug], phone — day", "is_interactive": true },
+    "PaletteCarina.dc.html": { "x": 0, "y": -1340, "w": 2040, "h": 700, "title": "Palette A — Carina (chosen)" },
+    "PaletteVorticity.dc.html": { "x": 2120, "y": -1340, "w": 2040, "h": 700, "title": "Palette B — Vorticity" },
+    "PaletteIce.dc.html": { "x": 4240, "y": -1340, "w": 2040, "h": 700, "title": "Palette C — Swift–Hohenberg ice" }
+  },
+  "order": ["Main.dc.html", "Blog.dc.html", "Post.dc.html", "Reading.dc.html", "HomeMobile.dc.html", "PostMobile.dc.html", "MainDay.dc.html", "BlogDay.dc.html", "PostDay.dc.html", "ReadingDay.dc.html", "HomeMobileDay.dc.html", "PostMobileDay.dc.html", "PaletteCarina.dc.html", "PaletteVorticity.dc.html", "PaletteIce.dc.html"],
+  "notes": {
+    "title": { "x": 0, "y": -320, "text": "sagar-pal.dev — Carina, night theme", "kind": "title1", "maxW": 6940 },
+    "dayTitle": { "x": 0, "y": 7020, "text": "Day theme", "kind": "title1", "maxW": 6940 },
+    "paletteTitle": { "x": 0, "y": -1660, "text": "Palette options — Carina chosen", "kind": "title1", "maxW": 6280 }
+  },
+  "designSystems": []
+}

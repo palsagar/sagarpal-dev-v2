@@ -1,0 +1,571 @@
+/*
+ * Base styles, type roles and shared UI (DESIGN.md §1, §4, §6, §8, §9).
+ * House rules: surfaces separate by a tone step (no borders, no shadows),
+ * pills are fully round, no `transition: all`.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+main:focus {
+  outline: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+ul,
+ol,
+dl,
+dd {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: inherit;
+  font-size: inherit;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* `hidden` wins over component display rules (flex, inline-flex). */
+[hidden] {
+  display: none !important;
+}
+
+/* Theme change: a short colour fade on the page only (§3.6). */
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    transition:
+      background-color var(--dur-fast) ease,
+      color var(--dur-fast) ease;
+  }
+}
+
+/* No animation anywhere under reduced motion, except user-initiated media (§8). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Layout ---------- */
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  padding-top: var(--section-space);
+}
+
+/* ---------- Focus, links ---------- */
+
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 3px;
+}
+
+a {
+  color: var(--ink);
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  color: var(--link);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a {
+    transition: color var(--dur-fast) ease;
+  }
+}
+
+.navlink {
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.navlink:hover {
+  color: var(--ink);
+}
+
+.navlink[aria-current='page'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.skip-link {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+.skip-link:hover {
+  color: var(--on-accent);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Type roles (§4) ---------- */
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.display {
+  font-size: clamp(76px, 10.4vw, 156px);
+  font-weight: 640;
+  font-stretch: 112%;
+  letter-spacing: -0.05em;
+  line-height: 0.86;
+}
+
+.display--blog {
+  font-size: clamp(72px, 10vw, 148px);
+  line-height: 0.88;
+}
+
+.display--reading {
+  font-size: clamp(64px, 9vw, 136px);
+  line-height: 0.88;
+  max-width: 9ch;
+}
+
+.h-section {
+  font-size: clamp(42px, 4.8vw, 72px);
+  font-weight: 620;
+  font-stretch: 108%;
+  letter-spacing: -0.04em;
+  line-height: 0.96;
+}
+
+.h-post {
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 630;
+  font-stretch: 108%;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  max-width: 16ch;
+}
+
+.h-featured {
+  font-size: clamp(34px, 3.4vw, 50px);
+  font-weight: 620;
+  font-stretch: 106%;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+
+.statement {
+  font-size: clamp(21px, 1.95vw, 28px);
+  letter-spacing: -0.01em;
+  line-height: 1.32;
+  max-width: 34ch;
+}
+
+.dek {
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 1.8vw, 26px);
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+.list-title {
+  font-size: clamp(25px, 2.4vw, 34px);
+  font-weight: 580;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.list-title--blog {
+  font-size: clamp(23px, 2.1vw, 30px);
+  line-height: 1.18;
+}
+
+.card-title {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.meta {
+  font-size: 15px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.small {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+@media (max-width: 719.98px) {
+  body {
+    font-size: 17px;
+  }
+
+  .display,
+  .display--blog,
+  .display--reading {
+    font-size: 76px;
+  }
+
+  .h-section {
+    font-size: 44px;
+  }
+
+  .h-post {
+    font-size: 40px;
+  }
+
+  .card-title {
+    font-size: 26px;
+  }
+}
+
+/* ---------- Buttons and pills (§6) ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn,
+  .pill {
+    transition:
+      background-color var(--dur-fast) ease,
+      color var(--dur-fast) ease,
+      transform var(--dur-fast) ease;
+  }
+
+  .btn:active,
+  .pill:active {
+    transform: scale(0.98);
+  }
+}
+
+.btn--lg {
+  height: 52px;
+  padding: 0 26px;
+}
+
+.btn--sm {
+  height: 44px;
+  padding: 0 20px;
+  font-size: 16px;
+}
+
+.btn--xs {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 15px;
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.btn--primary:hover {
+  background: var(--accent-hover);
+  color: var(--on-accent);
+}
+
+.btn--secondary {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.btn--secondary:hover {
+  background: var(--surface-3);
+  color: var(--ink);
+}
+
+/* Filter pill: topics, reading types, hero presets. Toggle state via aria-pressed. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pill:hover {
+  background: var(--surface-3);
+}
+
+.pill--ghost {
+  background: transparent;
+}
+
+.pill--ghost:hover {
+  background: var(--surface-2);
+}
+
+.pill[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.pill[aria-pressed='true']:hover {
+  background: var(--accent-hover);
+}
+
+.pill__count {
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.pill[aria-pressed='true'] .pill__count {
+  color: inherit;
+}
+
+/* Icon-only round button (theme toggle). */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: var(--surface-3);
+}
+
+/* ---------- Row link (writing, finished reading) ---------- */
+
+.row-link {
+  --row-pad-x: min(24px, var(--gutter));
+  display: block;
+  padding: 28px var(--row-pad-x);
+  margin: 0 calc(-1 * var(--row-pad-x));
+  border-radius: 20px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.row-link:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.row-link:hover .row-link__title {
+  color: var(--link);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .row-link,
+  .row-link__title {
+    transition:
+      background-color var(--dur-fast) ease,
+      color var(--dur-fast) ease;
+  }
+}
+
+/* ---------- Surfaces ---------- */
+
+.surface {
+  background: var(--surface);
+}
+
+.band {
+  background: var(--surface);
+  padding-block: 120px;
+}
+
+.card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 36px 40px;
+}
+
+@media (max-width: 719.98px) {
+  .card {
+    padding: 28px 24px;
+  }
+}
+
+/* ---------- Theme-specific media (§3.5): both share one box ---------- */
+
+[data-theme='day'] .only-night,
+[data-theme='night'] .only-day {
+  display: none;
+}
+
+@media not (prefers-color-scheme: light) {
+  :root:not([data-theme]) .only-day {
+    display: none;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .only-night {
+    display: none;
+  }
+}
+
+/* ---------- Section header: h2 + side link or sentence (§7.1) ---------- */
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.section-head__link {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+/* ---------- Phone-only / not-on-phone content ---------- */
+
+@media (max-width: 719.98px) {
+  .phone-hidden {
+    display: none !important;
+  }
+}
+
+@media (min-width: 720px) {
+  .phone-only {
+    display: none !important;
+  }
+}
+
+/* ---------- Section entrances (§8) ----------
+ * Base.astro adds .reveal-pre from JS, only to [data-reveal] blocks that start
+ * below the fold and only when motion is allowed, so content is visible without JS.
+ * data-reveal="0|1|2" (heading, text, media) sets the 70ms stagger. */
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    transition:
+      opacity 500ms var(--ease-out),
+      transform 500ms var(--ease-out);
+    transition-delay: calc(var(--reveal-i, 0) * 70ms);
+  }
+
+  .reveal-pre {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}

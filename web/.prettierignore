@@ -1,0 +1,10 @@
+dist
+.astro
+node_modules
+package-lock.json
+public/
+# Migrated content from the Jekyll site: do not reformat.
+src/data/*.yml
+test-results
+playwright-report
+.lighthouseci/

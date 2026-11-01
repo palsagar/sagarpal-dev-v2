@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sagar Pal — Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&amp;family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:var(--ink)}a:hover{color:var(--link)}
+:focus-visible{outline:2px solid var(--link);outline-offset:3px}
+.navlink{color:var(--ink-2);text-decoration:none}.navlink:hover{color:var(--ink)}
+.row:hover{background:var(--surface)}
+.row:hover .rowtitle{color:var(--link)}
+.namefill{background-image:url(/_blob/7584d50266de59135c885d8e22e09824);background-size:cover;background-position:50% 40%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.pill-lime:hover{background:var(--accent-hover);color:var(--on-accent)}
+.pill-surface:hover{background:var(--surface-3);color:var(--ink)}
+</style>
+</helmet>
+<div style="--ground: {{tk.ground}}; --surface: {{tk.surface}}; --surface-2: {{tk.surface2}}; --surface-3: {{tk.surface3}}; --ink: {{tk.ink}}; --ink-2: {{tk.ink2}}; --ink-3: {{tk.ink3}}; --accent: {{tk.accent}}; --accent-hover: {{tk.accentHover}}; --on-accent: {{tk.onAccent}}; --link: {{tk.link}}; --teal: {{tk.teal}}; color-scheme: {{tk.scheme}}; background: var(--ground); color: var(--ink); font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif; font-size: 18px; line-height: 1.5; -webkit-font-smoothing: antialiased; overflow-x: clip">
+
+<header style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 20px clamp(16px, 3vw, 40px); display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap">
+<a href="Main.dc.html" style="font-size: 18px; font-weight: 650; letter-spacing: -0.01em; text-decoration: none; color: var(--ink)">Sagar Pal</a>
+<nav aria-label="Primary" style="display: flex; align-items: center; gap: 28px; flex-wrap: wrap; font-size: 16px">
+<a class="navlink" href="Blog.dc.html">Writing</a>
+<a class="navlink" href="Reading.dc.html">Reading</a>
+<a class="navlink" href="#work">Projects</a>
+<a class="navlink" href="#papers">Papers</a>
+<div style="display: flex; align-items: center; gap: 8px">
+<a class="pill-surface" href="#cv" style="display: inline-flex; align-items: center; height: 40px; padding: 0 18px; border-radius: 999px; background: var(--surface-2); color: var(--ink); text-decoration: none; font-weight: 500">CV</a>
+<button type="button" aria-label="{{toggleLabel}}" onClick="{{toggleTheme}}" style="width: 40px; height: 40px; border-radius: 999px; border: 0; background: var(--surface-2); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; cursor: pointer">
+<sc-if value="{{isNight}}" hint-placeholder-val="{{true}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"></path></svg></sc-if>
+<sc-if value="{{isDay}}" hint-placeholder-val="{{false}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if>
+</button>
+</div>
+</nav>
+</header>
+
+<main>
+<section aria-labelledby="hero-title" style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 0 clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; gap: 48px; align-items: stretch">
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 64px; padding: 88px 0 8px">
+<div style="display: flex; flex-direction: column; gap: 40px">
+<h1 id="hero-title" style="margin: 0; font-size: clamp(76px, 10.4vw, 156px); font-weight: 640; font-stretch: 112%; letter-spacing: -0.05em; line-height: 0.86">Sagar Pal</h1>
+<p style="margin: 0; font-size: clamp(21px, 1.95vw, 28px); line-height: 1.32; letter-spacing: -0.01em; max-width: 34ch">I work at the intersection of scientific computing, AI for science and high-performance ML systems.</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<a class="pill-lime" href="Blog.dc.html" style="display: inline-flex; align-items: center; height: 52px; padding: 0 26px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 600; text-decoration: none">Read the writing</a>
+<a class="pill-surface" href="#cv" style="display: inline-flex; align-items: center; height: 52px; padding: 0 26px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-weight: 500; text-decoration: none">Download CV</a>
+</div>
+</div>
+<div style="display: flex; gap: 24px; flex-wrap: wrap; font-size: 15px">
+<a class="navlink" href="https://github.com/palsagar">GitHub</a>
+<a class="navlink" href="https://linkedin.com/in/spal220493">LinkedIn</a>
+<a class="navlink" href="https://scholar.google.com/citations?user=PtMicc0AAAAJ">Google Scholar</a>
+<a class="navlink" href="mailto:sagar2204pal@gmail.com">Email</a>
+</div>
+</div>
+
+<figure style="flex: 1.15 1 520px; min-width: 0; margin: 0 calc(-1 * clamp(16px, 3vw, 40px)) 0 0; display: flex; flex-direction: column">
+<div style="position: relative; height: clamp(440px, 54vw, 780px); overflow: hidden; background: var(--ground)">
+<img src="{{fieldImg}}" alt="Gray–Scott reaction–diffusion: coral-like colonies with teal rims and amber cores spreading across the field" style="width: 100%; height: 100%; object-fit: cover; display: block">
+<div style="position: absolute; left: 16px; right: 16px; bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap">
+<div role="group" aria-label="Pattern preset" style="display: flex; gap: 4px; flex-wrap: wrap; background: var(--ground); padding: 5px; border-radius: 999px">
+<sc-for list="{{presets}}" as="p" hint-placeholder-count="4">
+<sc-if value="{{p.on}}" hint-placeholder-val="{{false}}">
+<button type="button" aria-pressed="true" onClick="{{p.pick}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 600 14px 'Archivo', sans-serif; cursor: pointer">{{p.label}}</button>
+</sc-if>
+<sc-if value="{{p.off}}" hint-placeholder-val="{{true}}">
+<button type="button" aria-pressed="false" onClick="{{p.pick}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; color: var(--ink); font: 500 14px 'Archivo', sans-serif; cursor: pointer">{{p.label}}</button>
+</sc-if>
+</sc-for>
+</div>
+<div style="display: flex; gap: 18px; background: var(--ground); padding: 0 18px; height: 46px; align-items: center; border-radius: 999px; font-size: 14px; font-variant-numeric: tabular-nums; color: var(--ink)">
+<span>F = {{F}}</span>
+<span>k = {{k}}</span>
+</div>
+</div>
+</div>
+<figcaption style="padding: 14px clamp(16px, 3vw, 40px) 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-2)">Gray–Scott reaction–diffusion, solved live on your GPU. Drag across the field to seed new growth.</figcaption>
+</figure>
+</section>
+
+<section id="path" aria-labelledby="path-title" style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 200px clamp(16px, 3vw, 40px) 0; display: flex; flex-wrap: wrap; gap: 48px 72px; align-items: flex-start">
+<div style="flex: 1 1 300px; max-width: 440px; min-width: 0">
+<img src="/_blob/875cb299adf33fa463a88c4a60b58811" alt="Sagar Pal, outdoors in a park in winter, wearing a dark coat and glasses" style="width: 100%; aspect-ratio: 4 / 5; object-fit: cover; display: block">
+</div>
+<div style="flex: 2 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 44px">
+<h2 id="path-title" style="margin: 0; font-size: clamp(42px, 4.8vw, 72px); font-weight: 620; font-stretch: 108%; letter-spacing: -0.04em; line-height: 0.96; max-width: 13ch">From droplets to materials</h2>
+<div style="display: flex; flex-direction: column; gap: 20px; font-size: 20px; line-height: 1.55; max-width: 60ch">
+<p style="margin: 0">I started in mechanical engineering, moved into theoretical fluid dynamics, and spent my PhD at Sorbonne Université building numerical methods for multiphase flows: air meeting water at extreme speeds, breaking into droplets and sprays.</p>
+<p style="margin: 0">A post-doc pushed me into statistical physics, coupling direct numerical simulation with Monte Carlo to model how liquids fragment. Today I lead the technical side of Entalpic's ML platform for materials discovery, where generative and predictive models run next to HPC chemistry.</p>
+<p style="margin: 0; color: var(--ink-2)">Across the whole stack, from hand-tuned Fortran on 64,000 cores to PyTorch and JAX on GPU clusters.</p>
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-width: 760px">
+<li style="display: flex; flex-wrap: wrap; gap: 4px 32px; padding: 14px 0"><span style="flex: 0 0 8.5rem; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 16px">2025 – now</span><span style="flex: 1 1 320px"><span style="font-weight: 560">Senior ML &amp; HPC Engineer</span><span style="color: var(--ink-2)">, Entalpic</span></span></li>
+<li style="display: flex; flex-wrap: wrap; gap: 4px 32px; padding: 14px 0"><span style="flex: 0 0 8.5rem; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 16px">2021 – 2025</span><span style="flex: 1 1 320px"><span style="font-weight: 560">Research Engineer</span><span style="color: var(--ink-2)">, Saint-Gobain Research</span></span></li>
+<li style="display: flex; flex-wrap: wrap; gap: 4px 32px; padding: 14px 0"><span style="flex: 0 0 8.5rem; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 16px">2020 – 2021</span><span style="flex: 1 1 320px"><span style="font-weight: 560">Post-doctoral Researcher</span><span style="color: var(--ink-2)">, Sorbonne Université</span></span></li>
+<li style="display: flex; flex-wrap: wrap; gap: 4px 32px; padding: 14px 0"><span style="flex: 0 0 8.5rem; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 16px">2017 – 2020</span><span style="flex: 1 1 320px"><span style="font-weight: 560">PhD in Mechanics</span><span style="color: var(--ink-2)">, Sorbonne Université</span></span></li>
+<li style="display: flex; flex-wrap: wrap; gap: 4px 32px; padding: 14px 0"><span style="flex: 0 0 8.5rem; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 16px">2016 – 2017</span><span style="flex: 1 1 320px"><span style="font-weight: 560">MSc in Fluid Mechanics</span><span style="color: var(--ink-2)">, UPMC &amp; École Polytechnique</span></span></li>
+<li style="display: flex; flex-wrap: wrap; gap: 4px 32px; padding: 14px 0"><span style="flex: 0 0 8.5rem; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 16px">2015 – 2016</span><span style="flex: 1 1 320px"><span style="font-weight: 560">Research Fellow</span><span style="color: var(--ink-2)">, Indian Institute of Science</span></span></li>
+<li style="display: flex; flex-wrap: wrap; gap: 4px 32px; padding: 14px 0"><span style="flex: 0 0 8.5rem; color: var(--ink-2); font-variant-numeric: tabular-nums; font-size: 16px">2011 – 2015</span><span style="flex: 1 1 320px"><span style="font-weight: 560">B.Tech in Mechanical Engineering</span><span style="color: var(--ink-2)">, Indian Institute of Technology</span></span></li>
+</ul>
+</div>
+</section>
+
+<section id="writing" aria-labelledby="writing-title" style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 200px clamp(16px, 3vw, 40px) 0">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap">
+<h2 id="writing-title" style="margin: 0; font-size: clamp(42px, 4.8vw, 72px); font-weight: 620; font-stretch: 108%; letter-spacing: -0.04em; line-height: 0.96">Writing</h2>
+<a href="Blog.dc.html" style="font-size: 17px; font-weight: 500">All posts</a>
+</div>
+<ul style="list-style: none; margin: 48px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+<li><a class="row" href="Post.dc.html" style="display: flex; flex-wrap: wrap; gap: 10px 48px; padding: 28px 24px; margin: 0 -24px; border-radius: 20px; text-decoration: none; color: var(--ink)">
+<span style="flex: 0 0 7rem; color: var(--ink-2); font-size: 16px; font-variant-numeric: tabular-nums; padding-top: 8px">Oct 2026</span>
+<span style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 10px"><span class="rowtitle" style="font-size: clamp(25px, 2.4vw, 34px); font-weight: 580; letter-spacing: -0.02em; line-height: 1.15">Gray–Scott in 200 lines of WGSL</span><span style="font-size: 18px; color: var(--ink-2); line-height: 1.5; max-width: 62ch">A reaction–diffusion solver written as WebGPU compute shaders, and what ping-pong buffers teach you about GPU memory.</span></span>
+<span style="flex: 0 0 auto; color: var(--ink-2); font-size: 15px; padding-top: 10px">14 min read</span>
+</a></li>
+<li><a class="row" href="Post.dc.html" style="display: flex; flex-wrap: wrap; gap: 10px 48px; padding: 28px 24px; margin: 0 -24px; border-radius: 20px; text-decoration: none; color: var(--ink)">
+<span style="flex: 0 0 7rem; color: var(--ink-2); font-size: 16px; font-variant-numeric: tabular-nums; padding-top: 8px">Sep 2026</span>
+<span style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 10px"><span class="rowtitle" style="font-size: clamp(25px, 2.4vw, 34px); font-weight: 580; letter-spacing: -0.02em; line-height: 1.15">From DFT labels to production MLIPs</span><span style="font-size: 18px; color: var(--ink-2); line-height: 1.5; max-width: 62ch">What it takes to serve machine-learned interatomic potentials next to the HPC chemistry that trains them.</span></span>
+<span style="flex: 0 0 auto; color: var(--ink-2); font-size: 15px; padding-top: 10px">22 min read</span>
+</a></li>
+<li><a class="row" href="Post.dc.html" style="display: flex; flex-wrap: wrap; gap: 10px 48px; padding: 28px 24px; margin: 0 -24px; border-radius: 20px; text-decoration: none; color: var(--ink)">
+<span style="flex: 0 0 7rem; color: var(--ink-2); font-size: 16px; font-variant-numeric: tabular-nums; padding-top: 8px">Dec 2025</span>
+<span style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 10px"><span class="rowtitle" style="font-size: clamp(25px, 2.4vw, 34px); font-weight: 580; letter-spacing: -0.02em; line-height: 1.15">Mass–momentum consistency, explained with a falling raindrop</span><span style="font-size: 18px; color: var(--ink-2); line-height: 1.5; max-width: 62ch">Why naive Volume-of-Fluid schemes blow up at a 1000:1 density ratio, and the discrete fix that keeps a raindrop in one piece.</span></span>
+<span style="flex: 0 0 auto; color: var(--ink-2); font-size: 15px; padding-top: 10px">18 min read</span>
+</a></li>
+</ul>
+</section>
+
+<section id="reading" aria-labelledby="reading-title" style="margin-top: 200px; background: var(--surface)">
+<div style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 120px clamp(16px, 3vw, 40px); display: flex; flex-wrap: wrap; gap: 48px 96px">
+<div style="flex: 1 1 300px; max-width: 460px; display: flex; flex-direction: column; align-items: flex-start; gap: 28px">
+<h2 id="reading-title" style="margin: 0; font-size: clamp(42px, 4.8vw, 72px); font-weight: 620; font-stretch: 108%; letter-spacing: -0.04em; line-height: 0.96">Reading</h2>
+<p style="margin: 0; font-size: 20px; line-height: 1.5">Books, papers and long reads on my desk right now, each with a line on why it's there.</p>
+<a class="pill-surface" href="Reading.dc.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-weight: 500; text-decoration: none">Everything I'm reading</a>
+</div>
+<ul style="flex: 2 1 560px; min-width: 0; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 44px">
+<li style="display: flex; flex-wrap: wrap; gap: 6px 32px">
+<span style="flex: 0 0 6rem; font-size: 15px; color: var(--ink-2); padding-top: 5px">Book</span>
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<a href="Reading.dc.html" style="font-size: 25px; font-weight: 560; letter-spacing: -0.015em; line-height: 1.22; text-decoration: none">The Art of Doing Science and Engineering</a>
+<span style="font-size: 16px; color: var(--ink-2)">Richard Hamming, 1997</span>
+<p style="margin: 6px 0 0; font-size: 17px; line-height: 1.55; max-width: 58ch">On choosing important problems. I reread it every few years and underline different things each time.</p>
+</div>
+</li>
+<li style="display: flex; flex-wrap: wrap; gap: 6px 32px">
+<span style="flex: 0 0 6rem; font-size: 15px; color: var(--ink-2); padding-top: 5px">Paper</span>
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<a href="Reading.dc.html" style="font-size: 25px; font-weight: 560; letter-spacing: -0.015em; line-height: 1.22; text-decoration: none">MACE: Higher order equivariant message passing neural networks for fast and accurate force fields</a>
+<span style="font-size: 16px; color: var(--ink-2)">Batatia, Kovács, Simm, Ortner, Csányi, 2022</span>
+<p style="margin: 6px 0 0; font-size: 17px; line-height: 1.55; max-width: 58ch">The equivariant baseline every new interatomic potential gets measured against.</p>
+</div>
+</li>
+<li style="display: flex; flex-wrap: wrap; gap: 6px 32px">
+<span style="flex: 0 0 6rem; font-size: 15px; color: var(--ink-2); padding-top: 5px">Essay</span>
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<a href="Reading.dc.html" style="font-size: 25px; font-weight: 560; letter-spacing: -0.015em; line-height: 1.22; text-decoration: none">The Bitter Lesson</a>
+<span style="font-size: 16px; color: var(--ink-2)">Rich Sutton, 2019</span>
+<p style="margin: 6px 0 0; font-size: 17px; line-height: 1.55; max-width: 58ch">Short, uncomfortable, and still the best argument for building the infrastructure first.</p>
+</div>
+</li>
+</ul>
+</div>
+</section>
+
+<section id="work" aria-labelledby="work-title" style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 200px clamp(16px, 3vw, 40px) 0">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap">
+<h2 id="work-title" style="margin: 0; font-size: clamp(42px, 4.8vw, 72px); font-weight: 620; font-stretch: 108%; letter-spacing: -0.04em; line-height: 0.96; max-width: 12ch">Simulations and tools</h2>
+<p style="margin: 0; font-size: 20px; line-height: 1.5; max-width: 34ch">Side projects, mostly physics running in a browser tab.</p>
+</div>
+<div style="margin-top: 64px; display: flex; flex-wrap: wrap; gap: 72px 40px">
+<article style="flex: 7 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+<a href="https://flow.gpuphysics.dev/" style="display: block"><img src="/_blob/e16fa8a14cf8de63d19687d764d7c80a" alt="FlowLab: dye shed from a cylinder curling into a Kármán vortex street" style="width: 100%; aspect-ratio: 1528 / 720; object-fit: cover; display: block"></a>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; align-items: flex-start">
+<div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<h3 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.1">FlowLab</h3>
+<p style="margin: 0; font-size: 18px; line-height: 1.5; max-width: 46ch">Real-time 2D Navier–Stokes in the browser: pressure projection, semi-Lagrangian advection, obstacles you can drag through the flow.</p>
+<span style="font-size: 15px; color: var(--ink-2)">WebGPU, WGSL, Navier–Stokes</span>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<a class="pill-lime" href="https://flow.gpuphysics.dev/" style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 16px; text-decoration: none">Live demo</a>
+<a class="pill-surface" href="https://github.com/palsagar/webgpu-fluid-solver" style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-weight: 500; font-size: 16px; text-decoration: none">Source</a>
+</div>
+</div>
+</article>
+<article style="flex: 5 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+<a href="https://patterns.gpuphysics.dev" style="display: block"><img src="/_blob/7584d50266de59135c885d8e22e09824" alt="Gray-Scott simulator: spots and loops in amber and teal on a dark field" style="width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block"></a>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h3 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.1">Gray-Scott</h3>
+<p style="margin: 0; font-size: 18px; line-height: 1.5; max-width: 46ch">Turing patterns on your GPU: twelve presets, brush seeding and live parameter tuning with vim-style keys.</p>
+<span style="font-size: 15px; color: var(--ink-2)">WebGPU, WGSL, reaction–diffusion</span>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<a class="pill-lime" href="https://patterns.gpuphysics.dev" style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 16px; text-decoration: none">Live demo</a>
+<a class="pill-surface" href="https://github.com/palsagar/webgpu-gray-scott" style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-weight: 500; font-size: 16px; text-decoration: none">Source</a>
+</div>
+</article>
+<article style="flex: 5 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+<pre data-ui="true" aria-label="PortWhisperer output in a terminal" style="margin: 0; background: var(--surface); color: var(--ink); padding: 28px; font: 13px/1.7 'JetBrains Mono', ui-monospace, monospace; overflow-x: auto; aspect-ratio: 4 / 3; box-sizing: border-box"><span style="color: var(--ink-2)">$</span> ports
+
+ PORT   PROCESS  PROJECT     FRAMEWORK
+ :3000  next     frontend    Next.js
+ :5173  vite     preview     Vite
+ :5432  docker   postgres    PostgreSQL
+ :8000  uvicorn  api         FastAPI
+
+ <span style="color: var(--link)">4 ports active</span></pre>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h3 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.1">PortWhisperer</h3>
+<p style="margin: 0; font-size: 18px; line-height: 1.5; max-width: 46ch">See what's running on your ports, with framework detection, Docker containers and cleanup of orphaned processes.</p>
+<span style="font-size: 15px; color: var(--ink-2)">Python, CLI</span>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<a class="pill-lime" href="https://pypi.org/project/portwhisperer/" style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 16px; text-decoration: none">PyPI</a>
+<a class="pill-surface" href="https://github.com/palsagar/port-whisperer" style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-weight: 500; font-size: 16px; text-decoration: none">Source</a>
+</div>
+</article>
+<article style="flex: 7 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+<a href="https://rent-or-buy-sim.com/" style="display: block"><img src="/_blob/c4fbc47523e50575971406226cd33ce1" alt="Rent vs Buy simulator: verdict panel and net-value chart over ten years" style="width: 100%; aspect-ratio: 1528 / 720; object-fit: cover; object-position: top; display: block"></a>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; align-items: flex-start">
+<div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<h3 style="margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.1">Rent vs Buy</h3>
+<p style="margin: 0; font-size: 18px; line-height: 1.5; max-width: 46ch">Compare realistic renting and buying scenarios with mortgage rates, appreciation, returns, taxes and upkeep.</p>
+<span style="font-size: 15px; color: var(--ink-2)">Python, simulation, finance</span>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<a class="pill-lime" href="https://rent-or-buy-sim.com/" style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 16px; text-decoration: none">Live demo</a>
+<a class="pill-surface" href="https://github.com/palsagar/rent-vs-buy-simulator" style="display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-weight: 500; font-size: 16px; text-decoration: none">Source</a>
+</div>
+</div>
+</article>
+</div>
+</section>
+
+<section id="papers" aria-labelledby="papers-title" style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 200px clamp(16px, 3vw, 40px) 0">
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap">
+<h2 id="papers-title" style="margin: 0; font-size: clamp(42px, 4.8vw, 72px); font-weight: 620; font-stretch: 108%; letter-spacing: -0.04em; line-height: 0.96">Papers</h2>
+<a href="https://scholar.google.com/citations?user=PtMicc0AAAAJ" style="font-size: 17px; font-weight: 500">Google Scholar</a>
+</div>
+<ol reversed style="list-style: none; margin: 48px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+<li style="display: flex; flex-wrap: wrap; gap: 8px 48px; padding: 28px 0">
+<span style="flex: 0 0 7rem; font-size: 30px; font-weight: 500; color: var(--ink-2); font-variant-numeric: tabular-nums; line-height: 1.1">2024</span>
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 10px; max-width: 900px">
+<span style="font-size: clamp(21px, 1.8vw, 26px); font-weight: 560; letter-spacing: -0.015em; line-height: 1.25">Statistics of drops generated from ensembles of randomly corrugated ligaments</span>
+<span style="font-size: 16px; color: var(--ink-2)"><strong style="color: var(--ink); font-weight: 600">S. Pal</strong>, C. Pairetti, M. Crialesi-Esposito, D. Fuster, S. Zaleski. Physics of Fluids.</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px">
+<a class="pill-surface" href="#pdf" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-size: 15px; text-decoration: none">PDF</a>
+<a class="pill-surface" href="https://doi.org/10.1063/5.0221732" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-size: 15px; text-decoration: none">DOI</a>
+</div>
+</div>
+</li>
+<li style="display: flex; flex-wrap: wrap; gap: 8px 48px; padding: 28px 0">
+<span style="flex: 0 0 7rem; font-size: 30px; font-weight: 500; color: var(--ink-2); font-variant-numeric: tabular-nums; line-height: 1.1">2021</span>
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 10px; max-width: 900px">
+<span style="font-size: clamp(21px, 1.8vw, 26px); font-weight: 560; letter-spacing: -0.015em; line-height: 1.25">A novel momentum-conserving, mass-momentum consistent method for interfacial flows involving large density contrasts</span>
+<span style="font-size: 16px; color: var(--ink-2)"><strong style="color: var(--ink); font-weight: 600">S. Pal</strong>, D. Fuster, S. Zaleski. Journal of Computational Physics.</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px">
+<a class="pill-surface" href="#pdf" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-size: 15px; text-decoration: none">PDF</a>
+<a class="pill-surface" href="https://doi.org/10.48550/arXiv.2101.04142" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-size: 15px; text-decoration: none">arXiv</a>
+</div>
+</div>
+</li>
+<li style="display: flex; flex-wrap: wrap; gap: 8px 48px; padding: 28px 0">
+<span style="flex: 0 0 7rem; font-size: 30px; font-weight: 500; color: var(--ink-2); font-variant-numeric: tabular-nums; line-height: 1.1">2021</span>
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 10px; max-width: 900px">
+<span style="font-size: clamp(21px, 1.8vw, 26px); font-weight: 560; letter-spacing: -0.015em; line-height: 1.25">PArallel, Robust, Interface Simulator (PARIS)</span>
+<span style="font-size: 16px; color: var(--ink-2)">W. Aniszewski, T. Arrufat, M. Crialesi-Esposito, S. Dabiri, D. Fuster, Y. Ling, J. Lu, L. Malan, <strong style="color: var(--ink); font-weight: 600">S. Pal</strong>, R. Scardovelli, G. Tryggvason. Computer Physics Communications.</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px">
+<a class="pill-surface" href="https://doi.org/10.1016/j.cpc.2021.107849" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-size: 15px; text-decoration: none">DOI</a>
+</div>
+</div>
+</li>
+<li style="display: flex; flex-wrap: wrap; gap: 8px 48px; padding: 28px 0">
+<span style="flex: 0 0 7rem; font-size: 30px; font-weight: 500; color: var(--ink-2); font-variant-numeric: tabular-nums; line-height: 1.1">2021</span>
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 10px; max-width: 900px">
+<span style="font-size: clamp(21px, 1.8vw, 26px); font-weight: 560; letter-spacing: -0.015em; line-height: 1.25">A mass-momentum consistent, Volume-of-Fluid method for incompressible flow on staggered grids</span>
+<span style="font-size: 16px; color: var(--ink-2)">T. Arrufat, M. Crialesi-Esposito, D. Fuster, Y. Ling, L. Malan, <strong style="color: var(--ink); font-weight: 600">S. Pal</strong>, R. Scardovelli, G. Tryggvason, S. Zaleski. Computers and Fluids.</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px">
+<a class="pill-surface" href="#pdf" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-size: 15px; text-decoration: none">PDF</a>
+<a class="pill-surface" href="https://doi.org/10.1016/j.compfluid.2020.104785" style="display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-size: 15px; text-decoration: none">DOI</a>
+</div>
+</div>
+</li>
+</ol>
+</section>
+</main>
+
+<footer style="max-width: 1440px; margin: 0 auto; box-sizing: border-box; padding: 200px clamp(16px, 3vw, 40px) 40px">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 16px 32px; flex-wrap: wrap; font-size: 16px">
+<nav aria-label="Elsewhere" style="display: flex; gap: 24px; flex-wrap: wrap">
+<a class="navlink" href="https://github.com/palsagar">GitHub</a>
+<a class="navlink" href="https://linkedin.com/in/spal220493">LinkedIn</a>
+<a class="navlink" href="https://scholar.google.com/citations?user=PtMicc0AAAAJ">Google Scholar</a>
+<a class="navlink" href="mailto:sagar2204pal@gmail.com">Email</a>
+<a class="navlink" href="#rss">RSS</a>
+</nav>
+<span style="color: var(--ink-2)">Paris, 2026</span>
+</div>
+<p class="namefill" aria-hidden="true" style="margin: 40px 0 0; font-size: clamp(72px, 17.6vw, 262px); font-weight: 720; font-stretch: 115%; letter-spacing: -0.06em; line-height: 0.82; white-space: nowrap">Sagar Pal</p>
+<p style="margin: 32px 0 0; font-size: 14px; color: var(--ink-2)">Set in Archivo and Source Serif 4. Every pattern on this site is a solution of the Gray–Scott equations.</p>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["night","day"],"default":"night"},"$preview":{"width":1440,"height":6900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { preset: 'coral', theme: null };
+  }
+  renderVals() {
+    const list = [
+      { id: 'coral', label: 'Coral', F: '0.0545', k: '0.0620' },
+      { id: 'mitosis', label: 'Mitosis', F: '0.0367', k: '0.0649' },
+      { id: 'mazes', label: 'Mazes', F: '0.0290', k: '0.0570' },
+      { id: 'loops', label: 'Spots & loops', F: '0.0180', k: '0.0510' }
+    ];
+    const cur = list.find((p) => p.id === this.state.preset) || list[0];
+    const theme = this.state.theme || this.props.theme || 'night';
+    const TK = {
+      night: { scheme: 'dark', ground: '#0A0E16', surface: '#111823', surface2: '#1A2330', surface3: '#232E3D', ink: '#EEEAE2', ink2: '#A0A8B4', ink3: '#8A93A1', accent: '#F2A64A', accentHover: '#F6B867', onAccent: '#0A0E16', link: '#F2A64A', teal: '#6CC3CA' },
+      day: { scheme: 'light', ground: '#F3F4F6', surface: '#E7EBEF', surface2: '#DCE2E8', surface3: '#D0D8E0', ink: '#111925', ink2: '#4E5866', ink3: '#56606E', accent: '#F2A64A', accentHover: '#EE9A33', onAccent: '#111925', link: '#9A520E', teal: '#1F6F7A' }
+    };
+    return {
+      tk: TK[theme],
+      isNight: theme === 'night',
+      isDay: theme === 'day',
+      toggleLabel: theme === 'night' ? 'Switch to day theme' : 'Switch to night theme',
+      toggleTheme: () => this.setState({ theme: theme === 'night' ? 'day' : 'night' }),
+      fieldImg: theme === 'night' ? '/_blob/40813c46a1c75d0fd522dfd0d0bc7414' : '/_blob/7a87896c02709481adb079cb1b9b79be',
+      F: cur.F,
+      k: cur.k,
+      presets: list.map((p) => ({
+        label: p.label,
+        on: p.id === cur.id,
+        off: p.id !== cur.id,
+        pick: () => this.setState({ preset: p.id })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
