@@ -1,0 +1,99 @@
+name: Staging QA
+
+# Phase 9 checks against the deployed staging site (REDESIGN_PLAN.md):
+# the Playwright `build` tests and the Lighthouse budgets.
+# Coolify redeploys staging on every push to `redesign` (Auto Deploy), so each
+# job first waits until staging serves a build newer than the pushed commit.
+
+on:
+  push:
+    branches: [redesign]
+  workflow_dispatch:
+
+concurrency:
+  group: staging-qa
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  STAGING_URL: https://next.sagar-pal.dev
+
+jobs:
+  wait:
+    name: Wait for the staging deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Wait until the build is newer than the commit
+        # content-manifest.json is written by every build; its Last-Modified is the
+        # build time. Manual runs skip the wait (they test whatever is deployed).
+        if: github.event_name == 'push'
+        run: |
+          commit=$(git log -1 --format=%ct)
+          for _ in $(seq 1 90); do
+            built=$(curl -fsSI "$STAGING_URL/content-manifest.json" \
+              | sed -n 's/^last-modified: //Ip' | tr -d '\r')
+            if [ -n "$built" ] && [ "$(date -d "$built" +%s)" -ge "$commit" ]; then
+              echo "Staging build from $built"; exit 0
+            fi
+            sleep 10
+          done
+          echo "Staging did not deploy this commit within 15 minutes." >&2
+          exit 1
+
+  e2e:
+    name: Playwright against staging
+    needs: wait
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+        env:
+          BASE_URL: ${{ env.STAGING_URL }}
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: staging-playwright-report
+          path: web/playwright-report/
+          retention-days: 7
+
+  lighthouse:
+    name: Lighthouse budgets (mobile)
+    needs: wait
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install Lighthouse CI with Lighthouse 13
+        # @lhci/cli 0.15.1 (the latest) bundles Lighthouse 12; the override runs the
+        # Lighthouse that PageSpeed Insights and Chrome DevTools use.
+        run: |
+          mkdir -p "$RUNNER_TEMP/lhci"
+          echo '{"private":true,"dependencies":{"@lhci/cli":"0.15.1"},"overrides":{"lighthouse":"13.6.0"}}' \
+            > "$RUNNER_TEMP/lhci/package.json"
+          npm install --prefix "$RUNNER_TEMP/lhci" --no-audit --no-fund
+      - run: '"$RUNNER_TEMP/lhci/node_modules/.bin/lhci" autorun --config=lighthouserc.json'
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-reports
+          path: web/.lighthouseci/reports/
+          retention-days: 14
