@@ -233,6 +233,7 @@ Full spec in `docs/redesign/API.md`.
 
 ### Phase 8 — Container + deployment (needs Sagar for Coolify/DNS steps)
 - [ ] Multi-stage `Dockerfile`: `node:22-slim` builds `web/` → `python:3.12-slim` with uv installs `api/` → copy `web/dist` → run `uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'`. Non-root user, `HEALTHCHECK` on `/api/health`, image < 250 MB.
+- [ ] With `TRUST_CLOUDFLARE=true`, make the origin reachable only through Cloudflare (firewall to Cloudflare's IP ranges, or a Cloudflare Tunnel), and set uvicorn's `--forwarded-allow-ips` to the proxy's address rather than `*`. Otherwise anyone can forge `CF-Connecting-IP` and bypass the per-IP login limit and the view/Useful dedupe (security review of Phase 5).
 - [ ] Bound build memory (the VPS swap-thrash fix in today's Dockerfile is a lesson: keep `npm ci` single-job friendly, no parallel native builds).
 - [ ] Rewrite `DEPLOYMENT.md`. Coolify app: build pack Dockerfile, **exposed port 8000** (was 80), persistent volume → `/data`, runtime env vars (API.md §8). Staging first: a second Coolify app on branch `redesign` at e.g. `next.sagar-pal.dev` (**ask Sagar**).
 - [ ] Backups: nightly `sqlite3 .backup` to the volume plus off-box copy (Coolify S3 backup or Litestream → Cloudflare R2). **Ask Sagar** which.
