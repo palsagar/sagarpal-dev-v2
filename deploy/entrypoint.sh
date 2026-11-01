@@ -22,6 +22,16 @@ for name in LITESTREAM_PATH LITESTREAM_ENDPOINT LITESTREAM_ACCESS_KEY_ID LITESTR
   fi
 done
 
+# Only one container may run Litestream on this volume: two Litestream processes
+# writing to one replica can corrupt it. Coolify's rolling updates start the new
+# container before they stop the old one. The lock is on file descriptor 9, which
+# litestream and uvicorn inherit through exec, so it lasts until they exit.
+exec 9>/data/.litestream.lock
+if ! flock -n 9; then
+  echo "entrypoint: another container is running Litestream on this /data volume. In Coolify, set Container naming to \"Consistent name (no rolling updates)\" (DEPLOYMENT.md)." >&2
+  exit 1
+fi
+
 # A new or lost volume has no database: bring back the latest copy from R2, if there is one.
 litestream restore -if-db-not-exists -if-replica-exists /data/site.db
 

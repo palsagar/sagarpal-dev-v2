@@ -47,16 +47,17 @@ needs none of them. A change takes effect on the next restart, without a rebuild
 | `SITE_URL` | `https://next.sagar-pal.dev` | `https://sagar-pal.dev` (image default) | Absolute URLs in the RSS feed and the Open Graph images |
 | `HASH_SECRET` | own value | own value | Required. 32+ characters. Keys the daily visitor hash |
 | `SESSION_SECRET` | own value | own value | Required. 32+ characters. Signs the admin cookie and CSRF tokens |
-| `ADMIN_PASSWORD_HASH` | own value | own value | Required. argon2id hash of the admin password |
+| `ADMIN_PASSWORD_HASH` | own value | own value | Required. argon2id hash of the admin password. Set its **Interpolation** to **Literal (keep $ characters as-is)** (see below) |
 | `ADMIN_API_TOKEN` | optional | optional | Turns on the bearer JSON admin API. Empty means off |
 | `TRUST_CLOUDFLARE` | `true` | `true` | Use `CF-Connecting-IP` as the visitor's IP (only from Cloudflare addresses, see section 4) |
 | `FORWARDED_ALLOW_IPS` | proxy network | proxy network | The subnet of Coolify's proxy network, for example `10.0.1.0/24`. Section 4 says how to find it |
 | `NOINDEX` | `true` | unset | Adds `X-Robots-Tag: noindex, nofollow` to every response, so search engines skip staging |
-| `LITESTREAM_BUCKET` | `sagar-pal-dev-staging-backups` | `sagar-pal-dev-production-backups` | Turns on Litestream. All five `LITESTREAM_*` values must then be set. Each site has its own bucket (section 3) |
+| `LITESTREAM_BUCKET` | `sagar-pal-dev-staging-backups` | `sagar-pal-dev-production-backups` | Turns on Litestream. The next four `LITESTREAM_*` values must then be set too. Each site has its own bucket (section 3) |
 | `LITESTREAM_PATH` | `staging` | `production` | Folder inside the bucket that holds the copy |
 | `LITESTREAM_ENDPOINT` | R2 endpoint | R2 endpoint | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
 | `LITESTREAM_ACCESS_KEY_ID` | staging R2 key | production R2 key | From the site's own R2 API token (section 3) |
 | `LITESTREAM_SECRET_ACCESS_KEY` | staging R2 secret | production R2 secret | From the site's own R2 API token |
+| `LITESTREAM_HEARTBEAT_URL` | optional | optional | Ping URL from an uptime service. Litestream calls it while replication works (section 3). Empty means off |
 | `UMAMI_DOMAIN`, `UMAMI_ID` | unset | as today | Both set means the Umami tag is added to every page. No trailing slash on the domain |
 | `CONTACT_EMAIL` | optional | optional | Sent in the User-Agent of Crossref, arXiv and Open Library lookups |
 | `LOG_LEVEL` | `info` | `info` | |
@@ -71,6 +72,10 @@ production:
 uv run python -c "import secrets; print(secrets.token_urlsafe(32))"   # HASH_SECRET, then again for SESSION_SECRET
 uv run python -m app.tools.hash_password                              # ADMIN_PASSWORD_HASH
 ```
+
+The argon2id hash contains `$` characters. Coolify can expand `$` references in a variable's
+value, which would change the hash so that every admin login fails. So, in Coolify, set the
+**Interpolation** of `ADMIN_PASSWORD_HASH` to **Literal (keep $ characters as-is)**.
 
 ## 3. R2 buckets for Litestream (once)
 
@@ -98,6 +103,17 @@ from being deleted for a set time.
 Litestream sends each change to R2 within about a second. By default, Litestream keeps the
 last 24 hours of history in the bucket, so a restore from R2 can go back up to a day. The nightly copies in
 section 6 go back two weeks.
+
+### Monitoring replication
+
+The container's health check tests only the site, not the backups. When the database
+already exists, a revoked or wrong R2 key does not stop the site: Litestream logs errors
+and keeps retrying, and nothing else tells you that the copies in R2 have stopped.
+
+So set `LITESTREAM_HEARTBEAT_URL` to a ping URL from an uptime service, for example a
+healthchecks.io check or an Uptime Kuma "push" monitor. Set the service to alert you when
+the pings stop. Litestream calls the URL every 5 minutes, but only while every sync
+succeeds. When the variable is empty, Litestream sends no pings.
 
 ## 4. Visitor IPs behind Cloudflare (`FORWARDED_ALLOW_IPS`)
 
@@ -150,19 +166,27 @@ database and secrets. Phase 9 QA runs against it.
    destination path `/data`. Use a volume, not a directory mount: a new Docker volume takes
    its owner from the image, so the `app` user can write to it. A directory on the server
    is owned by root, and the container stops with "/data is not writable".
-5. **Environment variables:** the staging column of section 2.
-6. **Health check:** leave Coolify's own health check off. Coolify then uses the
+5. **Environment variables:** the staging column of section 2. Set the **Interpolation** of
+   `ADMIN_PASSWORD_HASH` to **Literal (keep $ characters as-is)** (section 2).
+6. **Container naming:** choose **Consistent name (no rolling updates)**. With rolling
+   updates, Coolify starts the new container before it stops the old one, so two Litestream
+   processes would write to one replica, which can corrupt it. The entrypoint refuses to
+   start a second Litestream on the same volume, so a deploy with rolling updates on fails.
+   The cost of this setting is a few seconds of downtime on each deploy.
+7. **Health check:** leave Coolify's own health check off. Coolify then uses the
    Dockerfile's `HEALTHCHECK`. Coolify's HTTP check would run `curl` inside the container,
    and the image does not include curl.
-7. **Cloudflare DNS:** add `A next → <VPS_IP>`, **DNS only (grey cloud)**, so Let's Encrypt
+8. **Cloudflare DNS:** add `A next → <VPS_IP>`, **DNS only (grey cloud)**, so Let's Encrypt
    can reach Coolify's proxy and issue the certificate.
-8. **Deploy.** The first build takes a few minutes. Check the logs: the last line should be
+9. **Deploy.** The first build takes a few minutes. Check the logs: the last line should be
    `Uvicorn running on http://0.0.0.0:8000`, and Litestream should log `replicating to`.
-9. Once `https://next.sagar-pal.dev` loads with a valid certificate, switch the DNS record
-   to **Proxied (orange cloud)**. Then run the check in section 4.
-10. **Scheduled task** (section 6).
-11. Run the smoke checks from `docs/redesign/API.md` §9 with `BASE=https://next.sagar-pal.dev`.
+10. Once `https://next.sagar-pal.dev` loads with a valid certificate, switch the DNS record
+    to **Proxied (orange cloud)**. Then run the check in section 4.
+11. **Scheduled task** (section 6).
+12. Run the smoke checks from `docs/redesign/API.md` §9 with `BASE=https://next.sagar-pal.dev`.
     Every response also carries `x-robots-tag: noindex, nofollow`.
+13. Sign in at `https://next.sagar-pal.dev/admin/`. If the login fails with the right
+    password, check the **Interpolation** of `ADMIN_PASSWORD_HASH` (section 2).
 
 On staging, canonical links and `og:image` URLs point at `https://sagar-pal.dev`, because
 Astro builds them from its fixed site URL. That is intended: search engines that find
@@ -225,8 +249,13 @@ old settings. So turn off automatic deployment for the short switch.
    - **Ports Exposes:** `80` → `8000`.
    - **Persistent Storage:** volume `sagar-pal-dev-data` at `/data`.
    - **Environment variables:** the production column of section 2. `UMAMI_DOMAIN` and
-     `UMAMI_ID` keep their current values and meaning.
-   - **Health check:** Coolify's own check off (section 5, step 6).
+     `UMAMI_ID` keep their current values and meaning. Set the **Interpolation** of
+     `ADMIN_PASSWORD_HASH` to **Literal (keep $ characters as-is)**.
+   - **Container naming:** **Consistent name (no rolling updates)** (section 5, step 6).
+     Without it, every deploy after the first one fails, because the new container cannot
+     start Litestream while the old one still runs it. With it, each deploy has a few
+     seconds of downtime.
+   - **Health check:** Coolify's own check off (section 5, step 7).
    - **Scheduled task:** section 6.
 4. **Deploy** and watch the logs until uvicorn and Litestream have both started.
 5. Verify:

@@ -169,6 +169,7 @@ Cache headers: `GET /api/reading` and `/stats` → `Cache-Control: no-store` (Cl
 | `FORWARDED_ALLOW_IPS` | in prod | `10.0.1.0/24` | Read by uvicorn: the proxy network whose `X-Forwarded-For` is trusted. Never `*` |
 | `NOINDEX` | no | `true` on staging | Adds `X-Robots-Tag: noindex, nofollow` to every response |
 | `LITESTREAM_BUCKET`, `LITESTREAM_PATH`, `LITESTREAM_ENDPOINT`, `LITESTREAM_ACCESS_KEY_ID`, `LITESTREAM_SECRET_ACCESS_KEY` | no | R2 bucket, `production` | Read by `deploy/entrypoint.sh`. Bucket set = Litestream replicates `/data/site.db` to R2 (all five needed) |
+| `LITESTREAM_HEARTBEAT_URL` | no | uptime-service ping URL | Read by `deploy/litestream.yml`. Litestream calls it every 5 min while every sync succeeds; empty = no pings |
 | `UMAMI_DOMAIN`, `UMAMI_ID` | no | `https://analytics.sagar-pal.dev`, UUID | Same semantics as today: no trailing slash; both empty → no tag |
 | `CONTACT_EMAIL` | no | — | Added to the lookup User-Agent (Crossref etiquette); empty = no address sent |
 | `LOG_LEVEL` | no | `info` | Never log IPs/UAs |
