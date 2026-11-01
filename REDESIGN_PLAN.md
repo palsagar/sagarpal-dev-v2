@@ -244,7 +244,7 @@ Full spec in `docs/redesign/API.md`.
 - [x] Rewrite `DEPLOYMENT.md`. Coolify app: build pack Dockerfile, **exposed port 8000** (was 80), persistent volume → `/data`, runtime env vars (API.md §8). Staging first: a second Coolify app on branch `redesign` at `next.sagar-pal.dev` (decided with Sagar).
 - [x] Backups: nightly `sqlite3 .backup` to the volume plus off-box copy. **Sagar chose Litestream → Cloudflare R2.**
 - [x] Cut-over checklist (DEPLOYMENT.md): staging sign-off → merge `redesign` → `main` → production redeploy → verify URLs, SW kill switch, Umami realtime hit, RSS validator, OG preview (e.g. opengraph.xyz) → keep the previous image tag for instant rollback.
-- [ ] Sagar: create the R2 bucket and token, the staging app, the `next` DNS record and the scheduled task (DEPLOYMENT.md §3–§6), then run the staging checks.
+- [ ] Sagar: create the two R2 buckets (staging and production) with one token each, the staging app, the `next` DNS record and the scheduled task (DEPLOYMENT.md §3–§6), then run the staging checks.
 
 **Done when:** staging passes Phase 9 QA and Sagar approves the production cut-over.
 

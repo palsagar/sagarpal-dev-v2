@@ -125,7 +125,9 @@ const ogImage = new URL(image, Astro.site ?? site.url).href;
       // history.replaceState. Back and Forward change it through popstate, which Umami
       // does not watch. After such a move, write the current history entry again with
       // replaceState: the browser and the router see no change, and Umami counts the
-      // page with the correct referrer.
+      // page with the correct referrer. umami.track() would not work here: it reports
+      // the last URL that Umami saw through its history hook, which is the page the
+      // visitor left.
       let traversed = false;
       document.addEventListener('astro:before-preparation', (event) => {
         traversed = event.navigationType === 'traverse';

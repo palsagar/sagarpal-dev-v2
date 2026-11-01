@@ -52,11 +52,11 @@ needs none of them. A change takes effect on the next restart, without a rebuild
 | `TRUST_CLOUDFLARE` | `true` | `true` | Use `CF-Connecting-IP` as the visitor's IP (only from Cloudflare addresses, see section 4) |
 | `FORWARDED_ALLOW_IPS` | proxy network | proxy network | The subnet of Coolify's proxy network, for example `10.0.1.0/24`. Section 4 says how to find it |
 | `NOINDEX` | `true` | unset | Adds `X-Robots-Tag: noindex, nofollow` to every response, so search engines skip staging |
-| `LITESTREAM_BUCKET` | bucket name | bucket name | Turns on Litestream. All five `LITESTREAM_*` values must then be set |
-| `LITESTREAM_PATH` | `staging` | `production` | Folder inside the bucket. **Staging and production must never share a path** |
+| `LITESTREAM_BUCKET` | `sagar-pal-dev-staging-backups` | `sagar-pal-dev-production-backups` | Turns on Litestream. All five `LITESTREAM_*` values must then be set. Each site has its own bucket (section 3) |
+| `LITESTREAM_PATH` | `staging` | `production` | Folder inside the bucket that holds the copy |
 | `LITESTREAM_ENDPOINT` | R2 endpoint | R2 endpoint | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
-| `LITESTREAM_ACCESS_KEY_ID` | R2 key | R2 key | From the R2 API token (section 3) |
-| `LITESTREAM_SECRET_ACCESS_KEY` | R2 secret | R2 secret | From the R2 API token |
+| `LITESTREAM_ACCESS_KEY_ID` | staging R2 key | production R2 key | From the site's own R2 API token (section 3) |
+| `LITESTREAM_SECRET_ACCESS_KEY` | staging R2 secret | production R2 secret | From the site's own R2 API token |
 | `UMAMI_DOMAIN`, `UMAMI_ID` | unset | as today | Both set means the Umami tag is added to every page. No trailing slash on the domain |
 | `CONTACT_EMAIL` | optional | optional | Sent in the User-Agent of Crossref, arXiv and Open Library lookups |
 | `LOG_LEVEL` | `info` | `info` | |
@@ -72,18 +72,28 @@ uv run python -c "import secrets; print(secrets.token_urlsafe(32))"   # HASH_SEC
 uv run python -m app.tools.hash_password                              # ADMIN_PASSWORD_HASH
 ```
 
-## 3. R2 bucket for Litestream (once)
+## 3. R2 buckets for Litestream (once)
 
-1. Cloudflare dashboard → **R2** → **Create bucket**. Name it, for example,
-   `sagar-pal-dev-backups`. For EU-only storage, pick the EU jurisdiction. The endpoint then
-   has `eu` in it: `https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com`.
-2. R2 → **Manage API tokens** → **Create API token**. Permission: **Object Read & Write**.
-   Scope: only this bucket. Copy the **Access Key ID**, the **Secret Access Key** and the
-   **S3 endpoint** it shows. The secret is shown only once.
-3. Put them in Coolify as `LITESTREAM_ENDPOINT`, `LITESTREAM_ACCESS_KEY_ID` and
-   `LITESTREAM_SECRET_ACCESS_KEY`, with `LITESTREAM_BUCKET` set to the bucket name.
+Staging and production each have their own bucket and their own API token. An R2 API token
+can be limited to one bucket, but not to a folder inside a bucket. With one shared bucket,
+the staging container would hold a key that can overwrite or delete production's backups,
+and a wrong `LITESTREAM_PATH` on staging would write into production's copy.
 
-One bucket serves both sites. `LITESTREAM_PATH` keeps them apart.
+1. Cloudflare dashboard → **R2** → **Create bucket**. Create two buckets, for example
+   `sagar-pal-dev-staging-backups` and `sagar-pal-dev-production-backups`. For EU-only
+   storage, pick the EU jurisdiction for both. The endpoint then has `eu` in it:
+   `https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com`.
+2. R2 → **Manage API tokens** → **Create API token**, once for each bucket. Permission:
+   **Object Read & Write**. Scope: only that one bucket. For each token, copy the
+   **Access Key ID**, the **Secret Access Key** and the **S3 endpoint** it shows. The secret
+   is shown only once.
+3. Put them in each Coolify app as `LITESTREAM_ENDPOINT`, `LITESTREAM_ACCESS_KEY_ID` and
+   `LITESTREAM_SECRET_ACCESS_KEY`, with `LITESTREAM_BUCKET` set to that site's bucket. The
+   staging app gets the staging token and bucket; the production app gets the production
+   token and bucket.
+
+For extra protection, an R2 bucket lock rule can stop objects in the production bucket
+from being deleted for a set time.
 
 Litestream sends each change to R2 within about a second. By default, Litestream keeps the
 last 24 hours of history in the bucket, so a restore from R2 can go back up to a day. The nightly copies in
@@ -95,6 +105,12 @@ The API reads the visitor's IP from `CF-Connecting-IP` to rate-limit admin login
 count each visitor once. Anyone who reaches the server without going through Cloudflare
 can send that header too. So the API trusts it only when the request arrived from one of
 Cloudflare's published address ranges. The ranges are in `api/app/privacy.py`.
+
+The ranges in `CLOUDFLARE_NETWORKS` are a copy of <https://www.cloudflare.com/ips/>. They
+were checked against that page on 1 Nov 2026. If Cloudflare adds a range, visitors who
+arrive through it are treated as coming from the Cloudflare address itself, so they share
+one login limit and one view count. Compare the list with that page now and then (for
+example, when you update dependencies) and update the code if the page has changed.
 
 Coolify's proxy stands between Cloudflare and the container, so uvicorn must be told to
 trust the proxy's `X-Forwarded-For` header. It then takes the address that connected to the
@@ -172,6 +188,11 @@ copy. Use **Execute Now** once to check it.
 and the same `LITESTREAM_*` values. The entrypoint finds no database and restores the
 latest copy from R2 before the site starts. The log shows the restore. When R2 has no copy
 yet, the site starts with an empty database.
+
+This was tested locally. With a wrong key, the restore fails with a 403 error and the
+container stops, so the site never starts with an empty database by mistake. When R2
+cannot be reached, the restore keeps retrying, and the site starts only after the restore
+has finished.
 
 **From a nightly copy, after a bad change.** Stop the app in Coolify. Then, on the VPS:
 
