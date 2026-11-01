@@ -20,6 +20,14 @@ IMMUTABLE = "public, max-age=31536000, immutable"
 ASSET_CACHE = "public, max-age=86400"
 # Files whose content changes without a new name: always revalidate.
 _REVALIDATE_TYPES = ("text/html", "application/json", "application/xml", "text/plain", "text/xml")
+# Types that Python's built-in table lacks. python:3.12-slim has no /etc/mime.types, so
+# without these the image serves them as application/octet-stream (with "nosniff").
+_MEDIA_TYPES = {
+    ".webp": "image/webp",
+    ".woff2": "font/woff2",
+    ".woff": "font/woff",
+    ".ttf": "font/ttf",
+}
 
 FALLBACK_404 = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -108,6 +116,11 @@ class SiteStatic(StaticFiles):
             # protocol-relative "//blog/" (an open redirect to a host named "blog").
             location = "/" + quote(Path(path).as_posix().strip("/")) + "/" + _query(scope)
             return RedirectResponse(location, status_code=301)
+        if isinstance(response, FileResponse):
+            # Name the types the system table may not know, whatever the host has installed.
+            media_type = _MEDIA_TYPES.get(Path(response.path).suffix.lower())
+            if media_type is not None:
+                response.headers["Content-Type"] = media_type
         response.headers["Cache-Control"] = self._cache_control(path, response)
         if self.umami and isinstance(response, FileResponse) and _is_html(response):
             return self._inject(response)

@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import mimetypes
 from pathlib import Path
 
 import pytest
@@ -184,3 +185,28 @@ def test_a_missing_hashed_asset_is_not_cached_for_a_year(client: TestClient) -> 
     response = client.get("/_astro/gone.abc123.js")
     assert response.status_code == 404
     assert response.headers["cache-control"] == "public, max-age=0, must-revalidate"
+
+
+@pytest.mark.parametrize(
+    ("name", "media_type"),
+    [
+        ("image.webp", "image/webp"),
+        ("font.woff2", "font/woff2"),
+        ("font.woff", "font/woff"),
+        ("font.ttf", "font/ttf"),
+    ],
+)
+def test_types_missing_from_the_slim_image_are_named(
+    client: TestClient,
+    static_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    name: str,
+    media_type: str,
+) -> None:
+    # python:3.12-slim has no /etc/mime.types, so Python knows only its built-in table,
+    # which lacks these. With "nosniff", a wrong type can stop a browser using the file.
+    monkeypatch.setattr(mimetypes, "_db", mimetypes.MimeTypes())
+    (static_dir / "_astro" / name).write_bytes(b"\x00" * 16)
+    response = client.get(f"/_astro/{name}")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == media_type
