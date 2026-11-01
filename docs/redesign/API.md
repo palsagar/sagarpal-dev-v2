@@ -167,6 +167,7 @@ Cache headers: `GET /api/reading` and `/stats` → `Cache-Control: no-store` (Cl
 | `ADMIN_API_TOKEN` | no | — | Enables the bearer JSON admin API |
 | `TRUST_CLOUDFLARE` | no | `true` in prod | Use `CF-Connecting-IP` |
 | `UMAMI_DOMAIN`, `UMAMI_ID` | no | `https://analytics.sagar-pal.dev`, UUID | Same semantics as today: no trailing slash; both empty → no tag |
+| `CONTACT_EMAIL` | no | — | Added to the lookup User-Agent (Crossref etiquette); empty = no address sent |
 | `LOG_LEVEL` | no | `info` | Never log IPs/UAs |
 
 Coolify: set these as **runtime** variables (not build variables). Mount a persistent volume at `/data`.

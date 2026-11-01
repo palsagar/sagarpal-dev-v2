@@ -28,7 +28,7 @@ build:
 test: test-api test-e2e
 
 test-api:
-	cd api && uv run pytest --cov=app --cov-report=term-missing
+	cd api && uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 
 test-e2e: build
 	cd web && npm run test:e2e

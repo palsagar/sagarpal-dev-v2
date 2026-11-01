@@ -1,0 +1,71 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ "Edit item" if item_id else "New item" }}{% endblock %}
+{% macro error(name) %}{% if errors.get(name) %}<p class="error" id="{{ name }}-error">{{ errors[name] }}</p>{% endif %}{% endmacro %}
+{% macro described(name) %}{% if errors.get(name) %} aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}{% endmacro %}
+{% macro text(name, label, type="text", hint="") %}
+<div>
+  <label for="{{ name }}">{{ label }}{% if hint %} <span class="hint">{{ hint }}</span>{% endif %}</label>
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values[name] }}"{{ described(name) }}>
+  {{ error(name) }}
+</div>
+{% endmacro %}
+{% block content %}
+<h1>{{ "Edit item" if item_id else "New item" }}</h1>
+{% if message %}<p class="message" role="status">{{ message }}</p>{% endif %}
+{% if errors %}<p class="message" role="alert">Some fields need fixing.</p>{% endif %}
+<form class="stack" method="post" action="/admin/items/{{ item_id if item_id else 'new' }}">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <input type="hidden" name="item_id" value="{{ item_id or '' }}">
+  <div>
+    <label for="identifier">Identifier <span class="hint">ISBN, arXiv ID or DOI</span></label>
+    <div class="with-button">
+      <input id="identifier" name="identifier" type="text" value="{{ values.identifier }}" autocapitalize="off" spellcheck="false"{{ described('identifier') }}>
+      <button class="btn" type="submit" formaction="/admin/lookup" formnovalidate>Fetch details</button>
+    </div>
+    {{ error('identifier') }}
+  </div>
+  <div class="row">
+    <div>
+      <label for="kind">Type</label>
+      <select id="kind" name="kind"{{ described('kind') }}>
+        {% for k in kinds %}<option value="{{ k }}"{% if values.kind == k %} selected{% endif %}>{{ k | capitalize }}</option>{% endfor %}
+      </select>
+      {{ error('kind') }}
+    </div>
+    <div>
+      <label for="status">Status</label>
+      <select id="status" name="status"{{ described('status') }}>
+        {% for s, title in statuses %}<option value="{{ s }}"{% if values.status == s %} selected{% endif %}>{{ title }}</option>{% endfor %}
+      </select>
+      {{ error('status') }}
+    </div>
+  </div>
+  <div>
+    <label for="title">Title</label>
+    <input id="title" name="title" type="text" value="{{ values.title }}" required{{ described('title') }}>
+    {{ error('title') }}
+  </div>
+  {{ text("authors", "Authors", hint="as displayed, e.g. Sutton, Barto") }}
+  <div class="row">
+    {{ text("year", "Year", type="number") }}
+    {{ text("source", "Source", hint="publisher, journal or site") }}
+  </div>
+  {{ text("url", "Link", type="url") }}
+  {{ text("cover_url", "Cover image URL", type="url") }}
+  <div class="row">
+    {{ text("started_on", "Started", type="date") }}
+    {{ text("finished_on", "Finished", type="date") }}
+  </div>
+  <div>
+    <label for="note">Note <span class="hint">one line on why it matters, 280 characters at most</span></label>
+    <textarea id="note" name="note" maxlength="280"{{ described('note') }}>{{ values.note }}</textarea>
+    {{ error('note') }}
+  </div>
+  {{ text("verb", "Verb", hint="optional, replaces “started” or “finished”, e.g. reread") }}
+  <label class="check"><input type="checkbox" name="published" value="1"{% if values.published %} checked{% endif %}> Show on the site</label>
+  <div class="actions">
+    <button class="btn btn--primary" type="submit">Save</button>
+    <a class="btn" href="/admin">Cancel</a>
+  </div>
+</form>
+{% endblock %}

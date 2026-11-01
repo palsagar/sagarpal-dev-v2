@@ -1,6 +1,6 @@
 # sagar-pal.dev redesign — build plan
 
-> Status: **design signed off (31 Oct 2026). Phases 0–2 and 4 done on branch `redesign`. Phase 3 built; its real-phone frame-rate check is pending. Phase 5 next.**
+> Status: **design signed off (31 Oct 2026). Phases 0–2, 4 and 5 done on branch `redesign`. Phase 3 built; its real-phone frame-rate check is pending. Phase 6 next.**
 > This is the master plan for replacing the Jekyll/Chirpy site with an Astro front end and a FastAPI back end.
 > It is written for Claude Code to execute phase by phase; a human can follow it too.
 
@@ -201,15 +201,17 @@ Spec in DESIGN.md §5. Summary:
 
 ### Phase 5 — FastAPI back end
 Full spec in `docs/redesign/API.md`.
-- [ ] Settings via `pydantic-settings`; SQLite at `/data/site.db` (WAL mode); Alembic migrations run on start-up.
-- [ ] Reading list: model, public `GET /api/reading`, admin CRUD (server-rendered Jinja2 forms, phone-friendly), metadata lookup by ISBN (Open Library), arXiv ID (arXiv API) or DOI (Crossref).
-- [ ] Views + Useful: privacy-preserving dedupe (daily-rotating HMAC of IP + UA, never stored raw), bot filtering, rate limits.
-- [ ] Search: SQLite FTS5 index built from the manifest at start-up and on manifest change.
-- [ ] RSS 2.0 `/feed.xml` and OG images `/og/{slug}.png` (Pillow, bundled fonts, field-image background, disk cache keyed by content hash).
-- [ ] Static hosting of `web/dist` with correct cache headers, 404 page, redirects (§2.2), security headers, and Umami tag injection into HTML when `UMAMI_DOMAIN` and `UMAMI_ID` are set (parity with today's nginx `sub_filter`).
-- [ ] Tests: pytest + httpx for every endpoint, auth, dedupe, migrations on an empty DB, manifest reload.
+- [x] Settings via `pydantic-settings`; SQLite at `/data/site.db` (WAL mode); Alembic migrations run on start-up.
+- [x] Reading list: model, public `GET /api/reading`, admin CRUD (server-rendered Jinja2 forms, phone-friendly), metadata lookup by ISBN (Open Library), arXiv ID (arXiv API) or DOI (Crossref).
+- [x] Views + Useful: privacy-preserving dedupe (daily-rotating HMAC of IP + UA, never stored raw), bot filtering, rate limits.
+- [x] Search: SQLite FTS5 index built from the manifest at start-up and on manifest change.
+- [x] RSS 2.0 `/feed.xml` and OG images `/og/{slug}.png` (Pillow, bundled fonts, field-image background, disk cache keyed by content hash).
+- [x] Static hosting of `web/dist` with correct cache headers, 404 page, redirects (§2.2), security headers, and Umami tag injection into HTML when `UMAMI_DOMAIN` and `UMAMI_ID` are set (parity with today's nginx `sub_filter`).
+- [x] Tests: pytest + httpx for every endpoint, auth, dedupe, migrations on an empty DB, manifest reload.
 
 **Done when:** `pytest` passes with ≥ 90% coverage on `app/`. Admin works on a phone viewport. `curl` checks in API.md §9 pass locally against the built image.
+
+*Phase 5 notes (1 Nov 2026):* 141 pytest tests, 99% coverage on `app/`; CI and `make test-api` now fail below 90%. The §9 `curl` checks pass against uvicorn serving a fresh `web/dist` (the Docker image is Phase 8), except `/publications/`, which is 404 until Phase 7 builds the page. End to end through `astro dev`'s proxy with a scratch manifest listing the example draft: the real `/stats`, `/useful`, `/view` and `/api/search` drive the post page and the blog search, and the admin works at 390px in both themes (no sideways scroll). **Decisions taken without asking (confirm or change):** the 404 page is `dist/404.html` when it exists, otherwise a plain built-in page until Phase 7's `404.astro`; `/cv` is a **302** (its target changes with each CV; a cached 301 would pin the old file), the other redirects are 301; directory URLs without a slash get a relative 301 (Starlette's default is a 307); lookups send `CONTACT_EMAIL` (new optional variable, empty by default) in the User-Agent, so no address is chosen for Sagar; the OG card darkens the text column by **55%**, not the 30% of API.md §7, because the serif dek was hard to read over the bright corals at 30%; `counts` in `GET /api/reading` ignore the `kind` filter (so the pills can show every count) but respect `status`; a queued item's label is "Paper, added January 2026" (from `created_at`); `GET /api/search` caps `limit` at 50 and the default stays 10; `/docs` and `/openapi.json` are off; expired dedupe keys are purged on writes at most once an hour, not by a timer. **Privacy:** uvicorn's access log is disabled (it prints client IPs); the app logs JSON lines with method, path (no query string), status and duration. **Security:** the three secrets are required (min. 32 characters for the two HMAC keys), so the app refuses to start without them; admin cookies are `HttpOnly; Secure; SameSite=Strict; Path=/admin` (browsers accept `Secure` on `http://localhost`); CSRF is a signed double-submit token; reading-list URLs must be `http(s)`; search snippets are HTML-escaped before `<mark>` is added; the CSP is report-only and hashes every inline script found in `dist/` at start-up (`img-src` allows any `https:` image for covers). There is no `report-uri` yet, so "a week without reports" cannot be measured until one is added. Fonts: Archivo and Source Serif 4 variable TTFs from the Google Fonts repository with their OFL files in `api/app/fonts/`; the OG background is `api/app/assets/field-hero-night.jpg`. FastAPI routes answer HEAD too (`/api/health`, `/feed.xml`, `/og/*`), so `curl -I` and uptime monitors work.
 
 ### Phase 6 — Reading page + home band
 - [ ] `/what-im-reading/` per DESIGN.md §7.4: title, sentence, type filter with counts, "Reading now" (lead item large with typographic cover; others stacked), "Finished" grouped by year, "Up next" in a surface band. Empty state.
