@@ -7,6 +7,7 @@ import ProjectCard from '../components/ProjectCard.astro';
 import ProjectGrid from '../components/ProjectGrid.astro';
 import ReadingCover from '../components/ReadingCover.astro';
 import WritingList from '../components/WritingList.astro';
+import { getProjects } from '../lib/profile';
 import Callout from '../components/post/Callout.astro';
 import Figure from '../components/post/Figure.astro';
 import Sidenote from '../components/post/Sidenote.astro';
@@ -177,9 +178,7 @@ const label = theme === 'night' ? 'Night' : 'Day';
 
 // Home components (Phase 2), with real profile data. The blog is empty until
 // Phase 4, so the writing rows use dev-only text.
-const projects = (await getCollection('projects')).sort(
-  (a, b) => a.data.order - b.data.order,
-);
+const projects = await getProjects();
 const papers = (await getCollection('publications')).slice(0, 1);
 const devPosts = [
   {

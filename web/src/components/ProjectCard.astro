@@ -59,7 +59,7 @@ const t = project.terminal;
   <div class="project__body">
     <div class="project__text">
       <h3 class="card-title">{project.title}</h3>
-      <p class="project__summary">
+      <p class="project__blurb">
         {full ? project.description : project.summary}
       </p>
       <span class="project__tech">{project.tech}</span>
@@ -148,7 +148,7 @@ const t = project.terminal;
     gap: 8px;
   }
 
-  .project__summary {
+  .project__blurb {
     max-width: 46ch;
     font-size: 18px;
     line-height: 1.5;
@@ -188,7 +188,7 @@ const t = project.terminal;
       padding: 20px var(--gutter);
     }
 
-    .project__summary {
+    .project__blurb {
       font-size: 16px;
     }
   }

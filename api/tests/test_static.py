@@ -82,6 +82,7 @@ def test_slash_redirect_cannot_point_at_another_host(client: TestClient) -> None
         ("/posts/old-post", 301, "/blog/old-post/"),
         ("/cv", 302, "/assets/pdfs/Sagar_Pal_CV_2025.pdf"),
         ("/cv/", 302, "/assets/pdfs/Sagar_Pal_CV_2025.pdf"),
+        ("/sitemap.xml", 301, "/sitemap-index.xml"),
     ],
 )
 def test_old_urls_redirect(client: TestClient, path: str, status: int, location: str) -> None:
