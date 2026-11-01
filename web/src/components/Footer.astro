@@ -11,15 +11,25 @@ interface Props {
 
 const { variant = 'full' } = Astro.props;
 const year = new Date().getFullYear();
+// The fill loads with the page, so it is kept small: 800px (the size the project
+// card also uses) and only seen through the letters. AVIF where supported, WebP otherwise.
 const fill =
   variant === 'full'
-    ? await getImage({ src: fieldFill, width: 1600, format: 'webp' })
+    ? await Promise.all(
+        (['avif', 'webp'] as const).map((format) =>
+          getImage({ src: fieldFill, width: 800, format }),
+        ),
+      )
     : null;
 ---
 
 <footer
   class="site-footer container"
-  style={fill ? `--name-fill: url(${fill.src})` : undefined}
+  style={
+    fill
+      ? `--name-fill: url(${fill[1].src}); --name-fill-set: image-set(url(${fill[0].src}) type("image/avif"), url(${fill[1].src}) type("image/webp"))`
+      : undefined
+  }
 >
   <div class="site-footer__row">
     <nav aria-label="Elsewhere">
@@ -99,6 +109,14 @@ const fill =
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+
+  /* Inside @supports: an image-set() the browser rejects would leave the
+     transparent text with no fill at all. */
+  @supports (background-image: image-set(url('x.avif') type('image/avif'))) {
+    .site-footer__name {
+      background-image: var(--name-fill-set);
+    }
   }
 
   .site-footer__colophon {

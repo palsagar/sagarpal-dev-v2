@@ -110,7 +110,24 @@ test('footer: links, field-filled name hidden from assistive tech', async ({
   }
   const name = footer.locator('.site-footer__name');
   await expect(name).toHaveAttribute('aria-hidden', 'true');
-  await expect(name).toHaveCSS('background-image', /\.webp/);
+  await expect(name).toHaveCSS('background-image', /\.avif/);
+});
+
+// The fill loads with the page wherever the footer is, so it must stay small.
+test('footer name fill: AVIF under 64 KB, WebP fallback under 128 KB', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/');
+  const style = await page.locator('footer.site-footer').getAttribute('style');
+  const urls = [...(style ?? '').matchAll(/url\(([^)]+)\)/g)].map((m) => m[1]);
+  const avif = urls.find((u) => u.endsWith('.avif'));
+  const webp = urls.find((u) => u.endsWith('.webp'));
+  expect(avif && webp).toBeTruthy();
+  const size = async (u: string) =>
+    (await (await request.get(u)).body()).length;
+  expect(await size(avif!)).toBeLessThan(64 * 1024);
+  expect(await size(webp!)).toBeLessThan(128 * 1024);
 });
 
 test('Back and Forward report the page to Umami', async ({ page }) => {
