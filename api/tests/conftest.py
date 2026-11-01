@@ -85,7 +85,7 @@ def isolated_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterat
 
 @pytest.fixture
 def static_dir(tmp_path: Path) -> Path:
-    """A fake Astro build with a home page, a blog page, a 404 page and one asset."""
+    """A fake Astro build: home, blog and 404 pages, assets and the service-worker kill switch."""
     dist = tmp_path / "dist"
     (dist / "blog").mkdir(parents=True)
     (dist / "_astro").mkdir()
@@ -100,6 +100,7 @@ def static_dir(tmp_path: Path) -> Path:
     (dist / "404.html").write_text("<html><head></head><body>custom 404</body></html>")
     (dist / "_astro" / "a.js").write_text("console.log(1)")
     (dist / "favicon.ico").write_bytes(b"\x00\x00\x01\x00")
+    (dist / "sw.min.js").write_text("self.addEventListener('install', () => self.skipWaiting());")
     write_manifest(dist, [post("alpha"), post("beta", date="2026-10-01")])
     return dist
 

@@ -1,0 +1,67 @@
+---
+// 404 (DESIGN.md §7.5): title, sentence, "Back home" and a small static field
+// image. FastAPI serves dist/404.html with status 404 for unknown paths.
+import fieldDay from '../assets/fig-mitosis-day.jpg';
+import fieldNight from '../assets/fig-mitosis-night.jpg';
+import ThemedPicture from '../components/ThemedPicture.astro';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Not found" noindex>
+  <section class="container not-found" aria-labelledby="page-title">
+    <div class="not-found__text">
+      <h1 id="page-title" class="display display--blog">
+        Not found
+      </h1>
+      <p class="not-found__lede">That page drifted out of the field.</p>
+      <a class="btn btn--primary" href="/">
+        Back home
+      </a>
+    </div>
+    <ThemedPicture
+      src={fieldNight}
+      srcDay={fieldDay}
+      alt=""
+      sizes="(min-width: 1000px) 480px, 100vw"
+      widths={[480, 800, 960]}
+      class="not-found__img"
+    />
+  </section>
+</Base>
+
+<style>
+  .not-found {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 64px 72px;
+    padding-top: 96px;
+  }
+
+  .not-found__text {
+    flex: 7 1 520px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+  }
+
+  .not-found__lede {
+    max-width: 34ch;
+    font-size: clamp(20px, 1.8vw, 26px);
+    line-height: 1.35;
+  }
+
+  .not-found :global(picture) {
+    flex: 5 1 380px;
+    min-width: 0;
+    max-width: 480px;
+  }
+
+  .not-found :global(.not-found__img) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+</style>

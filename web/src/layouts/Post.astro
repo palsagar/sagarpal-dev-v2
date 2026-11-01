@@ -7,6 +7,7 @@
 // /api/posts/{slug}/stats answers (lib/post.ts). Copy link needs JS.
 import type { MarkdownHeading } from 'astro';
 import ThemedPicture from '../components/ThemedPicture.astro';
+import { site } from '../data/site';
 import { isoDate, longDate, shortDate, type Post } from '../lib/posts';
 import Base from './Base.astro';
 import 'katex/dist/katex.min.css';
@@ -28,9 +29,37 @@ const more = [
   newer && { label: 'Next post', post: newer },
   older && { label: 'Previous post', post: older },
 ].filter((x) => !!x);
+
+// FastAPI draws the card from content-manifest.json (API.md §4).
+const image = `/og/${post.slug}.png`;
+const published = isoDate(data.date);
+const modified = isoDate(data.updated ?? data.date);
+const blogPosting = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: data.title,
+  description: data.dek,
+  datePublished: published,
+  dateModified: modified,
+  url: canonical,
+  mainEntityOfPage: canonical,
+  image: new URL(image, Astro.site).href,
+  keywords: data.tags.join(', '),
+  author: { '@type': 'Person', name: site.name, url: site.url },
+};
+// "<" escaped so no string in the front matter can close the <script>.
+const jsonLd = JSON.stringify(blogPosting).replaceAll('<', '\\u003c');
 ---
 
-<Base title={data.title} description={data.dek}>
+<Base title={data.title} description={data.dek} image={image} type="article">
+  <Fragment slot="head">
+    <meta property="article:published_time" content={published} />
+    <meta property="article:modified_time" content={modified} />
+    {data.tags.map((t) => (
+      <meta property="article:tag" content={t} />
+    ))}
+    <script is:inline type="application/ld+json" set:html={jsonLd} />
+  </Fragment>
   <article class="post" data-post data-slug={post.slug}>
     <header class="container post__row post__head">
       <div class="post__aside" aria-hidden="true"></div>

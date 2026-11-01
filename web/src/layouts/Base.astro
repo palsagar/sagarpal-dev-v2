@@ -17,7 +17,12 @@ interface Props {
   footer?: 'full' | 'compact';
   /** Emit the JSON-LD Person block (home page). */
   person?: boolean;
+  /** Not indexed and no canonical URL (404). */
   noindex?: boolean;
+  /** Open Graph image path, served by FastAPI (API.md §4). */
+  image?: string;
+  /** Open Graph type: posts are articles. */
+  type?: 'website' | 'article';
 }
 
 const {
@@ -26,13 +31,15 @@ const {
   footer = 'compact',
   person = false,
   noindex = false,
+  image = '/og/default.png',
+  type = 'website',
 } = Astro.props;
 
 const fullTitle = title
   ? `${title} — ${site.name}`
   : `${site.name} — Scientific computing, AI for science, HPC`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).href;
-const ogImage = new URL('/assets/img/og-card.png', Astro.site ?? site.url).href;
+const ogImage = new URL(image, Astro.site ?? site.url).href;
 ---
 
 <!doctype html>
@@ -53,7 +60,7 @@ const ogImage = new URL('/assets/img/og-card.png', Astro.site ?? site.url).href;
     />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {!noindex && <link rel="canonical" href={canonical} />}
     {/* A coral colony on the night ground, from docs/redesign/scripts/make_assets.py --favicon. */}
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -72,12 +79,14 @@ const ogImage = new URL('/assets/img/og-card.png', Astro.site ?? site.url).href;
       href="/feed.xml"
     />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
 
     {person && (

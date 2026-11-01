@@ -1,0 +1,54 @@
+---
+// Project cards in rows of two with alternating weights: 7/5, then 5/7
+// (DESIGN.md §7.1.5). Explicit rows, because at some widths three flex bases
+// fit on one line. `full` is passed to each card (the /projects/ page).
+import type { CollectionEntry } from 'astro:content';
+import ProjectCard from './ProjectCard.astro';
+
+interface Props {
+  projects: CollectionEntry<'projects'>[];
+  full?: boolean;
+}
+
+const { projects, full = false } = Astro.props;
+const rows = Array.from({ length: Math.ceil(projects.length / 2) }, (_, r) =>
+  projects.slice(2 * r, 2 * r + 2),
+);
+---
+
+<div class="projects">
+  {rows.map((row, r) => (
+    <div class="projects__row">
+      {row.map(({ data }, i) => (
+        <ProjectCard
+          project={data}
+          wide={i === r % 2}
+          full={full}
+          reveal={i + 1}
+        />
+      ))}
+    </div>
+  ))}
+</div>
+
+<style>
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: 72px;
+  }
+
+  .projects__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 72px 40px;
+  }
+
+  @media (max-width: 719.98px) {
+    .projects,
+    .projects__row {
+      gap: 56px;
+    }
+  }
+</style>

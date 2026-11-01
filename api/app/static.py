@@ -37,6 +37,8 @@ _CHIRPY_POST = re.compile(r"/posts/([^/]+)/?")
 def redirect_for(path: str) -> tuple[str, int] | None:
     """Return ``(location, status)`` for the old URLs of plan §2.2, else None.
 
+    ``/sitemap.xml`` is the old Jekyll sitemap; Astro writes ``/sitemap-index.xml``.
+
     ``/cv`` is a 302 because its target changes with each new CV; a cached 301
     would keep returning visitors on the old file.
 
@@ -48,6 +50,8 @@ def redirect_for(path: str) -> tuple[str, int] | None:
     """
     if path in ("/cv", "/cv/"):
         return (CV_PATH, 302)
+    if path == "/sitemap.xml":
+        return ("/sitemap-index.xml", 301)
     if _CHIRPY_TABS.fullmatch(path):
         return ("/blog/", 301)
     if match := _CHIRPY_POST.fullmatch(path):
@@ -116,7 +120,8 @@ class SiteStatic(StaticFiles):
             return HTML_CACHE
         if path.startswith("_astro/"):
             return IMMUTABLE
-        if path == "sw.js":
+        # The kill switch for the old site's service worker (web/public/sw.min.js).
+        if path == "sw.min.js":
             return "no-store"
         if response.headers.get("content-type", "").startswith(_REVALIDATE_TYPES):
             return HTML_CACHE

@@ -4,8 +4,10 @@ import { getCollection } from 'astro:content';
 import CareerList from '../components/CareerList.astro';
 import PaperList from '../components/PaperList.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import ProjectGrid from '../components/ProjectGrid.astro';
 import ReadingCover from '../components/ReadingCover.astro';
 import WritingList from '../components/WritingList.astro';
+import { getProjects } from '../lib/profile';
 import Callout from '../components/post/Callout.astro';
 import Figure from '../components/post/Figure.astro';
 import Sidenote from '../components/post/Sidenote.astro';
@@ -176,9 +178,7 @@ const label = theme === 'night' ? 'Night' : 'Day';
 
 // Home components (Phase 2), with real profile data. The blog is empty until
 // Phase 4, so the writing rows use dev-only text.
-const projects = (await getCollection('projects')).sort(
-  (a, b) => a.data.order - b.data.order,
-);
+const projects = await getProjects();
 const papers = (await getCollection('publications')).slice(0, 1);
 const devPosts = [
   {
@@ -455,7 +455,9 @@ const devPosts = [
       </h3>
       <p class="small">
         CareerList (phoneLimit hides rows on phones), WritingList, ProjectCard
-        (wide 7 / narrow 5, image or terminal), PaperList.
+        (wide 7 / narrow 5, image or terminal), PaperList. Then the /projects/
+        and /publications/ versions: ProjectGrid and PaperList with `full` (the
+        longer descriptions).
       </p>
       <CareerList
         rows={[
@@ -479,6 +481,8 @@ const devPosts = [
         ))}
       </div>
       <PaperList papers={papers} />
+      <ProjectGrid projects={projects.slice(0, 2)} full />
+      <PaperList papers={papers} full />
     </section>
 
     <section class="sg-block" aria-labelledby={`sg-${theme}-reading`}>
