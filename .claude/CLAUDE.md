@@ -2,7 +2,7 @@
 
 ## Overview
 
-Personal website for Sagar Pal, being rebuilt on branch `redesign`: an Astro 7 front end with React islands (`web/`) and a FastAPI back end (`api/`), shipped later as one Docker image on the Coolify VPS. `main` still holds the old Jekyll + Chirpy site and stays deployable until the cut-over in Phase 8.
+Personal website for Sagar Pal: an Astro 7 front end with React islands (`web/`) and a FastAPI back end (`api/`), shipped as one Docker image on the Coolify VPS. The redesign (REDESIGN_PLAN.md) went live on 1 Nov 2026 from `main`; the old Jekyll + Chirpy site is the rollback image `f70270a` (DEPLOYMENT.md §8, Rollback).
 
 ## Read before doing any work (in this order)
 
@@ -12,13 +12,13 @@ Personal website for Sagar Pal, being rebuilt on branch `redesign`: an Astro 7 f
 4. `docs/redesign/design-reference/README.md`: how to read the mockup sources (`*.dc.html`).
 
 Rules that come from the plan:
-- Work on `redesign`. Never push to `main`, never force-push.
+- Work on a branch from `main` and merge through a pull request (`main` requires one review; Sagar merges with his admin rights). Never push to `main` directly, never force-push. A push to `main` deploys production (Auto Deploy).
 - Ask Sagar before deploying, touching DNS/Cloudflare/Coolify, deleting anything outside this repo, or changing a decision in plan §1.
 - Never ship the mockups' placeholder content (DESIGN.md §10, "Must not ship"). Blog and reading list launch empty.
 
 ## Status
 
-- Phases 0, 1 and 2 are done (Phase 2: home page, static parts; Lighthouse mobile 98/100/96/100). Phase 3 (live hero simulation) is built and tested; a frame-rate check on a real mid-range phone is pending. Phases 4 (blog), 5 (FastAPI back end), 6 (reading page and home band) and 7 (projects, publications and 404 pages, SEO, the old service-worker kill switch) are done. Phase 8 (container and deployment) is done: staging runs at `https://next.sagar-pal.dev` (Coolify app "Personal Website (staging)", branch `redesign`, Auto Deploy on), without Litestream/R2 (Sagar's decision; nightly copies plus VPS disk backups). Phase 9 (QA) is done: `.github/workflows/staging.yml` is green on staging (REDESIGN_PLAN.md Phase 9 notes). Next: Sagar's review of the PR `redesign` → `main`, then the production cut-over (DEPLOYMENT.md §8).
+- Phases 0, 1 and 2 are done (Phase 2: home page, static parts; Lighthouse mobile 98/100/96/100). Phase 3 (live hero simulation) is built and tested; a frame-rate check on a real mid-range phone is pending. Phases 4 (blog), 5 (FastAPI back end), 6 (reading page and home band) and 7 (projects, publications and 404 pages, SEO, the old service-worker kill switch) are done. Phase 8 (container and deployment) is done: staging runs at `https://next.sagar-pal.dev` (Coolify app "Personal Website (staging)", branch `redesign`, Auto Deploy on), without Litestream/R2 (Sagar's decision; nightly copies plus VPS disk backups). Phase 9 (QA) is done: `.github/workflows/staging.yml` is green on staging (REDESIGN_PLAN.md Phase 9 notes). Production cut-over done on 1 Nov 2026: `https://sagar-pal.dev` runs `main` (PR #7, squash-merged as `c700614`; REDESIGN_PLAN.md, cut-over notes). Staging still builds `redesign`, whose history no longer matches `main`.
 
 ## Layout
 
