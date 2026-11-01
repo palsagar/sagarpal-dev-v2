@@ -58,3 +58,27 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run mypy app tests
       - run: uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=90
+
+  image:
+    name: Docker image (build, start, health)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: docker build -t sagar-pal-dev .
+      - name: Start the image and wait until its health check passes
+        # Throwaway values: the app refuses to start without its three secrets.
+        run: |
+          docker run -d --name site -p 8000:8000 \
+            -e HASH_SECRET=ci-only-hash-secret-0123456789abcdef \
+            -e SESSION_SECRET=ci-only-session-secret-0123456789abc \
+            -e ADMIN_PASSWORD_HASH=ci-only-not-a-real-hash \
+            sagar-pal-dev
+          for _ in $(seq 1 60); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' site)" = healthy ] && break
+            sleep 1
+          done
+          docker logs site
+          [ "$(docker inspect -f '{{.State.Health.Status}}' site)" = healthy ]
+          curl -fsS http://localhost:8000/api/health
+          curl -fsS -o /dev/null http://localhost:8000/publications/
+          docker image ls sagar-pal-dev

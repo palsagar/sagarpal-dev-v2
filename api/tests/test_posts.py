@@ -5,6 +5,7 @@ from freezegun import freeze_time
 from sqlalchemy import func, select
 
 from app.models import SeenKey
+from tests.conftest import CLOUDFLARE_PEER, client_from
 
 OTHER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Gecko/20100101 Firefox/133.0"
 
@@ -82,6 +83,11 @@ def test_cloudflare_ip_separates_visitors_only_when_trusted(client: TestClient) 
     ctx.settings.trust_cloudflare = True
     for ip in ["203.0.113.1", "203.0.113.2"]:
         client.post("/api/posts/alpha/view", headers={"CF-Connecting-IP": ip})
+    assert _stats(client)["views"] == 1  # trusted, but the peer is not a Cloudflare address
+
+    via_cloudflare = client_from(client, CLOUDFLARE_PEER)
+    for ip in ["203.0.113.1", "203.0.113.2"]:
+        via_cloudflare.post("/api/posts/alpha/view", headers={"CF-Connecting-IP": ip})
     assert _stats(client)["views"] == 3
 
 

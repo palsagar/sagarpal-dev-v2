@@ -56,7 +56,10 @@ request_log = logging.getLogger("app.request")
 
 
 class RequestLog:
-    """ASGI middleware: log method, path (query dropped), status and duration."""
+    """ASGI middleware: log method, path (query dropped), status and duration.
+
+    Successful health checks are not logged.
+    """
 
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
@@ -77,12 +80,14 @@ class RequestLog:
         try:
             await self.app(scope, receive, capture)
         finally:
-            request_log.info(
-                "request",
-                extra={
-                    "method": scope["method"],
-                    "path": scope["path"],
-                    "status": status,
-                    "ms": round((time.perf_counter() - start) * 1000, 1),
-                },
-            )
+            # The container health check calls /api/health every 30 s; log it only when it fails.
+            if scope["path"] != "/api/health" or status != 200:
+                request_log.info(
+                    "request",
+                    extra={
+                        "method": scope["method"],
+                        "path": scope["path"],
+                        "status": status,
+                        "ms": round((time.perf_counter() - start) * 1000, 1),
+                    },
+                )

@@ -103,7 +103,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         log.warning("STATIC_DIR %s does not exist; serving the API only", settings.static_dir)
 
     csp = content_security_policy(hashes, settings.umami_domain if umami else None)
-    app.add_middleware(SecurityHeaders, headers=security_headers(csp))
+    app.add_middleware(SecurityHeaders, headers=security_headers(csp, settings.noindex))
     app.add_middleware(RequestLog)
     return app
 

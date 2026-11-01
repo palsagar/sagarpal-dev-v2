@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     admin_api_token: SecretStr | None = None
 
     trust_cloudflare: bool = False
+    # true on staging: every response carries X-Robots-Tag so search engines skip the site.
+    noindex: bool = False
     umami_domain: str | None = None
     umami_id: str | None = None
     # Contact address for the User-Agent of metadata lookups (Crossref etiquette).

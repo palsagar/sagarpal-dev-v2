@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from app.config import get_settings
 from app.main import create_app
 from app.static import redirect_for
 from tests.conftest import BROWSER_UA
@@ -24,6 +25,15 @@ def test_html_revalidates_and_carries_security_headers(client: TestClient) -> No
     assert headers["permissions-policy"] == "camera=(), microphone=(), geolocation=()"
     assert headers["x-frame-options"] == "DENY"
     assert "content-security-policy" not in headers  # report-only for now
+    assert "x-robots-tag" not in headers  # only the staging site sets NOINDEX
+
+
+def test_noindex_marks_every_response(static_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("NOINDEX", "true")
+    get_settings.cache_clear()
+    with TestClient(create_app()) as staging:
+        for path in ["/", "/api/health", "/does-not-exist"]:
+            assert staging.get(path).headers["x-robots-tag"] == "noindex, nofollow"
 
 
 def test_csp_hashes_the_inline_theme_script_only(client: TestClient) -> None:

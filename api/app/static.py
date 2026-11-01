@@ -219,9 +219,12 @@ class SecurityHeaders:
         await self.app(scope, receive, send_with_headers)
 
 
-def security_headers(csp: str) -> dict[str, str]:
-    """The fixed header set, with the CSP in report-only mode."""
-    return {
+def security_headers(csp: str, noindex: bool = False) -> dict[str, str]:
+    """The fixed header set, with the CSP in report-only mode.
+
+    ``noindex`` adds ``X-Robots-Tag: noindex, nofollow`` (the staging site).
+    """
+    headers = {
         "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -229,3 +232,6 @@ def security_headers(csp: str) -> dict[str, str]:
         "X-Frame-Options": "DENY",
         "Content-Security-Policy-Report-Only": csp,
     }
+    if noindex:
+        headers["X-Robots-Tag"] = "noindex, nofollow"
+    return headers

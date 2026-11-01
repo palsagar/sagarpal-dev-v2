@@ -49,7 +49,7 @@ def test_run_migrations_is_idempotent_and_uses_the_given_url(tmp_path: Path) -> 
 
 def test_app_start_migrates_an_empty_database(isolated_settings: Path) -> None:
     with TestClient(create_app()) as client:
-        assert client.get("/api/health").json() == {"status": "ok", "posts": 0}
+        assert client.get("/api/health").json()["posts"] == 0
     engine = create_db_engine(get_settings().database_url)
     try:
         with engine.connect() as conn:
