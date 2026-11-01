@@ -112,3 +112,32 @@ test('footer: links, field-filled name hidden from assistive tech', async ({
   await expect(name).toHaveAttribute('aria-hidden', 'true');
   await expect(name).toHaveCSS('background-image', /\.webp/);
 });
+
+test('Back and Forward report the page to Umami', async ({ page }) => {
+  // A stand-in for Umami's tracker: like the real one, it notes each URL change made
+  // through history.pushState or history.replaceState, and counts a page view for it.
+  await page.addInitScript(() => {
+    const seen: string[] = [];
+    Object.assign(window, { umami: {}, __historyUrls: seen });
+    for (const method of ['pushState', 'replaceState'] as const) {
+      const original = history[method].bind(history);
+      history[method] = (state, unused, url) => {
+        if (url) seen.push(new URL(String(url), location.href).pathname);
+        original(state, unused, url);
+      };
+    }
+  });
+  const urls = () =>
+    page.evaluate(
+      () => (window as unknown as { __historyUrls: string[] }).__historyUrls,
+    );
+  await page.setViewportSize({ width: WIDTHS.desktop, height: 900 });
+  await page.goto('/');
+  const nav = page.getByRole('navigation', { name: 'Primary' });
+  await nav.getByRole('link', { name: 'Projects', exact: true }).click();
+  await expect.poll(urls).toEqual(['/projects/']);
+  await page.goBack();
+  await expect.poll(urls).toEqual(['/projects/', '/']);
+  await page.goForward();
+  await expect.poll(urls).toEqual(['/projects/', '/', '/projects/']);
+});

@@ -42,6 +42,8 @@ def test_csp_hashes_the_inline_theme_script_only(client: TestClient) -> None:
     assert f"'sha256-{digest}'" in csp
     assert csp.count("'sha256-") == 1  # JSON-LD and external scripts are not hashed
     assert "frame-ancestors 'none'" in csp
+    # The build inlines small fonts into its CSS as data: URLs.
+    assert "font-src 'self' data:;" in csp
 
 
 def test_api_responses_also_get_security_headers(client: TestClient) -> None:
