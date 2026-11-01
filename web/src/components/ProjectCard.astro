@@ -1,5 +1,5 @@
 ---
-// Project article (DESIGN.md §7.1.5): image (or terminal fragment), h3, summary,
+// Project article (DESIGN.md §7.1.5): image (or terminal fragment), title (h3; h2 on /projects/), summary,
 // tech line, buttons. `wide` cards take 7 parts of the row, narrow ones 5.
 // `full` (the /projects/ page) shows the longer description instead of the summary.
 import { Picture } from 'astro:assets';
@@ -11,9 +11,12 @@ interface Props {
   full?: boolean;
   /** Stagger index for the section entrance (DESIGN.md §8). */
   reveal?: number;
+  /** Title level: 3 under a section h2 (home), 2 under the page h1 (/projects/). */
+  level?: 2 | 3;
 }
 
-const { project, wide, full = false, reveal } = Astro.props;
+const { project, wide, full = false, reveal, level = 3 } = Astro.props;
+const Title = `h${level}` as const;
 const primary = project.demo
   ? { label: 'Live demo', href: project.demo }
   : { label: 'PyPI', href: project.pypi };
@@ -58,7 +61,7 @@ const t = project.terminal;
   )}
   <div class="project__body">
     <div class="project__text">
-      <h3 class="card-title">{project.title}</h3>
+      <Title class="card-title">{project.title}</Title>
       <p class="project__blurb">
         {full ? project.description : project.summary}
       </p>

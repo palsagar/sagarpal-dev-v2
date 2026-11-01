@@ -6,6 +6,7 @@ import {
   expectNoHorizontalScroll,
   storeTheme,
 } from './helpers';
+import { ITEMS, mockReading } from './reading-fixtures';
 
 // Secondary pages (REDESIGN_PLAN.md Phase 7, DESIGN.md §7.5): /projects/ and
 // /publications/ (the home sections at full length) and the 404 page.
@@ -31,7 +32,7 @@ test.describe('projects', () => {
 
     const cards = page.locator('main article');
     await expect(cards).toHaveCount(4);
-    await expect(cards.getByRole('heading', { level: 3 })).toHaveText([
+    await expect(cards.getByRole('heading', { level: 2 })).toHaveText([
       'FlowLab',
       'Gray-Scott',
       'PortWhisperer',
@@ -122,4 +123,25 @@ for (const path of ['/projects/', '/publications/', '/no-such-page/']) {
       });
     }
   }
+}
+
+// axe's heading-order rule is a best practice, outside the WCAG tags above.
+for (const path of [
+  '/',
+  '/projects/',
+  '/publications/',
+  '/blog/',
+  '/what-im-reading/',
+  '/no-such-page/',
+]) {
+  test(`${path}: one h1 and no skipped heading levels`, async ({ page }) => {
+    await mockReading(page, ITEMS);
+    await page.goto(path);
+    const levels = await page
+      .locator('h1, h2, h3, h4, h5, h6')
+      .evaluateAll((hs) => hs.map((h) => Number(h.tagName[1])));
+    expect(levels.filter((l) => l === 1)).toHaveLength(1);
+    const skips = levels.filter((l, i) => i > 0 && l > levels[i - 1] + 1);
+    expect(skips).toEqual([]);
+  });
 }
