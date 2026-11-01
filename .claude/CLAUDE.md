@@ -18,7 +18,7 @@ Rules that come from the plan:
 
 ## Status
 
-- Phases 0, 1 and 2 are done (Phase 2: home page, static parts; Lighthouse mobile 98/100/96/100). Phase 3 (live hero simulation) is built and tested; a frame-rate check on a real mid-range phone is pending. Phases 4 (blog), 5 (FastAPI back end), 6 (reading page and home band) and 7 (projects, publications and 404 pages, SEO, the old service-worker kill switch) are done. Phase 8 (container and deployment) is done: staging runs at `https://next.sagar-pal.dev` (Coolify app "Personal Website (staging)", branch `redesign`, Auto Deploy on), without Litestream/R2 (Sagar's decision; nightly copies plus VPS disk backups). Next: Phase 9 (QA) against staging, then the production cut-over (DEPLOYMENT.md §8).
+- Phases 0, 1 and 2 are done (Phase 2: home page, static parts; Lighthouse mobile 98/100/96/100). Phase 3 (live hero simulation) is built and tested; a frame-rate check on a real mid-range phone is pending. Phases 4 (blog), 5 (FastAPI back end), 6 (reading page and home band) and 7 (projects, publications and 404 pages, SEO, the old service-worker kill switch) are done. Phase 8 (container and deployment) is done: staging runs at `https://next.sagar-pal.dev` (Coolify app "Personal Website (staging)", branch `redesign`, Auto Deploy on), without Litestream/R2 (Sagar's decision; nightly copies plus VPS disk backups). Phase 9 (QA) is done: `.github/workflows/staging.yml` is green on staging (REDESIGN_PLAN.md Phase 9 notes). Next: Sagar's review of the PR `redesign` → `main`, then the production cut-over (DEPLOYMENT.md §8).
 
 ## Layout
 
