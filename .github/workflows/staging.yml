@@ -8,6 +8,16 @@ name: Staging QA
 on:
   push:
     branches: [redesign]
+    # Only changes that reach the image. Others (docs, tests, CI) leave Docker's
+    # cache intact, so staging keeps the previous build and the wait below would
+    # time out. These paths follow .dockerignore.
+    paths:
+      - 'web/**'
+      - 'api/**'
+      - 'deploy/**'
+      - 'Dockerfile'
+      - '!web/tests/**'
+      - '!api/tests/**'
   workflow_dispatch:
 
 concurrency:
