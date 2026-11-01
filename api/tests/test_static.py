@@ -40,6 +40,13 @@ def test_api_responses_also_get_security_headers(client: TestClient) -> None:
     assert headers["cache-control"] == "no-store"  # the route's own value is kept
 
 
+def test_the_service_worker_kill_switch_is_never_cached(client: TestClient) -> None:
+    # Browsers must always see the current version of the old site's worker URL.
+    response = client.get("/sw.min.js")
+    assert response.status_code == 200
+    assert response.headers["cache-control"] == "no-store"
+
+
 def test_fingerprinted_assets_are_immutable_and_others_cached_a_day(client: TestClient) -> None:
     assert client.get("/_astro/a.js").headers["cache-control"] == (
         "public, max-age=31536000, immutable"

@@ -116,7 +116,8 @@ class SiteStatic(StaticFiles):
             return HTML_CACHE
         if path.startswith("_astro/"):
             return IMMUTABLE
-        if path == "sw.js":
+        # The kill switch for the old site's service worker (web/public/sw.min.js).
+        if path == "sw.min.js":
             return "no-store"
         if response.headers.get("content-type", "").startswith(_REVALIDATE_TYPES):
             return HTML_CACHE

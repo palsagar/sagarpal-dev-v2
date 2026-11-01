@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import CareerList from '../components/CareerList.astro';
 import PaperList from '../components/PaperList.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import ProjectGrid from '../components/ProjectGrid.astro';
 import ReadingCover from '../components/ReadingCover.astro';
 import WritingList from '../components/WritingList.astro';
 import Callout from '../components/post/Callout.astro';
@@ -455,7 +456,9 @@ const devPosts = [
       </h3>
       <p class="small">
         CareerList (phoneLimit hides rows on phones), WritingList, ProjectCard
-        (wide 7 / narrow 5, image or terminal), PaperList.
+        (wide 7 / narrow 5, image or terminal), PaperList. Then the /projects/
+        and /publications/ versions: ProjectGrid and PaperList with `full` (the
+        longer descriptions).
       </p>
       <CareerList
         rows={[
@@ -479,6 +482,8 @@ const devPosts = [
         ))}
       </div>
       <PaperList papers={papers} />
+      <ProjectGrid projects={projects.slice(0, 2)} full />
+      <PaperList papers={papers} full />
     </section>
 
     <section class="sg-block" aria-labelledby={`sg-${theme}-reading`}>

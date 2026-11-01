@@ -1,17 +1,19 @@
 ---
 // Project article (DESIGN.md §7.1.5): image (or terminal fragment), h3, summary,
 // tech line, buttons. `wide` cards take 7 parts of the row, narrow ones 5.
+// `full` (the /projects/ page) shows the longer description instead of the summary.
 import { Picture } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
   project: CollectionEntry<'projects'>['data'];
   wide: boolean;
+  full?: boolean;
   /** Stagger index for the section entrance (DESIGN.md §8). */
   reveal?: number;
 }
 
-const { project, wide, reveal } = Astro.props;
+const { project, wide, full = false, reveal } = Astro.props;
 const primary = project.demo
   ? { label: 'Live demo', href: project.demo }
   : { label: 'PyPI', href: project.pypi };
@@ -57,7 +59,9 @@ const t = project.terminal;
   <div class="project__body">
     <div class="project__text">
       <h3 class="card-title">{project.title}</h3>
-      <p class="project__summary">{project.summary}</p>
+      <p class="project__summary">
+        {full ? project.description : project.summary}
+      </p>
       <span class="project__tech">{project.tech}</span>
     </div>
     <div class="project__actions">

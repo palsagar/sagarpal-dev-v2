@@ -20,8 +20,8 @@ export const site = {
 export const primaryNav = [
   { label: 'Writing', href: '/blog/' },
   { label: 'Reading', href: '/what-im-reading/' },
-  { label: 'Projects', href: '/#work' },
-  { label: 'Papers', href: '/#papers' },
+  { label: 'Projects', href: '/projects/' },
+  { label: 'Papers', href: '/publications/' },
 ] as const;
 
 /** Footer "Elsewhere" links. */

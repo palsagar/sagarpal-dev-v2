@@ -433,3 +433,38 @@ test('after "Play", focus moves to the first slider', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect(page.getByLabel('Feed rate F')).toBeFocused({ timeout: 30_000 });
 });
+
+test('SEO: article tags, the post OG image and the BlogPosting JSON-LD', async ({
+  page,
+}) => {
+  await page.goto(URL_);
+  const canonical = `https://sagar-pal.dev${URL_}`;
+  const meta = (p: string) => page.locator(`head meta[property="${p}"]`);
+  await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    canonical,
+  );
+  await expect(meta('og:type')).toHaveAttribute('content', 'article');
+  await expect(meta('og:image')).toHaveAttribute(
+    'content',
+    `https://sagar-pal.dev/og/${SLUG}.png`,
+  );
+  await expect(meta('article:published_time')).toHaveAttribute(
+    'content',
+    '2026-10-30',
+  );
+  await expect(meta('article:tag')).toHaveCount(2);
+
+  const jsonLd = await page
+    .locator('head script[type="application/ld+json"]')
+    .textContent();
+  expect(JSON.parse(jsonLd ?? '')).toMatchObject({
+    '@type': 'BlogPosting',
+    headline: 'Example draft: every post component',
+    datePublished: '2026-10-30',
+    url: canonical,
+    image: `https://sagar-pal.dev/og/${SLUG}.png`,
+    keywords: 'Numerics, GPU',
+    author: { '@type': 'Person', name: 'Sagar Pal' },
+  });
+});

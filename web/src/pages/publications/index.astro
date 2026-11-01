@@ -1,0 +1,58 @@
+---
+// Papers (DESIGN.md §7.5): the home "Papers" section at full length, with each
+// paper's description. Keeps the old /publications/ URL.
+import PaperList from '../../components/PaperList.astro';
+import { site } from '../../data/site';
+import Base from '../../layouts/Base.astro';
+import { getPapers } from '../../lib/profile';
+
+const papers = await getPapers();
+---
+
+<Base
+  title="Papers"
+  description="Peer-reviewed papers by Sagar Pal on numerical methods and the physics of multiphase flows."
+>
+  <section class="container page-head" aria-labelledby="page-title">
+    <h1 id="page-title" class="display display--blog">
+      Papers
+    </h1>
+    <p class="page-head__lede">
+      Peer-reviewed work on numerical methods and the physics of multiphase
+      flows.
+    </p>
+    <a class="btn btn--secondary page-head__scholar" href={site.social.scholar}>
+      Google Scholar
+    </a>
+  </section>
+
+  <section class="container page-body" aria-label="All papers">
+    <PaperList papers={papers} full />
+  </section>
+</Base>
+
+<style>
+  .page-head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    padding-top: 96px;
+  }
+
+  .page-head__lede {
+    max-width: 34ch;
+    font-size: clamp(20px, 1.8vw, 26px);
+    line-height: 1.35;
+  }
+
+  .page-body {
+    padding-top: 96px;
+  }
+
+  @media (max-width: 719.98px) {
+    .page-body {
+      padding-top: 80px;
+    }
+  }
+</style>

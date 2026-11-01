@@ -1,14 +1,16 @@
 ---
 // Paper rows (DESIGN.md §7.1.6): year, title, authors (Sagar bold) + journal,
 // PDF pill when there is a PDF, then a DOI or arXiv pill. Pass papers already sorted.
+// `full` (the /publications/ page) adds each paper's description.
 import type { CollectionEntry } from 'astro:content';
 import { doiLabel } from '../lib/format';
 
 interface Props {
   papers: CollectionEntry<'publications'>[];
+  full?: boolean;
 }
 
-const { papers } = Astro.props;
+const { papers, full = false } = Astro.props;
 ---
 
 <ol reversed class="papers" role="list">
@@ -21,6 +23,7 @@ const { papers } = Astro.props;
         <span class="paper__authors">
           <Fragment set:html={p.authors} />. {p.journal}.
         </span>
+        {full && <p class="paper__description">{p.description}</p>}
         <div class="paper__links">
           {p.pdf && (
             <a class="btn btn--secondary btn--xs" href={p.pdf}>
@@ -85,6 +88,13 @@ const { papers } = Astro.props;
   .paper__authors :global(strong) {
     color: var(--ink);
     font-weight: 600;
+  }
+
+  .paper__description {
+    max-width: 68ch;
+    margin-top: 4px;
+    font-size: 17px;
+    line-height: 1.55;
   }
 
   .paper__links {
