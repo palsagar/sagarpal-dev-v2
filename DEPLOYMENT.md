@@ -210,8 +210,10 @@ copy. Use **Execute Now** once to check it.
 
 **From R2, after the volume or the server is lost.** Start the app with an empty volume
 and the same `LITESTREAM_*` values. The entrypoint finds no database and restores the
-latest copy from R2 before the site starts. The log shows the restore. When R2 has no copy
-yet, the site starts with an empty database.
+latest copy from R2 before the site starts. A successful restore prints nothing, so check
+that the reading list and the view counts are back. The log line
+`no matching backups found` means R2 had no copy yet, and the site started with an empty
+database.
 
 This was tested locally. With a wrong key, the restore fails with a 403 error and the
 container stops, so the site never starts with an empty database by mistake. When R2
