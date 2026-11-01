@@ -73,7 +73,7 @@
     accounting for mortgage rates, property appreciation, investment returns,
     taxes, and maintenance costs to help make informed housing decisions.
   image: "../assets/project-rent-vs-buy.jpg"
-  image_alt: "Rent vs Buy simulator: verdict panel and net-value chart over ten years"
+  image_alt: "Rent vs Buy simulator: input sliders, the verdict, and a ten-year net-value chart where buying overtakes renting after seven years"
   image_position: "top"
   demo: "https://rent-or-buy-sim.com/"
   github: "https://github.com/palsagar/rent-vs-buy-simulator"

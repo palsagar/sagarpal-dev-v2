@@ -317,4 +317,4 @@ Local env (`api/.env`, gitignored): see API.md §8 for the full list. Local DB a
 3. ~~Backup target.~~ Answered (Phase 8): nightly local copies plus the VPS's disk backups. Litestream → R2 is built in but not turned on.
 4. Should the "From droplets to materials" section get the same quieter tone as the hero? (Raised on the canvas; currently unchanged.)
 5. CV file: keep `Sagar_Pal_CV_2025.pdf` or upload a 2026 version (and add the `/cv` redirect target)?
-6. Rent vs Buy site: its intro-tour overlay stays faintly visible behind the results after loading. Not part of this repo, but it shows in the project thumbnail.
+6. ~~Rent vs Buy site: its intro-tour overlay stays faintly visible behind the results.~~ Fixed on that site; the thumbnail was retaken on 1 Nov 2026.
