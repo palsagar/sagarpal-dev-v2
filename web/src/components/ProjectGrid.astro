@@ -10,9 +10,11 @@ interface Props {
   full?: boolean;
   /** Card title level, passed to each card. */
   level?: 2 | 3;
+  /** The first card's image is the page's LCP element (/projects/). */
+  priority?: boolean;
 }
 
-const { projects, full = false, level } = Astro.props;
+const { projects, full = false, level, priority = false } = Astro.props;
 const rows = Array.from({ length: Math.ceil(projects.length / 2) }, (_, r) =>
   projects.slice(2 * r, 2 * r + 2),
 );
@@ -27,6 +29,7 @@ const rows = Array.from({ length: Math.ceil(projects.length / 2) }, (_, r) =>
           wide={i === r % 2}
           full={full}
           level={level}
+          priority={priority && r === 0 && i === 0}
           reveal={i + 1}
         />
       ))}

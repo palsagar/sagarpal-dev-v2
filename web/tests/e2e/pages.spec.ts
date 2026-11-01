@@ -145,3 +145,64 @@ for (const path of [
     expect(skips).toEqual([]);
   });
 }
+
+// The first large image above the fold is the LCP element on these pages.
+test('/projects/: the first project image loads eagerly with high priority', async ({
+  page,
+}) => {
+  await page.goto('/projects/');
+  const imgs = page.locator('main article img');
+  await expect(imgs.first()).toHaveAttribute('loading', 'eager');
+  await expect(imgs.first()).toHaveAttribute('fetchpriority', 'high');
+  for (const img of (await imgs.all()).slice(1)) {
+    await expect(img).toHaveAttribute('loading', 'lazy');
+  }
+});
+
+for (const [path, image] of [
+  ['/blog/', 'fig-mitosis'],
+  ['/no-such-page/', 'fig-mitosis'],
+] as const) {
+  for (const theme of THEMES) {
+    test(`${path} (${theme}): the active theme's image is preloaded with high priority`, async ({
+      page,
+    }) => {
+      await storeTheme(page, theme);
+      await page.goto(path);
+      const preload = page.locator(
+        'link[rel="preload"][as="image"][fetchpriority="high"]',
+      );
+      await expect(preload).toHaveCount(1);
+      await expect(preload).toHaveAttribute(
+        'imagesrcset',
+        new RegExp(`${image}-${theme}`),
+      );
+    });
+  }
+}
+
+// Display titles must end inside the text column, not in the right gutter.
+for (const path of [
+  '/',
+  '/projects/',
+  '/publications/',
+  '/blog/',
+  '/what-im-reading/',
+  '/no-such-page/',
+]) {
+  test(`${path}: the h1 stays inside the column at 360 to 412px`, async ({
+    page,
+  }) => {
+    for (const width of [360, 375, 390, 412]) {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(path);
+      const over = await page.locator('h1').evaluate((h) => {
+        const r = document.createRange();
+        r.selectNodeContents(h);
+        const right = Math.max(...[...r.getClientRects()].map((x) => x.right));
+        return Math.round(right - h.getBoundingClientRect().right);
+      });
+      expect(over, `${width}px`).toBeLessThanOrEqual(0);
+    }
+  });
+}

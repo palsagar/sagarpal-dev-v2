@@ -13,9 +13,18 @@ interface Props {
   reveal?: number;
   /** Title level: 3 under a section h2 (home), 2 under the page h1 (/projects/). */
   level?: 2 | 3;
+  /** The page's LCP image (the first card on /projects/): eager, high priority. */
+  priority?: boolean;
 }
 
-const { project, wide, full = false, reveal, level = 3 } = Astro.props;
+const {
+  project,
+  wide,
+  full = false,
+  reveal,
+  level = 3,
+  priority = false,
+} = Astro.props;
 const Title = `h${level}` as const;
 const primary = project.demo
   ? { label: 'Live demo', href: project.demo }
@@ -36,6 +45,8 @@ const t = project.terminal;
         widths={[480, 800, 1200, project.image.width].filter(
           (w) => w <= project.image!.width,
         )}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : undefined}
         sizes={
           wide
             ? '(max-width: 1100px) 100vw, 800px'

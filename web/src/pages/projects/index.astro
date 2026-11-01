@@ -22,7 +22,7 @@ const projects = await getProjects();
   </section>
 
   <section class="container page-body" aria-label="Projects">
-    <ProjectGrid projects={projects} full level={2} />
+    <ProjectGrid projects={projects} full level={2} priority />
   </section>
 </Base>
 
@@ -49,10 +49,11 @@ const projects = await getProjects();
   }
 
   @media (max-width: 719.98px) {
-    /* "Simulations" is one long word: at the phone display size (76px) it is
-       wider than a 390px screen. */
+    /* "Simulations" is one long word (about 5.66em): at the phone display size
+       (76px) it is wider than a 390px screen. Sized to the column so it ends
+       inside it, not in the right gutter. */
     .page-head__title {
-      font-size: min(76px, 16.5vw);
+      font-size: min(76px, calc((100vw - 2 * var(--gutter)) / 5.75));
     }
 
     .page-body {
