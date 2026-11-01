@@ -158,3 +158,46 @@ test('Back and Forward report the page to Umami', async ({ page }) => {
   await page.goForward();
   await expect.poll(urls).toEqual(['/projects/', '/', '/projects/']);
 });
+
+// background-clip: text paints only inside the box. On phones the name is sized
+// to the column and has negative letter spacing, so the ink of the last letter
+// sits within a few pixels of the box edge: any ink outside would show unfilled.
+for (const width of [360, 390, 412, 719]) {
+  test(`footer name at ${width}px: no letter ink outside its box`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/');
+    const name = page.locator('.site-footer__name');
+    await name.scrollIntoViewIfNeeded();
+    // Paint the letters solid red so their ink shows outside the box.
+    await name.evaluate((e) => {
+      e.style.background = 'none';
+      e.style.setProperty('-webkit-text-fill-color', 'rgb(255, 0, 0)');
+    });
+    const box = (await name.boundingBox())!;
+    const shot = await page.screenshot({
+      clip: {
+        x: box.x + box.width,
+        y: box.y,
+        width: Math.min(24, width - box.x - box.width),
+        height: box.height,
+      },
+    });
+    const red = await page.evaluate(async (b64) => {
+      const img = new Image();
+      img.src = `data:image/png;base64,${b64}`;
+      await img.decode();
+      const c = document.createElement('canvas');
+      [c.width, c.height] = [img.width, img.height];
+      const ctx = c.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      const px = ctx.getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (let i = 0; i < px.length; i += 4)
+        if (px[i] > 200 && px[i + 1] < 90 && px[i + 2] < 90) n++;
+      return n;
+    }, shot.toString('base64'));
+    expect(red).toBe(0);
+  });
+}

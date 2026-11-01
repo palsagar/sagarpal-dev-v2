@@ -84,6 +84,8 @@ test('the draft post is not built', async ({ request }) => {
 });
 
 test('nothing in the build mentions the draft (pages, sitemap, assets)', () => {
+  // Reads the local dist/, so it says nothing about a deployed site.
+  test.skip(!!process.env.BASE_URL, 'checks the local build');
   const files: string[] = [];
   const walk = (dir: string) => {
     for (const name of readdirSync(dir)) {
