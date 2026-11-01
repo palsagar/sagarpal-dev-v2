@@ -1,6 +1,6 @@
 # sagar-pal.dev redesign — build plan
 
-> Status: **design signed off (31 Oct 2026). Phases 0–2 and 4–7 done on branch `redesign`. Phase 3 built; its real-phone frame-rate check is pending. Phase 8: the image, backups and DEPLOYMENT.md are done; the staging deploy waits on Sagar's Coolify, DNS and R2 steps (DEPLOYMENT.md §3–§6).**
+> Status: **design signed off (31 Oct 2026). Phases 0–2 and 4–7 done on branch `redesign`. Phase 3 built; its real-phone frame-rate check is pending. Phase 8 done: staging runs at `https://next.sagar-pal.dev` (1 Nov 2026). Next: Phase 9 QA against staging.**
 > This is the master plan for replacing the Jekyll/Chirpy site with an Astro front end and a FastAPI back end.
 > It is written for Claude Code to execute phase by phase; a human can follow it too.
 
@@ -242,9 +242,9 @@ Full spec in `docs/redesign/API.md`.
 - [x] With `TRUST_CLOUDFLARE=true`, make the origin reachable only through Cloudflare (firewall to Cloudflare's IP ranges, or a Cloudflare Tunnel), and set uvicorn's `--forwarded-allow-ips` to the proxy's address rather than `*`. Otherwise anyone can forge `CF-Connecting-IP` and bypass the per-IP login limit and the view/Useful dedupe (security review of Phase 5). **Done in the app instead (with Sagar):** `CF-Connecting-IP` counts only when the peer is in Cloudflare's published ranges, and `FORWARDED_ALLOW_IPS` is the Coolify proxy's network (DEPLOYMENT.md §4).
 - [x] Bound build memory (the VPS swap-thrash fix in today's Dockerfile is a lesson: keep `npm ci` single-job friendly, no parallel native builds).
 - [x] Rewrite `DEPLOYMENT.md`. Coolify app: build pack Dockerfile, **exposed port 8000** (was 80), persistent volume → `/data`, runtime env vars (API.md §8). Staging first: a second Coolify app on branch `redesign` at `next.sagar-pal.dev` (decided with Sagar).
-- [x] Backups: nightly `sqlite3 .backup` to the volume plus off-box copy. **Sagar chose Litestream → Cloudflare R2.**
+- [x] Backups: nightly `sqlite3 .backup` to the volume plus off-box copy. **Sagar chose Litestream → Cloudflare R2**, then, at the staging set-up, decided to run without it: the nightly copies plus the VPS's disk backups are enough. The image keeps Litestream, so the `LITESTREAM_*` variables turn it on later.
 - [x] Cut-over checklist (DEPLOYMENT.md): staging sign-off → merge `redesign` → `main` → production redeploy → verify URLs, SW kill switch, Umami realtime hit, RSS validator, OG preview (e.g. opengraph.xyz) → keep the previous image tag for instant rollback.
-- [ ] Sagar: create the two R2 buckets (staging and production) with one token each, the staging app, the `next` DNS record and the scheduled task (DEPLOYMENT.md §3–§6), then run the staging checks.
+- [x] Staging app, the `next` DNS record and the scheduled task (DEPLOYMENT.md §5–§6), then the staging checks. R2 dropped (see above).
 
 **Done when:** staging passes Phase 9 QA and Sagar approves the production cut-over.
 
@@ -266,6 +266,12 @@ Full spec in `docs/redesign/API.md`.
   - Litestream copies to an S3-compatible store (SeaweedFS; MinIO's images are no longer public). It restores into an empty volume, skips the restore when the database exists, and keeps working after a nightly copy is put back.
   - A misconfiguration (missing secret, partial `LITESTREAM_*`) stops the container with exit status 1.
 - **CI.** A new `image` job builds the image, starts it and waits for its health check.
+
+**Staging set-up (1 Nov 2026).**
+- **Done through the Coolify and Cloudflare MCP servers, with Sagar's OK.** The Coolify app **Personal Website (staging)** in Personal Projects → staging builds `redesign`. It has Auto Deploy on, consistent container naming, Coolify's health check off and the volume at `/data`. Sagar pasted the three secrets himself. The DNS record `next` is proxied, and the zone's SSL/TLS mode is Full.
+- **`FORWARDED_ALLOW_IPS` is `172.18.0.0/16`**, the `coolify` network on Yorkhost-VPS (`docker network inspect coolify`).
+- **Checks passed.** The first deploy of `fb1faa2` became healthy. Let's Encrypt issued the certificate while the record was DNS only. Through Cloudflare, `/api/health` shows `via_cloudflare: true`; forged headers sent straight to the origin give `false`. All API.md §9 smoke checks pass, and every response carries `x-robots-tag: noindex, nofollow`. The backup task (`0 3 * * *`) ran once and wrote `/data/backups/site-2026-11-01.db`.
+- **Lesson.** Coolify ticks **Available at Buildtime** by default for a new variable, so secrets must be unticked (DEPLOYMENT.md §2). The Coolify MCP's env-var update returns the variable's value, so do not use it on secrets.
 
 ### Phase 9 — QA and polish
 - [ ] Playwright e2e at 390, 768, 1440 × {night, day} × {JS on, JS off (where meaningful)}: navigation, theme toggle persistence, blog filter/search, Useful (dedupe), reading filters, admin happy path.
@@ -308,7 +314,7 @@ Local env (`api/.env`, gitignored): see API.md §8 for the full list. Local DB a
 ## 6. Open questions for Sagar (non-blocking unless noted)
 1. Licence for the new code and content (blocking Phase 0 licence file only).
 2. ~~Staging hostname and Cloudflare Access for the admin.~~ Answered (Phase 8): `next.sagar-pal.dev`; no Access for now.
-3. ~~Backup target.~~ Answered (Phase 8): Litestream → Cloudflare R2, plus nightly local copies.
+3. ~~Backup target.~~ Answered (Phase 8): nightly local copies plus the VPS's disk backups. Litestream → R2 is built in but not turned on.
 4. Should the "From droplets to materials" section get the same quieter tone as the hero? (Raised on the canvas; currently unchanged.)
 5. CV file: keep `Sagar_Pal_CV_2025.pdf` or upload a 2026 version (and add the `/cv` redirect target)?
 6. Rent vs Buy site: its intro-tour overlay stays faintly visible behind the results after loading. Not part of this repo, but it shows in the project thumbnail.

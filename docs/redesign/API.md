@@ -193,6 +193,6 @@ curl -sI $BASE/does-not-exist | head -1                # 404 (custom page)
 
 ## 10. Ops
 - **Migrations:** Alembic `upgrade head` in the lifespan hook, guarded by a file lock (single process anyway).
-- **Backups (decided with Sagar, Phase 8):** Litestream → Cloudflare R2 runs in the container and copies every change off the server within about a second. A Coolify scheduled task runs `python -m app.tools.backup` nightly: SQLite's online backup API to `/data/backups/site-YYYY-MM-DD.db`, newest 14 kept. Restore steps: DEPLOYMENT.md §7.
+- **Backups (decided with Sagar, Phase 8):** no Litestream for now: the nightly copies below plus the VPS's disk backups. Litestream → Cloudflare R2 is built into the image and starts when `LITESTREAM_BUCKET` is set; it then copies every change off the server within about a second. A Coolify scheduled task runs `python -m app.tools.backup` nightly: SQLite's online backup API to `/data/backups/site-YYYY-MM-DD.db`, newest 14 kept. Restore steps: DEPLOYMENT.md §7.
 - **Logs:** JSON lines to stdout (Coolify collects them); request logs exclude IP/UA and query strings for `/api/search`.
 - **Workers:** a single uvicorn worker is enough, and simplifies the in-memory rate limiter. If scaling later, move rate limits to SQLite or Redis.

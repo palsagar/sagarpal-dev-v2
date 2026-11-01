@@ -8,9 +8,14 @@ Browser ──► Cloudflare ──► Coolify proxy (Traefik) ──► contain
 ```
 
 Inside the container, one uvicorn process serves the Astro build, the JSON API, the admin,
-the RSS feed and the Open Graph images. Litestream runs uvicorn as its child process and
-copies every change to the SQLite database to a Cloudflare R2 bucket. The database and the
-Open Graph image cache live on a Docker volume mounted at `/data`.
+the RSS feed and the Open Graph images. The database and the Open Graph image cache live on
+a Docker volume mounted at `/data`.
+
+**Backups (decided with Sagar on 1 Nov 2026):** staging and production run without
+Litestream and R2. A Coolify scheduled task makes a consistent copy of the database every
+night in `/data/backups` (section 6), and the VPS's own disk backups take those copies off
+the server. The image still contains Litestream. Setting the `LITESTREAM_*` variables
+(section 3) turns it on, with no rebuild.
 
 | File | What it does |
 |---|---|
@@ -28,7 +33,7 @@ at 1.5 GB), so it does not push a small VPS into swap.
 | What | Where |
 |---|---|
 | Server | **Yorkhost-VPS**, with the Traefik proxy. Production and staging both run on it. Its IP address is under **Servers → Yorkhost-VPS**. The address is not written here, because the repo is public and Cloudflare keeps the server's address hidden. |
-| Project | **Personal Projects**. The environment **production** holds the app **Personal Website**. Staging goes into the environment **staging**. |
+| Project | **Personal Projects**. The environment **production** holds the app **Personal Website**. The environment **staging** holds the app **Personal Website (staging)**, set up on 1 Nov 2026 (section 5). |
 | Docker network | `coolify`, the same for both apps |
 | Git source | The GitHub App **my-private-repos-sagar**, which has access to `palsagar/sagarpal-dev-v2` |
 
@@ -48,8 +53,10 @@ copied off the server. That is expected locally.
 
 ## 2. Environment variables
 
-Set these in Coolify as **runtime** variables. Do not tick "Build Variable": the build
-needs none of them. A change takes effect on the next restart, without a rebuild.
+Set these in Coolify as **runtime** variables. Untick **Available at Buildtime**: the build
+needs none of them. Coolify ticks it by default for a new variable, and a build-time
+variable is written into the Dockerfile as an `ARG`, so a secret would end up in the
+image's build metadata. A change takes effect on the next restart, without a rebuild.
 
 | Variable | Staging | Production | Notes |
 |---|---|---|---|
@@ -61,7 +68,7 @@ needs none of them. A change takes effect on the next restart, without a rebuild
 | `TRUST_CLOUDFLARE` | `true` | `true` | Use `CF-Connecting-IP` as the visitor's IP (only from Cloudflare addresses, see section 4) |
 | `FORWARDED_ALLOW_IPS` | proxy network | proxy network | The subnet of Coolify's proxy network, for example `10.0.1.0/24`. Section 4 says how to find it |
 | `NOINDEX` | `true` | unset | Adds `X-Robots-Tag: noindex, nofollow` to every response, so search engines skip staging |
-| `LITESTREAM_BUCKET` | `sagar-pal-dev-staging-backups` | `sagar-pal-dev-production-backups` | Turns on Litestream. The next four `LITESTREAM_*` values must then be set too. Each site has its own bucket (section 3) |
+| `LITESTREAM_BUCKET` | unset | unset | Unset means no Litestream (the current set-up). Set, it turns on Litestream, and the next four `LITESTREAM_*` values must then be set too. Each site has its own bucket (section 3) |
 | `LITESTREAM_PATH` | `staging` | `production` | Folder inside the bucket that holds the copy |
 | `LITESTREAM_ENDPOINT` | R2 endpoint | R2 endpoint | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` |
 | `LITESTREAM_ACCESS_KEY_ID` | staging R2 key | production R2 key | From the site's own R2 API token (section 3) |
@@ -86,7 +93,11 @@ The argon2id hash contains `$` characters. Coolify can expand `$` references in 
 value, which would change the hash so that every admin login fails. So, in Coolify, set the
 **Interpolation** of `ADMIN_PASSWORD_HASH` to **Literal (keep $ characters as-is)**.
 
-## 3. R2 buckets for Litestream (once)
+## 3. R2 buckets for Litestream (optional, not used)
+
+Not set up: on 1 Nov 2026 Sagar decided that the nightly copies and the VPS's disk backups
+are enough. R2 is not enabled on the Cloudflare account. Follow this section only to turn
+Litestream on later.
 
 Staging and production each have their own bucket and their own API token. An R2 API token
 can be limited to one bucket, but not to a folder inside a bucket. With one shared bucket,
@@ -174,7 +185,8 @@ database and secrets. Phase 9 QA runs against it.
    only through the proxy.
 3. **Domains:** `https://next.sagar-pal.dev`.
 4. **Persistent Storage → Add → Volume Mount:** name `sagar-pal-dev-staging-data`,
-   destination path `/data`. Use a volume, not a directory mount: a new Docker volume takes
+   destination path `/data`. Coolify puts the app's UUID in front of the name. Use a
+   volume, not a directory mount: a new Docker volume takes
    its owner from the image, so the `app` user can write to it. A directory on the server
    is owned by root, and the container stops with "/data is not writable".
 5. **Environment variables:** the staging column of section 2. Set the **Interpolation** of
@@ -183,7 +195,9 @@ database and secrets. Phase 9 QA runs against it.
    updates, Coolify starts the new container before it stops the old one, so two Litestream
    processes would write to one replica, which can corrupt it. The entrypoint refuses to
    start a second Litestream on the same volume, so a deploy with rolling updates on fails.
-   The cost of this setting is a few seconds of downtime on each deploy.
+   The cost of this setting is a few seconds of downtime on each deploy. Without Litestream
+   the setting is not strictly needed, but keep it, so that turning Litestream on later
+   needs no other change.
 7. **Health check:** leave Coolify's own health check off. Coolify then uses the
    Dockerfile's `HEALTHCHECK`. Coolify's HTTP check would run `curl` inside the container,
    and the image does not include curl.
@@ -192,7 +206,9 @@ database and secrets. Phase 9 QA runs against it.
    **DNS only (grey cloud)**, so Let's Encrypt can reach Coolify's proxy and issue the
    certificate.
 10. **Deploy.** The first build takes a few minutes. Check the logs: the last line should be
-    `Uvicorn running on http://0.0.0.0:8000`, and Litestream should log `replicating to`.
+    `Uvicorn running on http://0.0.0.0:8000`. Without Litestream, the first line is
+    `LITESTREAM_BUCKET is not set; the database is not copied off the server`. With it,
+    Litestream logs `replicating to`.
 11. Once `https://next.sagar-pal.dev` loads with a valid certificate, switch the DNS record
     to **Proxied (orange cloud)**. Then run the check in section 4.
 12. **Scheduled task** (section 6).
@@ -225,7 +241,8 @@ copy. Use **Execute Now** once to check it.
 
 ## 7. Restore
 
-**From R2, after the volume or the server is lost.** Start the app with an empty volume
+**From R2, after the volume or the server is lost** (only when Litestream is on; today,
+restore the volume from the VPS's disk backup, then use a nightly copy as below). Start the app with an empty volume
 and the same `LITESTREAM_*` values. The entrypoint finds no database and restores the
 latest copy from R2 before the site starts. A successful restore prints nothing, so check
 that the reading list and the view counts are back. The log line
@@ -282,7 +299,7 @@ restart applies the saved one, so find out what changed before the switch.
      seconds of downtime.
    - **Health check:** Coolify's own check off (section 5, step 7).
    - **Scheduled task:** section 6.
-4. **Deploy** and watch the logs until uvicorn and Litestream have both started.
+4. **Deploy** and watch the logs until uvicorn has started (and Litestream, if it is on).
 5. Verify:
    - The API.md §9 smoke checks with `BASE=https://sagar-pal.dev`. There is no
      `x-robots-tag` header in production.
