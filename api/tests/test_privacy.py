@@ -4,7 +4,15 @@ import pytest
 from freezegun import freeze_time
 from starlette.requests import Request
 
-from app.privacy import client_ip, daily_secret, is_bot, key_expiry, utc_now, visitor_key
+from app.privacy import (
+    client_ip,
+    daily_secret,
+    from_cloudflare,
+    is_bot,
+    key_expiry,
+    utc_now,
+    visitor_key,
+)
 from app.ratelimit import RateLimiter
 from tests.conftest import BROWSER_UA
 
@@ -74,11 +82,35 @@ def test_browsers_are_not_bots() -> None:
 
 
 def test_client_ip_trusts_cloudflare_only_when_told_to() -> None:
-    request = _request({"CF-Connecting-IP": "203.0.113.7"})
+    request = _request({"CF-Connecting-IP": "203.0.113.7"}, peer="104.16.0.1")
     assert client_ip(request, trust_cloudflare=True) == "203.0.113.7"
-    assert client_ip(request, trust_cloudflare=False) == "10.0.0.1"
-    assert client_ip(_request({}), trust_cloudflare=True) == "10.0.0.1"
+    assert client_ip(request, trust_cloudflare=False) == "104.16.0.1"
+    assert client_ip(_request({}, peer="104.16.0.1"), trust_cloudflare=True) == "104.16.0.1"
     assert client_ip(_request({}, peer=None), trust_cloudflare=False) == ""
+
+
+def test_client_ip_ignores_the_header_from_a_peer_outside_cloudflare() -> None:
+    # Someone who reaches the origin directly can send the header; it must not count.
+    request = _request({"CF-Connecting-IP": "203.0.113.7"}, peer="198.51.100.4")
+    assert client_ip(request, trust_cloudflare=True) == "198.51.100.4"
+    assert client_ip(_request({"CF-Connecting-IP": "203.0.113.7"}, peer=None), True) == ""
+
+
+@pytest.mark.parametrize(
+    ("host", "expected"),
+    [
+        ("104.16.0.1", True),
+        ("172.71.255.254", True),
+        ("2606:4700::6810:84e5", True),
+        ("172.15.255.255", False),
+        ("10.0.1.5", False),
+        ("2001:db8::1", False),
+        ("testclient", False),
+        ("", False),
+    ],
+)
+def test_from_cloudflare_matches_the_published_ranges(host: str, expected: bool) -> None:
+    assert from_cloudflare(host) is expected
 
 
 class FakeClock:

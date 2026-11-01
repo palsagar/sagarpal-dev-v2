@@ -1,6 +1,6 @@
 # sagar-pal.dev redesign — build plan
 
-> Status: **design signed off (31 Oct 2026). Phases 0–2 and 4–7 done on branch `redesign`. Phase 3 built; its real-phone frame-rate check is pending. Phase 8 next.**
+> Status: **design signed off (31 Oct 2026). Phases 0–2 and 4–7 done on branch `redesign`. Phase 3 built; its real-phone frame-rate check is pending. Phase 8: the image, backups and DEPLOYMENT.md are done; the staging deploy waits on Sagar's Coolify, DNS and R2 steps (DEPLOYMENT.md §3–§6).**
 > This is the master plan for replacing the Jekyll/Chirpy site with an Astro front end and a FastAPI back end.
 > It is written for Claude Code to execute phase by phase; a human can follow it too.
 
@@ -107,6 +107,7 @@ Browser ──► Cloudflare (proxy + cache) ──► Coolify/Traefik ──►
 ├── docs/redesign/                # this hand-off
 ├── Dockerfile                    # multi-stage: build web → run api + static
 ├── .dockerignore
+├── deploy/                       # entrypoint.sh (Litestream + uvicorn), litestream.yml
 ├── Makefile                      # dev / build / test / lint shortcuts
 ├── .github/workflows/ci.yml      # lint + test + build on PRs (replaces pages-deploy.yml)
 ├── README.md, DEPLOYMENT.md      # rewritten for the new stack
@@ -237,14 +238,34 @@ Full spec in `docs/redesign/API.md`.
 *Phase 7 notes (1 Nov 2026):* decided with Sagar: the nav's "Projects" and "Papers" now link to `/projects/` and `/publications/` (they used to jump to `/#work` and `/#papers`; the hero's "View projects" button still jumps to `#work`, as the copy deck says); the page headers reuse the home wording ("Simulations and tools" with the home sentence; "Papers" with "Peer-reviewed work on numerical methods and the physics of multiphase flows." and a Google Scholar button). **Pages:** `components/ProjectGrid.astro` (the 7/5 rows, moved out of the home page) and `lib/profile.ts` (`getProjects()`, `getPapers()`: the sorting, shared with home); `ProjectCard` and `PaperList` take `full`, which shows the longer `description` from the YAML. On phones the projects title is `min(76px, 16.5vw)`, because "Simulations" at 76px is wider than a 390px screen. 404: `pages/404.astro` (copy from DESIGN.md §7.5, the mitosis field image, `noindex`); FastAPI serves `dist/404.html` with status 404. **SEO:** `Base.astro` takes `image` (default `/og/default.png`, the FastAPI card; the old Chirpy `og-card.png` stays at its URL but is no longer used) and `type`; `noindex` pages get no canonical URL or `og:url`. Posts (`Post.astro`) use `/og/{slug}.png`, `og:type` article, `article:*` tags and a `BlogPosting` JSON-LD block (`<` escaped). `public/robots.txt` disallows `/admin` and `/api/` and names the sitemap. The sitemap integration already leaves out the 404 page. The review added a 301 from `/sitemap.xml` (the old site's sitemap, which listed 10 URLs that all resolve on the new site) to `/sitemap-index.xml`. **Kill switch:** the old site registers **`/sw.min.js`** (not `/sw.js`; found in Chirpy's `app.min.js`), a cache-first worker. `public/sw.min.js` skips waiting, deletes every cache, unregisters itself and reloads open tabs; FastAPI sends it `no-store`. Keep it until at least May 2027. **Done before this phase:** the redirects (Phase 5, `app/static.py`), the favicon and Apple touch icon (Phase 3) and the `theme-color` per theme (Phase 1, `ThemeScript.astro`). **Checks:** FastAPI on the real build answered 200 for `/`, `/publications/`, `/projects/`, `/feed.xml` and all four PDFs, 301 → `/blog/` for `/categories/`, `/tags/`, `/archives/` (and their subpaths), 301 for `/posts/<slug>/`, 302 for `/cv`, and 404 with the new page for unknown paths. With the real Chirpy worker downloaded from the live site (scratch script, not in the repo), a profile that it controlled showed the old page for a moment on the first reload, then the new site; caches and workers were empty afterwards. `tests/e2e/seo.spec.ts` repeats this with a cache-first stand-in. make lint clean; make test: 148 pytest (99.60 % coverage) and 158 Playwright passed.
 
 ### Phase 8 — Container + deployment (needs Sagar for Coolify/DNS steps)
-- [ ] Multi-stage `Dockerfile`: `node:22-slim` builds `web/` → `python:3.12-slim` with uv installs `api/` → copy `web/dist` → run `uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'`. Non-root user, `HEALTHCHECK` on `/api/health`, image < 250 MB.
-- [ ] With `TRUST_CLOUDFLARE=true`, make the origin reachable only through Cloudflare (firewall to Cloudflare's IP ranges, or a Cloudflare Tunnel), and set uvicorn's `--forwarded-allow-ips` to the proxy's address rather than `*`. Otherwise anyone can forge `CF-Connecting-IP` and bypass the per-IP login limit and the view/Useful dedupe (security review of Phase 5).
-- [ ] Bound build memory (the VPS swap-thrash fix in today's Dockerfile is a lesson: keep `npm ci` single-job friendly, no parallel native builds).
-- [ ] Rewrite `DEPLOYMENT.md`. Coolify app: build pack Dockerfile, **exposed port 8000** (was 80), persistent volume → `/data`, runtime env vars (API.md §8). Staging first: a second Coolify app on branch `redesign` at e.g. `next.sagar-pal.dev` (**ask Sagar**).
-- [ ] Backups: nightly `sqlite3 .backup` to the volume plus off-box copy (Coolify S3 backup or Litestream → Cloudflare R2). **Ask Sagar** which.
-- [ ] Cut-over checklist (DEPLOYMENT.md): staging sign-off → merge `redesign` → `main` → production redeploy → verify URLs, SW kill switch, Umami realtime hit, RSS validator, OG preview (e.g. opengraph.xyz) → keep the previous image tag for instant rollback.
+- [x] Multi-stage `Dockerfile`: `node:22-slim` builds `web/` → `python:3.12-slim` with uv installs `api/` → copy `web/dist` → run `uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers` (from `deploy/entrypoint.sh`). Non-root user, `HEALTHCHECK` on `/api/health`, image < 250 MB (actual: about 290 MB on disk, 100 MB compressed; the Litestream binary is 35 MB of it).
+- [x] With `TRUST_CLOUDFLARE=true`, make the origin reachable only through Cloudflare (firewall to Cloudflare's IP ranges, or a Cloudflare Tunnel), and set uvicorn's `--forwarded-allow-ips` to the proxy's address rather than `*`. Otherwise anyone can forge `CF-Connecting-IP` and bypass the per-IP login limit and the view/Useful dedupe (security review of Phase 5). **Done in the app instead (with Sagar):** `CF-Connecting-IP` counts only when the peer is in Cloudflare's published ranges, and `FORWARDED_ALLOW_IPS` is the Coolify proxy's network (DEPLOYMENT.md §4).
+- [x] Bound build memory (the VPS swap-thrash fix in today's Dockerfile is a lesson: keep `npm ci` single-job friendly, no parallel native builds).
+- [x] Rewrite `DEPLOYMENT.md`. Coolify app: build pack Dockerfile, **exposed port 8000** (was 80), persistent volume → `/data`, runtime env vars (API.md §8). Staging first: a second Coolify app on branch `redesign` at `next.sagar-pal.dev` (decided with Sagar).
+- [x] Backups: nightly `sqlite3 .backup` to the volume plus off-box copy. **Sagar chose Litestream → Cloudflare R2.**
+- [x] Cut-over checklist (DEPLOYMENT.md): staging sign-off → merge `redesign` → `main` → production redeploy → verify URLs, SW kill switch, Umami realtime hit, RSS validator, OG preview (e.g. opengraph.xyz) → keep the previous image tag for instant rollback.
+- [ ] Sagar: create the two R2 buckets (staging and production) with one token each, the staging app, the `next` DNS record and the scheduled task (DEPLOYMENT.md §3–§6), then run the staging checks.
 
 **Done when:** staging passes Phase 9 QA and Sagar approves the production cut-over.
+
+**Phase 8 notes (1 Nov 2026).**
+- **Decisions with Sagar.** Litestream → R2 for off-server backups. Coolify's S3 backups cover only databases Coolify runs, not a SQLite file in an app volume. The origin check is done in the app, so no firewall or tunnel is needed. Staging is at `next.sagar-pal.dev`. Cloudflare Access for `/admin` is not added for now.
+- **Image.**
+  - `fastapi[standard]` moved to the dev dependencies. The image installs `fastapi` and `uvicorn` only, because the extras brought OpenTelemetry, a second HTTP client, `requests` and the CLI. That cut the Python packages from 138 MB to 80 MB.
+  - Coolify uses the Dockerfile's `HEALTHCHECK` for Dockerfile apps. Its own HTTP check would need `curl` in the image, which the image does not have.
+  - The request log skips successful health checks.
+- **App changes.**
+  - `app/privacy.py` has Cloudflare's ranges and `from_cloudflare()`.
+  - `/api/health` reports `via_cloudflare`, so the proxy setting can be checked from outside.
+  - `NOINDEX=true` adds `X-Robots-Tag` on staging.
+  - `python -m app.tools.backup` writes the nightly local copies.
+- **Checked locally (Docker 29, arm64).**
+  - The API.md §9 smoke checks pass.
+  - The proxy trust works both ways: through a Cloudflare address, `via_cloudflare` is true; with a forged `X-Forwarded-For`, it is false.
+  - The container stops in under a second, with or without Litestream.
+  - Litestream copies to an S3-compatible store (SeaweedFS; MinIO's images are no longer public). It restores into an empty volume, skips the restore when the database exists, and keeps working after a nightly copy is put back.
+  - A misconfiguration (missing secret, partial `LITESTREAM_*`) stops the container with exit status 1.
+- **CI.** A new `image` job builds the image, starts it and waits for its health check.
 
 ### Phase 9 — QA and polish
 - [ ] Playwright e2e at 390, 768, 1440 × {night, day} × {JS on, JS off (where meaningful)}: navigation, theme toggle persistence, blog filter/search, Useful (dedupe), reading filters, admin happy path.
@@ -286,8 +307,8 @@ Local env (`api/.env`, gitignored): see API.md §8 for the full list. Local DB a
 
 ## 6. Open questions for Sagar (non-blocking unless noted)
 1. Licence for the new code and content (blocking Phase 0 licence file only).
-2. Staging hostname (e.g. `next.sagar-pal.dev`) and whether to put the admin behind Cloudflare Access.
-3. Backup target: Coolify S3 backups vs Litestream → Cloudflare R2.
+2. ~~Staging hostname and Cloudflare Access for the admin.~~ Answered (Phase 8): `next.sagar-pal.dev`; no Access for now.
+3. ~~Backup target.~~ Answered (Phase 8): Litestream → Cloudflare R2, plus nightly local copies.
 4. Should the "From droplets to materials" section get the same quieter tone as the hero? (Raised on the canvas; currently unchanged.)
 5. CV file: keep `Sagar_Pal_CV_2025.pdf` or upload a 2026 version (and add the `/cv` redirect target)?
 6. Rent vs Buy site: its intro-tour overlay stays faintly visible behind the results after loading. Not part of this repo, but it shows in the project thumbnail.

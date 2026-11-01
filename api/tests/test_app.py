@@ -13,12 +13,18 @@ from app.auth import verify_password
 from app.config import REPO_ROOT, Settings
 from app.log import JsonFormatter, configure_logging
 from app.tools import hash_password as tool
+from tests.conftest import CLOUDFLARE_PEER, client_from
 
 
 def test_health_reports_posts(client: TestClient) -> None:
     response = client.get("/api/health")
-    assert response.json() == {"status": "ok", "posts": 2}
+    assert response.json() == {"status": "ok", "posts": 2, "via_cloudflare": False}
     assert response.headers["cache-control"] == "no-store"
+
+
+def test_health_says_when_the_request_came_through_cloudflare(client: TestClient) -> None:
+    response = client_from(client, CLOUDFLARE_PEER).get("/api/health")
+    assert response.json()["via_cloudflare"] is True
 
 
 def test_health_is_503_when_the_database_fails(
@@ -91,6 +97,22 @@ def test_request_log_drops_query_strings_and_ips(
     assert json.loads(line)["path"] == "/api/search"
     assert "secret" not in line
     assert "testclient" not in line  # the TestClient's peer address
+
+
+def test_request_log_skips_successful_health_checks(
+    client: TestClient, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with caplog.at_level(logging.INFO, logger="app.request"):
+        client.get("/api/health")
+        assert not [r for r in caplog.records if r.name == "app.request"]
+
+        def broken() -> None:
+            raise OperationalError("SELECT 1", {}, Exception("disk I/O error"))
+
+        monkeypatch.setattr(client.app.state.ctx.engine, "connect", broken)  # type: ignore[attr-defined]
+        client.get("/api/health")
+    [record] = [r for r in caplog.records if r.name == "app.request"]
+    assert record.status == 503  # type: ignore[attr-defined]
 
 
 def test_configure_logging_silences_the_access_log() -> None:

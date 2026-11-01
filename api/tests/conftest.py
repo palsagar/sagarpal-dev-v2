@@ -20,6 +20,7 @@ TEST_ENV = {
     "ADMIN_PASSWORD_HASH": TEST_PASSWORD_HASH,
     "ADMIN_API_TOKEN": "",
     "TRUST_CLOUDFLARE": "false",
+    "NOINDEX": "false",
     "UMAMI_DOMAIN": "",
     "UMAMI_ID": "",
     "CONTACT_EMAIL": "",
@@ -32,6 +33,18 @@ from app.config import get_settings  # noqa: E402
 from app.main import create_app  # noqa: E402
 
 BROWSER_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_0) AppleWebKit/605.1.15 Safari/605.1.15"
+# An address in one of Cloudflare's edge ranges, for requests that arrive through Cloudflare.
+CLOUDFLARE_PEER = ("104.16.0.1", 443)
+
+
+def client_from(client: TestClient, peer: tuple[str, int]) -> TestClient:
+    """A second client for the same (already started) app whose requests come from ``peer``."""
+    return TestClient(
+        client.app,
+        base_url="https://testserver",
+        headers={"User-Agent": BROWSER_UA},
+        client=peer,
+    )
 
 
 def post(slug: str, **overrides: Any) -> dict[str, Any]:

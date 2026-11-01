@@ -1,0 +1,19 @@
+# Litestream: copies every change to /data/site.db to a Cloudflare R2 bucket.
+# deploy/entrypoint.sh uses it only when LITESTREAM_BUCKET is set, and checks
+# that the other values are set too. DEPLOYMENT.md says how to make the bucket
+# and its API token. Staging and production must use different paths.
+
+# Optional ping URL, called while every sync succeeds; empty disables it.
+heartbeat-url: ${LITESTREAM_HEARTBEAT_URL}
+heartbeat-interval: 5m
+
+dbs:
+  - path: /data/site.db
+    replica:
+      type: s3
+      bucket: ${LITESTREAM_BUCKET}
+      path: ${LITESTREAM_PATH}
+      endpoint: ${LITESTREAM_ENDPOINT}
+      region: auto
+      access-key-id: ${LITESTREAM_ACCESS_KEY_ID}
+      secret-access-key: ${LITESTREAM_SECRET_ACCESS_KEY}

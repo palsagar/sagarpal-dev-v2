@@ -1,26 +1,23 @@
-# Phase 8 writes the new multi-stage Dockerfile; keep the build context lean.
-.git
-.github
-.claude
-.superpowers
-.vscode
-.idea
-.DS_Store
-docs
+# Only web/, api/ and deploy/ go into the build, without local builds, caches or secrets.
+*
+!web/
+!api/
+!deploy/
 
-# Dependencies and build output (rebuilt inside the image)
-**/node_modules
-web/dist
-web/.astro
-web/test-results
-web/playwright-report
-**/.venv
-**/__pycache__
-**/.pytest_cache
-**/.mypy_cache
-**/.ruff_cache
-
-# Local data and secrets
-.data
-**/.env
-**/.env.*
+web/node_modules/
+web/dist/
+web/.astro/
+web/tests/
+web/test-results/
+web/playwright-report/
+web/blob-report/
+api/.venv/
+api/tests/
+api/.env
+api/.env.*
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage
+**/.DS_Store

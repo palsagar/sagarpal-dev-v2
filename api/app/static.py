@@ -177,17 +177,19 @@ def inline_script_hashes(static_dir: Path) -> list[str]:
 
 
 def content_security_policy(script_hashes: list[str], umami_domain: str | None) -> str:
-    """The report-only policy: self, the inline scripts' hashes, Umami, data: images.
+    """The report-only policy: self, the inline scripts' hashes, Umami, data: images and fonts.
 
     ``img-src`` also allows any https image because reading-list covers come from
-    URLs the admin enters (Open Library and others).
+    URLs the admin enters (Open Library and others). ``font-src`` allows ``data:``
+    because the Astro build inlines small font files into its CSS (a KaTeX font and a
+    JetBrains Mono subset).
     """
     analytics = [umami_domain] if umami_domain else []
     script_src = " ".join(["'self'", *script_hashes, *analytics])
     connect_src = " ".join(["'self'", *analytics])
     return (
         f"default-src 'self'; script-src {script_src}; style-src 'self' 'unsafe-inline'; "
-        f"img-src 'self' data: https:; font-src 'self'; connect-src {connect_src}; "
+        f"img-src 'self' data: https:; font-src 'self' data:; connect-src {connect_src}; "
         "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
     )
 
@@ -219,9 +221,12 @@ class SecurityHeaders:
         await self.app(scope, receive, send_with_headers)
 
 
-def security_headers(csp: str) -> dict[str, str]:
-    """The fixed header set, with the CSP in report-only mode."""
-    return {
+def security_headers(csp: str, noindex: bool = False) -> dict[str, str]:
+    """The fixed header set, with the CSP in report-only mode.
+
+    ``noindex`` adds ``X-Robots-Tag: noindex, nofollow`` (the staging site).
+    """
+    headers = {
         "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -229,3 +234,6 @@ def security_headers(csp: str) -> dict[str, str]:
         "X-Frame-Options": "DENY",
         "Content-Security-Policy-Report-Only": csp,
     }
+    if noindex:
+        headers["X-Robots-Tag"] = "noindex, nofollow"
+    return headers

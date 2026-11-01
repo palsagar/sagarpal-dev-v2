@@ -111,7 +111,7 @@ FastAPI loads it in the lifespan hook from `STATIC_DIR`, validates it with Pydan
 
 | Method & path | Purpose | Response |
 |---|---|---|
-| `GET /api/health` | Liveness + DB check | `{"status":"ok","posts":N}` |
+| `GET /api/health` | Liveness + DB check | `{"status":"ok","posts":N,"via_cloudflare":bool}`. `via_cloudflare` says whether this request came from a Cloudflare edge address; through the public URL it must be `true` (DEPLOYMENT.md §4) |
 | `GET /api/reading?status=&kind=` | Published, non-deleted items. Order: `reading` by `started_on` desc; `finished` by `finished_on` desc; `queued` by `created_at` desc | `{"items":[ReadingItemOut…], "counts":{"all":n,"book":n,"paper":n,"article":n}}` |
 | `GET /api/posts/{slug}/stats` | Counts for one post | `{"views":n,"useful":n,"reacted":bool}` (`reacted` = this visitor already reacted today) |
 | `POST /api/posts/{slug}/view` | Count a view (deduped per visitor/day; bots ignored) | `204` |
@@ -126,7 +126,7 @@ Cache headers: `GET /api/reading` and `/stats` → `Cache-Control: no-store` (Cl
 
 ### 4.1 Privacy-preserving dedupe
 - Visitor key = `HMAC_SHA256(daily_secret, client_ip + "|" + user_agent + "|" + slug + "|" + action)`, where `daily_secret = HMAC_SHA256(HASH_SECRET, YYYY-MM-DD UTC)`. Store only the key with `expires_at = tomorrow 00:00 UTC + 1h`, and purge expired keys hourly. Raw IPs and UAs are never written to disk or logs.
-- Client IP comes from `CF-Connecting-IP` when the request came via Cloudflare (trust only when `TRUST_CLOUDFLARE=true`), else from uvicorn's proxy headers.
+- Client IP comes from `CF-Connecting-IP` when the request came via Cloudflare (trust only when `TRUST_CLOUDFLARE=true` and the peer is in Cloudflare's published ranges, `app/privacy.py`), else from uvicorn's proxy headers (`FORWARDED_ALLOW_IPS` = the Coolify proxy's network).
 - Bot filter: ignore `view`/`useful` when the UA matches a conservative crawler regex or is empty.
 - Rate limits (per hashed IP): `POST` stats 30/min; search 60/min; admin login 5/15 min.
 - No cookies for visitors. This matches Umami's cookieless setup, so no consent banner is needed.
@@ -146,7 +146,7 @@ Cache headers: `GET /api/reading` and `/stats` → `Cache-Control: no-store` (Cl
   - Unknown paths → `dist/404.html` with status 404.
 - **Redirects (301):** `/categories/*`, `/tags/*`, `/archives/*` → `/blog/`; `/posts/{slug}/` → `/blog/{slug}/`; `/cv` → `/assets/pdfs/Sagar_Pal_CV_2025.pdf`; `/sitemap.xml` → `/sitemap-index.xml` (the old Jekyll sitemap URL). Trailing-slash policy matches Astro's `trailingSlash` setting (pick `always` to keep the Chirpy-era `/projects/` and `/publications/` URLs).
 - **Umami injection:** when `UMAMI_DOMAIN` and `UMAMI_ID` are both set, insert `<script defer src="{UMAMI_DOMAIN}/script.js" data-website-id="{UMAMI_ID}"></script>` before `</head>` in HTML responses (stream-safe: HTML files are small, so read, replace, send). When unset, inject nothing. This keeps today's runtime-configurable behaviour (see the old `nginx.conf.template`). Optional later: proxy the script and `/api/send` through the same origin to dodge ad-blockers.
-- **Security headers** on all responses: `Strict-Transport-Security: max-age=31536000; includeSubDomains`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, `X-Frame-Options: DENY`. Start CSP as `Content-Security-Policy-Report-Only` (self + Umami domain + `data:` images + the inline theme script's hash, which Astro can expose at build time), then enforce after a week without reports.
+- **Security headers** on all responses: `Strict-Transport-Security: max-age=31536000; includeSubDomains`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`, `X-Frame-Options: DENY`. Start CSP as `Content-Security-Policy-Report-Only` (self + Umami domain + `data:` images and fonts + the inline theme script's hash, which Astro can expose at build time), then enforce after a week without reports.
 - **Old PWA kill switch:** served as a normal static file from `web/public/` at the old service-worker path (see the plan, Phase 7), with `Cache-Control: no-store`.
 
 ## 7. RSS and OG details (and the fallback)
@@ -165,7 +165,11 @@ Cache headers: `GET /api/reading` and `/stats` → `Cache-Control: no-store` (Cl
 | `SESSION_SECRET` | yes | 32+ random bytes | Admin cookie + CSRF signing |
 | `ADMIN_PASSWORD_HASH` | yes | `$argon2id$…` | Generate with `uv run python -m app.tools.hash_password` |
 | `ADMIN_API_TOKEN` | no | — | Enables the bearer JSON admin API |
-| `TRUST_CLOUDFLARE` | no | `true` in prod | Use `CF-Connecting-IP` |
+| `TRUST_CLOUDFLARE` | no | `true` in prod | Use `CF-Connecting-IP`, only from Cloudflare addresses |
+| `FORWARDED_ALLOW_IPS` | in prod | `10.0.1.0/24` | Read by uvicorn: the proxy network whose `X-Forwarded-For` is trusted. Never `*` |
+| `NOINDEX` | no | `true` on staging | Adds `X-Robots-Tag: noindex, nofollow` to every response |
+| `LITESTREAM_BUCKET`, `LITESTREAM_PATH`, `LITESTREAM_ENDPOINT`, `LITESTREAM_ACCESS_KEY_ID`, `LITESTREAM_SECRET_ACCESS_KEY` | no | R2 bucket, `production` | Read by `deploy/entrypoint.sh`. Bucket set = Litestream replicates `/data/site.db` to R2 (all five needed) |
+| `LITESTREAM_HEARTBEAT_URL` | no | uptime-service ping URL | Read by `deploy/litestream.yml`. Litestream calls it every 5 min while every sync succeeds; empty = no pings |
 | `UMAMI_DOMAIN`, `UMAMI_ID` | no | `https://analytics.sagar-pal.dev`, UUID | Same semantics as today: no trailing slash; both empty → no tag |
 | `CONTACT_EMAIL` | no | — | Added to the lookup User-Agent (Crossref etiquette); empty = no address sent |
 | `LOG_LEVEL` | no | `info` | Never log IPs/UAs |
@@ -189,6 +193,6 @@ curl -sI $BASE/does-not-exist | head -1                # 404 (custom page)
 
 ## 10. Ops
 - **Migrations:** Alembic `upgrade head` in the lifespan hook, guarded by a file lock (single process anyway).
-- **Backups:** nightly `sqlite3 /data/site.db ".backup /data/backups/site-$(date +%F).db"` (keep 14) plus an off-box copy: Coolify's S3 backup, or Litestream → Cloudflare R2 (Sagar to choose).
+- **Backups (decided with Sagar, Phase 8):** Litestream → Cloudflare R2 runs in the container and copies every change off the server within about a second. A Coolify scheduled task runs `python -m app.tools.backup` nightly: SQLite's online backup API to `/data/backups/site-YYYY-MM-DD.db`, newest 14 kept. Restore steps: DEPLOYMENT.md §7.
 - **Logs:** JSON lines to stdout (Coolify collects them); request logs exclude IP/UA and query strings for `/api/search`.
 - **Workers:** a single uvicorn worker is enough, and simplifies the in-memory rate limiter. If scaling later, move rate limits to SQLite or Redis.

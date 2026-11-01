@@ -121,6 +121,23 @@ const ogImage = new URL(image, Astro.site ?? site.url).href;
           ?.focus({ preventScroll: true });
       });
 
+      // Umami counts a page view when the URL changes through history.pushState or
+      // history.replaceState. Back and Forward change it through popstate, which Umami
+      // does not watch. After such a move, write the current history entry again with
+      // replaceState: the browser and the router see no change, and Umami counts the
+      // page with the correct referrer. umami.track() would not work here: it reports
+      // the last URL that Umami saw through its history hook, which is the page the
+      // visitor left.
+      let traversed = false;
+      document.addEventListener('astro:before-preparation', (event) => {
+        traversed = event.navigationType === 'traverse';
+      });
+      document.addEventListener('astro:page-load', () => {
+        if (!traversed || !('umami' in window)) return;
+        traversed = false;
+        history.replaceState(history.state, '', location.href);
+      });
+
       // Section entrances (DESIGN.md §8): blocks marked [data-reveal] that start
       // below the fold fade and rise in once, when they scroll into view.
       // Content above the fold, reduced motion and no-JS all skip it.
