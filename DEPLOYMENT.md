@@ -23,6 +23,15 @@ The image is about 290 MB on disk and 100 MB compressed. The Litestream binary i
 of that. The build keeps its memory low (one image-processing thread, Node's heap capped
 at 1.5 GB), so it does not push a small VPS into swap.
 
+**Where things are in Coolify** (checked on 1 Nov 2026):
+
+| What | Where |
+|---|---|
+| Server | **Yorkhost-VPS**, with the Traefik proxy. Production and staging both run on it. Its IP address is under **Servers → Yorkhost-VPS**. The address is not written here, because the repo is public and Cloudflare keeps the server's address hidden. |
+| Project | **Personal Projects**. The environment **production** holds the app **Personal Website**. Staging goes into the environment **staging**. |
+| Docker network | `coolify`, the same for both apps |
+| Git source | The GitHub App **my-private-repos-sagar**, which has access to `palsagar/sagarpal-dev-v2` |
+
 ## 1. Build and run the image locally
 
 ```bash
@@ -134,7 +143,7 @@ proxy as the peer. `FORWARDED_ALLOW_IPS` must be the subnet of the Docker networ
 proxy and the app share. Find it on the VPS:
 
 ```bash
-# The network is the app's destination in Coolify (Servers → your server → Destinations), usually "coolify".
+# On Yorkhost-VPS. The app's network is shown under General → Internal access → Docker network: "coolify".
 docker network inspect coolify --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}'
 ```
 
@@ -157,8 +166,10 @@ count.
 Staging is a second Coolify app built from the `redesign` branch. It has its own volume,
 database and secrets. Phase 9 QA runs against it.
 
-1. **Coolify → Projects → + New → Application → Private Repository (GitHub App).**
-   Repository `palsagar/sagarpal-dev-v2`, branch `redesign`, build pack **Dockerfile**.
+1. **Coolify → Projects → Personal Projects → staging → + New → Private Repository (with
+   GitHub App).** GitHub App **my-private-repos-sagar**, server **Yorkhost-VPS**, network
+   `coolify`. Repository `palsagar/sagarpal-dev-v2`, branch `redesign`, build pack
+   **Dockerfile**.
 2. **Ports Exposes:** `8000`. Leave **Ports Mappings** empty, so the container is reachable
    only through the proxy.
 3. **Domains:** `https://next.sagar-pal.dev`.
@@ -176,23 +187,29 @@ database and secrets. Phase 9 QA runs against it.
 7. **Health check:** leave Coolify's own health check off. Coolify then uses the
    Dockerfile's `HEALTHCHECK`. Coolify's HTTP check would run `curl` inside the container,
    and the image does not include curl.
-8. **Cloudflare DNS:** add `A next → <VPS_IP>`, **DNS only (grey cloud)**, so Let's Encrypt
-   can reach Coolify's proxy and issue the certificate.
-9. **Deploy.** The first build takes a few minutes. Check the logs: the last line should be
-   `Uvicorn running on http://0.0.0.0:8000`, and Litestream should log `replicating to`.
-10. Once `https://next.sagar-pal.dev` loads with a valid certificate, switch the DNS record
+8. **Advanced → Auto Deploy:** on. Every push to `redesign` then deploys staging.
+9. **Cloudflare DNS:** add an `A` record `next` with the IP address of Yorkhost-VPS,
+   **DNS only (grey cloud)**, so Let's Encrypt can reach Coolify's proxy and issue the
+   certificate.
+10. **Deploy.** The first build takes a few minutes. Check the logs: the last line should be
+    `Uvicorn running on http://0.0.0.0:8000`, and Litestream should log `replicating to`.
+11. Once `https://next.sagar-pal.dev` loads with a valid certificate, switch the DNS record
     to **Proxied (orange cloud)**. Then run the check in section 4.
-11. **Scheduled task** (section 6).
-12. Run the smoke checks from `docs/redesign/API.md` §9 with `BASE=https://next.sagar-pal.dev`.
+12. **Scheduled task** (section 6).
+13. Run the smoke checks from `docs/redesign/API.md` §9 with `BASE=https://next.sagar-pal.dev`.
     Every response also carries `x-robots-tag: noindex, nofollow`.
-13. Sign in at `https://next.sagar-pal.dev/admin/`. If the login fails with the right
+14. Sign in at `https://next.sagar-pal.dev/admin/`. If the login fails with the right
     password, check the **Interpolation** of `ADMIN_PASSWORD_HASH` (section 2).
 
 On staging, canonical links and `og:image` URLs point at `https://sagar-pal.dev`, because
 Astro builds them from its fixed site URL. That is intended: search engines that find
 staging anyway are told that the real pages live on the main domain.
 
-Every push to `redesign` redeploys staging, if automatic deployment is on.
+To check automatic deploys, push a commit to `redesign`. A new deployment appears under
+**Deployment Logs** within a minute. If none appears, check that **Git Source** is the
+GitHub App and that **Auto Deploy** is on. On GitHub, the App's settings → **Advanced** →
+**Recent Deliveries** shows whether GitHub sent the push to Coolify and what Coolify
+answered.
 
 ## 6. Nightly local copies (Coolify scheduled task)
 
@@ -244,8 +261,14 @@ app builds `main` (Jekyll + nginx on port 80). Changing its settings before `mai
 new code would break the live site, and merging first would deploy the new code with the
 old settings. So turn off automatic deployment for the short switch.
 
-1. In the production app, turn off automatic deployment. In **Deployments**, note the last
-   Jekyll deployment: it is the rollback target.
+Before you start, open **Servers → Yorkhost-VPS → Proxy**. On 1 Nov 2026, Coolify
+reported that the proxy's saved configuration differs from the one that runs. A proxy
+restart applies the saved one, so find out what changed before the switch.
+
+1. In the production app, turn off **Advanced → Auto Deploy**. The rollback target is the
+   Jekyll image `f70270ae35bcc92637000414cc5a6132dfabf662` (commit `f70270a` on `main`).
+   Coolify keeps no deployment history for this app, so use the image, not a deployment.
+   Check that the image is listed under **Rollback**.
 2. Merge the `redesign` pull request into `main`.
 3. Change the production app:
    - **Ports Exposes:** `80` → `8000`.
@@ -277,13 +300,18 @@ old settings. So turn off automatic deployment for the short switch.
    - Google Search Console: submit `https://sagar-pal.dev/sitemap-index.xml`.
    - The admin: sign in at `/admin` and add a test item. It appears on `/what-im-reading/`.
      Delete it again.
-6. Turn automatic deployment back on.
+6. Check that the app's **Git Source** is the GitHub App **my-private-repos-sagar**. With
+   the source **Public GitHub**, Coolify gets no push events, so automatic deploys cannot
+   work. The source could not be read through Coolify's API on 1 Nov 2026, so check it on
+   that page. Then turn **Advanced → Auto Deploy** back on. The next push to `main` must
+   start a deployment (section 5 says how to check).
 
 ### Rollback
 
-In the production app, set **Ports Exposes** back to `80`, then **Rollback** to the last
-Jekyll deployment you noted in step 1. That image is still on the server, so no rebuild
-is needed. The `/data` volume stays and is unused by the old site. For a lasting
+In the production app, set **Ports Exposes** back to `80`, then **Rollback** to the Jekyll
+image `f70270ae35bcc92637000414cc5a6132dfabf662` (step 1). That image is still on the
+server, so no rebuild is needed. The server's nightly Docker cleanup keeps images for
+rollback while **Disable application image retention** stays off. The `/data` volume stays and is unused by the old site. For a lasting
 rollback, also revert the merge on `main` (a new revert commit, never a force-push), so
 that the next push does not deploy the new site again.
 
