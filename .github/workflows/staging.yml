@@ -2,12 +2,12 @@ name: Staging QA
 
 # Phase 9 checks against the deployed staging site (REDESIGN_PLAN.md):
 # the Playwright `build` tests and the Lighthouse budgets.
-# Coolify redeploys staging on every push to `redesign` (Auto Deploy), so each
+# Coolify redeploys staging on every push to `develop` (Auto Deploy), so each
 # job first waits until staging serves a build newer than the pushed commit.
 
 on:
   push:
-    branches: [redesign]
+    branches: [develop]
     # Only changes that reach the image. Others (docs, tests, CI) leave Docker's
     # cache intact, so staging keeps the previous build and the wait below would
     # time out. These paths follow .dockerignore.
