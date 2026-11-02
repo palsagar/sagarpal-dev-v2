@@ -107,5 +107,13 @@ export default defineConfig({
       },
     },
     plugins: [proxyBeforeAstro()],
+    build: {
+      // Never inline component scripts. When a page has an inline module
+      // script, Astro's client router adds a `data:` module script after each
+      // page change to wait for it, and the enforced CSP blocks `data:` scripts.
+      // Other assets keep Vite's default 4 KB rule (undefined = default).
+      assetsInlineLimit: (filePath) =>
+        filePath.endsWith('.js') ? false : undefined,
+    },
   },
 });
