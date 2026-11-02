@@ -1,7 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
-import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { rehypeHeadingIds, unified } from '@astrojs/markdown-remark';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
@@ -68,7 +67,7 @@ export default defineConfig({
   // Keeps the old Chirpy URLs (/projects/, /publications/) unchanged.
   trailingSlash: 'always',
   output: 'static',
-  integrations: [mdx(), react(), sitemap(), devStyleguide()],
+  integrations: [mdx(), sitemap(), devStyleguide()],
   markdown: {
     // Blog posts (Phase 4). The unified processor runs remark/rehype plugins;
     // Astro 7's default (Sätteri) does not run them.
