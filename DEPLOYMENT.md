@@ -174,12 +174,12 @@ count.
 
 ## 5. Staging at `next.sagar-pal.dev`
 
-Staging is a second Coolify app built from the `redesign` branch. It has its own volume,
+Staging is a second Coolify app built from the `develop` branch (`redesign` until 2 Nov 2026). It has its own volume,
 database and secrets. Phase 9 QA runs against it.
 
 1. **Coolify → Projects → Personal Projects → staging → + New → Private Repository (with
    GitHub App).** GitHub App **my-private-repos-sagar**, server **Yorkhost-VPS**, network
-   `coolify`. Repository `palsagar/sagarpal-dev-v2`, branch `redesign`, build pack
+   `coolify`. Repository `palsagar/sagarpal-dev-v2`, branch `develop`, build pack
    **Dockerfile**.
 2. **Ports Exposes:** `8000`. Leave **Ports Mappings** empty, so the container is reachable
    only through the proxy.
@@ -201,7 +201,7 @@ database and secrets. Phase 9 QA runs against it.
 7. **Health check:** leave Coolify's own health check off. Coolify then uses the
    Dockerfile's `HEALTHCHECK`. Coolify's HTTP check would run `curl` inside the container,
    and the image does not include curl.
-8. **Advanced → Auto Deploy:** on. Every push to `redesign` then deploys staging.
+8. **Advanced → Auto Deploy:** on. Every push to `develop` then deploys staging.
 9. **Cloudflare DNS:** add an `A` record `next` with the IP address of Yorkhost-VPS,
    **DNS only (grey cloud)**, so Let's Encrypt can reach Coolify's proxy and issue the
    certificate.
@@ -221,7 +221,7 @@ On staging, canonical links and `og:image` URLs point at `https://sagar-pal.dev`
 Astro builds them from its fixed site URL. That is intended: search engines that find
 staging anyway are told that the real pages live on the main domain.
 
-To check automatic deploys, push a commit to `redesign`. A new deployment appears under
+To check automatic deploys, push a commit to `develop`. A new deployment appears under
 **Deployment Logs** within a minute. If none appears, check that **Git Source** is the
 GitHub App and that **Auto Deploy** is on. On GitHub, the App's settings → **Advanced** →
 **Recent Deliveries** shows whether GitHub sent the push to Coolify and what Coolify
@@ -338,5 +338,5 @@ Same behaviour as the old nginx set-up, now done by FastAPI. When `UMAMI_DOMAIN`
 `UMAMI_ID` are both set, every HTML page gets
 `<script defer src="${UMAMI_DOMAIN}/script.js" data-website-id="${UMAMI_ID}"></script>`
 before `</head>`. When either is empty, no tag is added. The Content-Security-Policy
-(report-only for now) allows that domain. Change or remove the variables and restart: no
+(enforced) allows that domain. Change or remove the variables and restart: no
 rebuild is needed.

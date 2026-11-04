@@ -25,7 +25,7 @@ def test_html_revalidates_and_carries_security_headers(client: TestClient) -> No
     assert headers["referrer-policy"] == "strict-origin-when-cross-origin"
     assert headers["permissions-policy"] == "camera=(), microphone=(), geolocation=()"
     assert headers["x-frame-options"] == "DENY"
-    assert "content-security-policy" not in headers  # report-only for now
+    assert "content-security-policy-report-only" not in headers  # enforced since the cut-over
     assert "x-robots-tag" not in headers  # only the staging site sets NOINDEX
 
 
@@ -38,7 +38,7 @@ def test_noindex_marks_every_response(static_dir: Path, monkeypatch: pytest.Monk
 
 
 def test_csp_hashes_the_inline_theme_script_only(client: TestClient) -> None:
-    csp = client.get("/").headers["content-security-policy-report-only"]
+    csp = client.get("/").headers["content-security-policy"]
     digest = base64.b64encode(hashlib.sha256(THEME_SCRIPT.encode()).digest()).decode()
     assert f"'sha256-{digest}'" in csp
     assert csp.count("'sha256-") == 1  # JSON-LD and external scripts are not hashed
@@ -156,7 +156,7 @@ def test_umami_is_injected_before_head_only_when_configured(
     assert int(page.headers["content-length"]) == len(page.content)
     assert tag in not_found.text and not_found.status_code == 404
     assert head.status_code == 200
-    csp = page.headers["content-security-policy-report-only"]
+    csp = page.headers["content-security-policy"]
     assert "https://analytics.example" in csp
 
 

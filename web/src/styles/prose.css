@@ -77,8 +77,41 @@
 .prose hr {
   width: 100%;
   height: 1px;
+  margin: 0;
   border: 0;
   background: var(--surface-2);
+}
+
+/* ---------- Plain Markdown images and tables ---------- */
+
+/* Matches <Figure>. Markdown wraps an image in a paragraph. */
+.prose p > img {
+  border-radius: 16px;
+}
+
+/* display: block lets a wide table scroll inside itself on a phone. */
+.prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.prose :where(th, td) {
+  padding: 10px 24px 10px 0;
+  border-bottom: 1px solid var(--surface-2);
+}
+
+/* Keeps the alignment of a column written as :--: or --: in Markdown. */
+.prose th:not([align]) {
+  text-align: left;
+}
+
+.prose th {
+  color: var(--ink-2);
+  font-weight: 620;
 }
 
 /* ---------- Code ---------- */

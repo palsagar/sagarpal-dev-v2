@@ -86,8 +86,9 @@ export const TOPICS = [
 ] as const;
 
 const blog = defineCollection({
-  // One file per post; the file name is the slug (src/content/blog/<slug>.mdx).
-  loader: glob({ pattern: '**/*.mdx', base: './src/content/blog' }),
+  // One file per post; the file name is the slug (src/content/blog/<slug>.md,
+  // or .mdx for a post that uses the components in components/post/).
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),

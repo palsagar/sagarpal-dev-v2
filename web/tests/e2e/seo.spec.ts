@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { publishedPosts } from './helpers';
 
 // SEO and migration safety (REDESIGN_PLAN.md Phase 7): head tags, robots.txt,
 // the sitemap and the kill switch for the old site's service worker.
@@ -77,10 +78,18 @@ test('the sitemap lists the public pages and not the 404 page', async ({
   expect(index).toContain(`${SITE}/sitemap-0.xml`);
   const body = await (await request.get('/sitemap-0.xml')).text();
   const urls = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const posts = await publishedPosts(request);
   expect(urls.sort()).toEqual(
-    ['/', '/blog/', '/projects/', '/publications/', '/what-im-reading/'].map(
-      (p) => `${SITE}${p}`,
-    ),
+    [
+      '/',
+      '/blog/',
+      '/projects/',
+      '/publications/',
+      '/what-im-reading/',
+      ...posts.map((p) => p.url),
+    ]
+      .map((p) => `${SITE}${p}`)
+      .sort(),
   );
 });
 

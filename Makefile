@@ -1,7 +1,11 @@
 # Shortcuts for the Astro front end (web/) and the FastAPI back end (api/).
 # See REDESIGN_PLAN.md §4.
 
-.PHONY: install dev dev-web dev-api build test test-api test-e2e lint fmt
+.PHONY: install post dev dev-web dev-api build test test-api test-e2e lint fmt
+
+# New draft post (docs/WRITING.md): make post title="My title"
+post:
+	cd web && node scripts/new-post.mjs "$(title)"
 
 install:
 	cd web && npm ci

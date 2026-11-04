@@ -190,7 +190,7 @@ def inline_script_hashes(static_dir: Path) -> list[str]:
 
 
 def content_security_policy(script_hashes: list[str], umami_domain: str | None) -> str:
-    """The report-only policy: self, the inline scripts' hashes, Umami, data: images and fonts.
+    """The policy: self, the inline scripts' hashes, Umami, data: images and fonts.
 
     ``img-src`` also allows any https image because reading-list covers come from
     URLs the admin enters (Open Library and others). ``font-src`` allows ``data:``
@@ -235,7 +235,7 @@ class SecurityHeaders:
 
 
 def security_headers(csp: str, noindex: bool = False) -> dict[str, str]:
-    """The fixed header set, with the CSP in report-only mode.
+    """The fixed header set, with the CSP enforced (report-only until the cut-over).
 
     ``noindex`` adds ``X-Robots-Tag: noindex, nofollow`` (the staging site).
     """
@@ -245,7 +245,7 @@ def security_headers(csp: str, noindex: bool = False) -> dict[str, str]:
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
         "X-Frame-Options": "DENY",
-        "Content-Security-Policy-Report-Only": csp,
+        "Content-Security-Policy": csp,
     }
     if noindex:
         headers["X-Robots-Tag"] = "noindex, nofollow"

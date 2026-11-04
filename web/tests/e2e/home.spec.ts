@@ -1,22 +1,36 @@
-import { expect, test, type Page } from '@playwright/test';
+import {
+  expect,
+  test,
+  type APIRequestContext,
+  type Page,
+} from '@playwright/test';
 import {
   THEMES,
   WIDTHS,
   expectNoAxeViolations,
   expectNoHorizontalScroll,
+  publishedPosts,
   storeTheme,
 } from './helpers';
 import { ITEMS, mockReading } from './reading-fixtures';
 
 // Home page, static parts (REDESIGN_PLAN.md Phase 2, DESIGN.md §7.1 and §10).
-// The blog launches empty, so these checks assume 0 published posts.
+// The hero's primary link and the Writing section depend on the published posts.
 
 const CV = '/assets/pdfs/Sagar_Pal_CV_2025.pdf';
 
+/** The first h2s: Writing comes after the path section, and only with posts. */
+async function firstHeadings(request: APIRequestContext) {
+  const posts = await publishedPosts(request);
+  return ['From droplets to materials', ...(posts.length ? ['Writing'] : [])];
+}
+
 test.describe('hero', () => {
-  test('with 0 posts the CTAs are "View projects" and "Download CV"', async ({
+  test('the primary CTA follows the posts; "Download CV" is always there', async ({
     page,
+    request,
   }) => {
+    const hasPosts = (await publishedPosts(request)).length > 0;
     await page.goto('/');
     const hero = page.locator('section[aria-labelledby="hero-title"]');
     await expect(
@@ -28,13 +42,17 @@ test.describe('hero', () => {
       ),
     ).toBeVisible();
     await expect(
-      hero.getByRole('link', { name: 'View projects' }),
-    ).toHaveAttribute('href', '#work');
+      hero.getByRole('link', {
+        name: hasPosts ? 'Read the writing' : 'View projects',
+      }),
+    ).toHaveAttribute('href', hasPosts ? '/blog/' : '#work');
     await expect(
       hero.getByRole('link', { name: 'Download CV' }),
     ).toHaveAttribute('href', CV);
     await expect(
-      hero.getByRole('link', { name: 'Read the writing' }),
+      hero.getByRole('link', {
+        name: hasPosts ? 'View projects' : 'Read the writing',
+      }),
     ).toHaveCount(0);
   });
 
@@ -92,16 +110,16 @@ test.describe('hero', () => {
   });
 });
 
-test('sections appear in order; Writing and Reading are hidden when empty', async ({
+test('sections appear in order; Reading is hidden when empty', async ({
   page,
+  request,
 }) => {
   await page.goto('/');
   await expect(page.locator('main h2:visible')).toHaveText([
-    'From droplets to materials',
+    ...(await firstHeadings(request)),
     'Simulations and tools',
     'Papers',
   ]);
-  await expect(page.locator('#writing')).toHaveCount(0);
   // `astro preview` has no API, so the Reading band stays hidden.
   await expect(page.locator('#reading')).toBeHidden();
   await expect(page.locator('#work')).toHaveCount(1);
@@ -370,6 +388,7 @@ test.describe('reading band', () => {
 
   test('shows up to three "reading now" items, linking to the reading page', async ({
     page,
+    request,
   }) => {
     const requests: string[] = [];
     const extra = { ...ITEMS[0], id: 99, title: 'Test Fourth Item' };
@@ -380,7 +399,7 @@ test.describe('reading band', () => {
     expect(requests).toEqual(['/api/reading?status=reading']);
 
     await expect(page.locator('main h2:visible')).toHaveText([
-      'From droplets to materials',
+      ...(await firstHeadings(request)),
       'Reading',
       'Simulations and tools',
       'Papers',
