@@ -6,19 +6,26 @@ import {
   WIDTHS,
   expectNoAxeViolations,
   expectNoHorizontalScroll,
+  publishedPosts,
   storeTheme,
 } from './helpers';
 
-// Blog in the production build (REDESIGN_PLAN.md Phase 4 "done when"):
-// zero posts, the empty state, a valid empty manifest, and no trace of the
-// example draft. The draft itself is tested under `astro dev` (dev/post.spec.ts).
+// Blog in the production build (REDESIGN_PLAN.md Phase 4 "done when"): the
+// empty state while there are no posts, a valid manifest, every published post,
+// and no trace of the example drafts. The drafts themselves are tested under
+// `astro dev` (dev/post.spec.ts, dev/markdown-post.spec.ts).
 
-const DRAFT_SLUG = 'example-draft';
-const DRAFT_TITLE = 'Example draft: every post component';
+const DRAFTS = [
+  { slug: 'example-draft', title: 'Example draft: every post component' },
+  { slug: 'example-markdown', title: 'Example draft: plain Markdown' },
+];
 
 test('/blog/ shows the empty state without search or filters', async ({
   page,
+  request,
 }) => {
+  const posts = await publishedPosts(request);
+  test.skip(posts.length > 0, 'the empty state shows only with 0 posts');
   await page.goto('/blog/');
   await expect(page).toHaveTitle('Writing — Sagar Pal');
   await expect(
@@ -53,7 +60,7 @@ test('/blog/ shows the empty state without search or filters', async ({
 
 for (const theme of THEMES) {
   for (const [label, width] of Object.entries(WIDTHS)) {
-    test(`/blog/ empty state at ${label} (${theme}): no sideways scroll, no axe violations`, async ({
+    test(`/blog/ at ${label} (${theme}): no sideways scroll, no axe violations`, async ({
       page,
     }) => {
       await storeTheme(page, theme);
@@ -65,25 +72,50 @@ for (const theme of THEMES) {
   }
 }
 
-test('content-manifest.json is valid and lists no posts', async ({
-  request,
-}) => {
+test('content-manifest.json is valid', async ({ request }) => {
   const response = await request.get('/content-manifest.json');
   expect(response.status()).toBe(200);
   const manifest = await response.json();
   expect(manifest).toEqual({
     generated_at: expect.stringMatching(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/),
     site: 'https://sagar-pal.dev',
-    posts: [],
+    posts: expect.any(Array),
   });
 });
 
-test('the draft post is not built', async ({ request }) => {
-  const response = await request.get(`/blog/${DRAFT_SLUG}/`);
-  expect(response.status()).toBe(404);
+// Each new post gets these checks without a new test.
+for (const theme of THEMES) {
+  test(`every published post (${theme}): complete, no sideways scroll, no axe violations`, async ({
+    page,
+    request,
+  }) => {
+    const posts = await publishedPosts(request);
+    test.setTimeout(30_000 * Math.max(1, posts.length));
+    await storeTheme(page, theme);
+    for (const post of posts) {
+      // new-post.mjs writes TODO in the dek.
+      expect(post.dek, post.slug).not.toContain('TODO');
+      for (const width of [WIDTHS.phone, WIDTHS.desktop]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(post.url);
+        await expect(
+          page.getByRole('heading', { level: 1, name: post.title }),
+        ).toBeVisible();
+        await expectNoHorizontalScroll(page);
+        await expectNoAxeViolations(page);
+      }
+    }
+  });
+}
+
+test('the drafts are not built', async ({ request }) => {
+  for (const { slug } of DRAFTS) {
+    const response = await request.get(`/blog/${slug}/`);
+    expect(response.status()).toBe(404);
+  }
 });
 
-test('nothing in the build mentions the draft (pages, sitemap, assets)', () => {
+test('nothing in the build mentions the drafts (pages, sitemap, assets)', () => {
   // Reads the local dist/, so it says nothing about a deployed site.
   test.skip(!!process.env.BASE_URL, 'checks the local build');
   const files: string[] = [];
@@ -98,15 +130,19 @@ test('nothing in the build mentions the draft (pages, sitemap, assets)', () => {
   expect(files.length).toBeGreaterThan(0);
   const leaks = files.filter((f) => {
     const text = readFileSync(f, 'utf8');
-    return text.includes(DRAFT_SLUG) || text.includes(DRAFT_TITLE);
+    return DRAFTS.some((d) => text.includes(d.slug) || text.includes(d.title));
   });
   expect(leaks).toEqual([]);
 });
 
-test('home has no Writing section and keeps "View projects"', async ({
+test('home shows the Writing section only with posts', async ({
   page,
+  request,
 }) => {
+  const posts = await publishedPosts(request);
   await page.goto('/');
-  await expect(page.locator('#writing')).toHaveCount(0);
-  await expect(page.getByRole('link', { name: 'View projects' })).toBeVisible();
+  await expect(page.locator('#writing')).toHaveCount(posts.length ? 1 : 0);
+  await expect(page.locator('#writing .writing__row')).toHaveCount(
+    Math.min(posts.length, 3),
+  );
 });

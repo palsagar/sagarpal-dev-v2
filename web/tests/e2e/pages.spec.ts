@@ -4,6 +4,7 @@ import {
   WIDTHS,
   expectNoAxeViolations,
   expectNoHorizontalScroll,
+  publishedPosts,
   storeTheme,
 } from './helpers';
 import { ITEMS, mockReading } from './reading-fixtures';
@@ -166,7 +167,11 @@ for (const [path, image] of [
   for (const theme of THEMES) {
     test(`${path} (${theme}): the active theme's image is preloaded with high priority`, async ({
       page,
+      request,
     }) => {
+      // The blog index shows this image only in its empty state.
+      const posts = await publishedPosts(request);
+      test.skip(path === '/blog/' && posts.length > 0, 'the blog has posts');
       await storeTheme(page, theme);
       await page.goto(path);
       const preload = page.locator(

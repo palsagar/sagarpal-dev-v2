@@ -1,5 +1,14 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, type Page } from '@playwright/test';
+import { expect, type APIRequestContext, type Page } from '@playwright/test';
+
+/** The posts of the site under test. Tests must follow this list and never
+ *  assume a number of posts, so that publishing a post does not break them. */
+export async function publishedPosts(
+  request: APIRequestContext,
+): Promise<{ slug: string; url: string; title: string; dek: string }[]> {
+  const response = await request.get('/content-manifest.json');
+  return (await response.json()).posts;
+}
 
 export const WIDTHS = { phone: 390, tablet: 768, desktop: 1440 } as const;
 export const THEMES = ['night', 'day'] as const;
