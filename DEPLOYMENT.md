@@ -227,6 +227,15 @@ GitHub App and that **Auto Deploy** is on. On GitHub, the App's settings → **A
 **Recent Deliveries** shows whether GitHub sent the push to Coolify and what Coolify
 answered.
 
+Production uses a different route. Since 4 Nov 2026, a signed webhook on the GitHub repo
+(**Settings → Webhooks**, push events only) sends pushes to
+`https://coolify.gpuphysics.dev/webhooks/source/github/events/manual`, and the production
+app holds the matching secret (**Webhooks → GitHub Webhook Secret**). The secret is stored
+nowhere else: to replace it, generate a new one and set it in both places. If a push to
+`main` starts no deployment, that webhook's **Recent Deliveries** tab shows what Coolify
+answered. Do not also set the production app's **Git Source** to the GitHub App while this
+webhook exists, because each push could then start two deployments.
+
 ## 6. Nightly local copies (Coolify scheduled task)
 
 In the app → **Scheduled Tasks** → **Add**:
@@ -317,11 +326,11 @@ restart applies the saved one, so find out what changed before the switch.
    - Google Search Console: submit `https://sagar-pal.dev/sitemap-index.xml`.
    - The admin: sign in at `/admin` and add a test item. It appears on `/what-im-reading/`.
      Delete it again.
-6. Check that the app's **Git Source** is the GitHub App **my-private-repos-sagar**. With
-   the source **Public GitHub**, Coolify gets no push events, so automatic deploys cannot
-   work. The source could not be read through Coolify's API on 1 Nov 2026, so check it on
-   that page. Then turn **Advanced → Auto Deploy** back on. The next push to `main` must
-   start a deployment (section 5 says how to check).
+6. Make automatic deploys work, then turn **Advanced → Auto Deploy** back on. An app with
+   the source **Public GitHub** gets no push events from the GitHub App. Production was
+   left in that state on 1 Nov 2026, and setting the source through Coolify's API on
+   4 Nov 2026 did not fix it. It uses the signed webhook in section 5 instead. The next push
+   to `main` must start a deployment.
 
 ### Rollback
 
