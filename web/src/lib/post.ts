@@ -78,10 +78,12 @@ function initSidenotes(article: HTMLElement, signal: AbortSignal) {
   }
 }
 
-/** Display math that scrolls sideways must be reachable by keyboard. Shiki
- *  already gives every code block tabindex="0". */
+/** Display math and tables that scroll sideways must be reachable by keyboard.
+ *  Shiki already gives every code block tabindex="0". */
 function initScrollables(article: HTMLElement, signal: AbortSignal) {
-  const boxes = [...article.querySelectorAll<HTMLElement>('.katex-display')];
+  const boxes = [
+    ...article.querySelectorAll<HTMLElement>('.katex-display, .prose table'),
+  ];
   if (!boxes.length) return;
   const update = () => {
     for (const box of boxes) {

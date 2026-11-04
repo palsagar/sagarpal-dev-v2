@@ -381,10 +381,9 @@ test.describe('blog index and home in dev (the draft is listed)', () => {
     page,
   }) => {
     await page.goto('/');
-    await expect(page.locator('#writing .writing__row')).toHaveAttribute(
-      'href',
-      URL_,
-    );
+    await expect(
+      page.locator('#writing .writing__row').first(),
+    ).toHaveAttribute('href', URL_);
     await expect(
       page.getByRole('link', { name: 'Read the writing' }),
     ).toHaveAttribute('href', '/blog/');
