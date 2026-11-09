@@ -228,4 +228,5 @@ Reuse the home section components at full length. 404: h1 "Not found", sentence 
 | `project-flowlab.jpg` | FlowLab thumbnail | Screenshot of flow.gpuphysics.dev (Kármán vortex preset), night duotone |
 | `project-gray-scott.jpg` | Gray-Scott thumbnail + footer name fill | Screenshot of patterns.gpuphysics.dev ("Spots & Loops", F 0.018 k 0.051), night duotone |
 | `project-rent-vs-buy.jpg` | Rent vs Buy thumbnail | Screenshot of rent-or-buy-sim.com (US defaults, 1520px window at 2x: sidebar, verdict and net-value chart), in the site's own colours, cropped to 1528:720 and saved at 1600 px. Retaken on 1 Nov 2026 |
+| `project-paris-property-sales.jpg` | Paris Property Sales thumbnail | Screenshot of parism2.gpuphysics.dev in its dark theme (1528×720 window at 2x, scrolled to the price map and the arrondissement ranking), saved at 1600 px. Taken on 9 Nov 2026 |
 | `portrait.jpg` (640×800) | Path section | Crop of `assets/img/prof_pic.jpg` |

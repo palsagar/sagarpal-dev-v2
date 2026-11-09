@@ -179,7 +179,7 @@ test.describe('path', () => {
   });
 });
 
-test('projects: four in design order with their links', async ({ page }) => {
+test('projects: five in design order with their links', async ({ page }) => {
   await page.goto('/');
   const work = page.locator('#work');
   const cards = work.locator('article');
@@ -188,6 +188,7 @@ test('projects: four in design order with their links', async ({ page }) => {
     'Gray-Scott',
     'PortWhisperer',
     'Rent vs Buy',
+    'Paris Property Sales',
   ]);
   const expected = [
     [
@@ -210,6 +211,11 @@ test('projects: four in design order with their links', async ({ page }) => {
       'https://rent-or-buy-sim.com/',
       'https://github.com/palsagar/rent-vs-buy-simulator',
     ],
+    [
+      'Live demo',
+      'https://parism2.gpuphysics.dev/',
+      'https://github.com/palsagar/paris-property-sales',
+    ],
   ];
   for (const [i, [primary, href, source]] of expected.entries()) {
     const card = cards.nth(i);
@@ -226,7 +232,7 @@ test('projects: four in design order with their links', async ({ page }) => {
   // PortWhisperer shows a terminal fragment instead of an image.
   await expect(cards.nth(2).locator('pre[data-ui]')).toContainText('$ ports');
   await expect(cards.nth(2).locator('img')).toHaveCount(0);
-  for (const i of [0, 1, 3]) {
+  for (const i of [0, 1, 3, 4]) {
     await expect(cards.nth(i).locator('source[type="image/avif"]')).toHaveCount(
       1,
     );
