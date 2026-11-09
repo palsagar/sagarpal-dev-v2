@@ -78,3 +78,24 @@
   demo: "https://rent-or-buy-sim.com/"
   github: "https://github.com/palsagar/rent-vs-buy-simulator"
   tags: ["Python", "Streamlit", "Finance"]
+
+- id: paris-property-sales
+  order: 5
+  title: "Paris Property Sales"
+  tagline: "What homes in Paris and its suburbs actually sold for"
+  summary: "400,000 real home sales in Paris and its suburbs since 2021: median €/m² on a map, trends by quarter, and every sale."
+  tech: "TypeScript, DuckDB, open data"
+  description: >-
+    An interactive dashboard of home sales in Paris, the 122 communes of the
+    inner suburbs and 13 major towns of the Paris region, built from DVF, the
+    French tax administration's open data on property sales. Features a map of
+    median price per m² and price change by arrondissement, quartier or commune
+    with a quarter-by-quarter slider, price trends and distributions, rankings,
+    a list of individual sales with CSV export, and an English and French
+    version. Every view is a shareable link.
+  image: "../assets/project-paris-property-sales.jpg"
+  image_alt: "Paris Property Sales: a map of median price per square metre across the arrondissements and nearby communes, next to a ranked list of arrondissements"
+  image_position: "top"
+  demo: "https://parism2.gpuphysics.dev/"
+  github: "https://github.com/palsagar/paris-property-sales"
+  tags: ["TypeScript", "React", "DuckDB", "Leaflet", "Open Data"]

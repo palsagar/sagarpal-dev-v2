@@ -32,12 +32,13 @@ test.describe('projects', () => {
     ).toHaveAttribute('aria-current', 'page');
 
     const cards = page.locator('main article');
-    await expect(cards).toHaveCount(4);
+    await expect(cards).toHaveCount(5);
     await expect(cards.getByRole('heading', { level: 2 })).toHaveText([
       'FlowLab',
       'Gray-Scott',
       'PortWhisperer',
       'Rent vs Buy',
+      'Paris Property Sales',
     ]);
     // The longer description, not the home summary.
     await expect(cards.first()).toContainText(
